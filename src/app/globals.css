@@ -1,0 +1,82 @@
+@import '../styles/tokens.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--g10);
+    color: var(--g90);
+    font-family: var(--ff);
+    font-feature-settings: 'ss01';
+  }
+  :focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+    border-radius: var(--r-s);
+  }
+  h1, h2, h3 { color: var(--ink-strong); letter-spacing: -0.015em; }
+}
+
+@layer components {
+  .card {
+    background: var(--white);
+    border: 1px solid var(--g30);
+    border-radius: var(--r-m);
+    box-shadow: var(--sh-1);
+  }
+  .field {
+    width: 100%;
+    background: var(--white);
+    border: 1px solid var(--g40);
+    border-radius: var(--r-s);
+    padding: 0.5rem 0.7rem;
+    font-size: 0.9rem;
+    color: var(--g90);
+  }
+  .field:disabled { background: var(--g20); color: var(--g60); }
+  .label { font-size: 0.8rem; font-weight: 600; color: var(--g60); }
+  .num { font-family: var(--fm); font-variant-numeric: tabular-nums; }
+}
+
+/* Tipografia de leitura das páginas de conteúdo. Medida curta e escala
+   generosa: são documentos para ler inteiros, não para escanear. */
+@layer components {
+  .prose-pulso { max-width: 68ch; color: var(--g80); }
+  .prose-pulso h2 {
+    margin-top: 2.5rem; margin-bottom: 0.75rem;
+    font-size: 1.25rem; font-weight: 600;
+    scroll-margin-top: 5rem;
+  }
+  .prose-pulso h3 {
+    margin-top: 1.75rem; margin-bottom: 0.5rem;
+    font-size: 1rem; font-weight: 600; color: var(--g90);
+  }
+  .prose-pulso p { margin: 0.85rem 0; line-height: 1.75; }
+  .prose-pulso ul, .prose-pulso ol { margin: 0.85rem 0 0.85rem 1.25rem; line-height: 1.7; }
+  .prose-pulso ul { list-style: disc; }
+  .prose-pulso ol { list-style: decimal; }
+  .prose-pulso li { margin: 0.3rem 0; }
+  .prose-pulso strong { color: var(--g90); font-weight: 600; }
+  .prose-pulso code {
+    font-family: var(--fm); font-size: 0.85em;
+    background: var(--g20); padding: 0.1em 0.35em; border-radius: 4px;
+  }
+  .prose-pulso blockquote {
+    margin: 1.5rem 0; padding: 0.75rem 1.25rem;
+    border-left: 3px solid var(--yellow);
+    background: var(--now-tint-bg);
+    font-size: 1.05rem; line-height: 1.6; color: var(--g90);
+  }
+  .prose-pulso hr { margin: 2rem 0; border: 0; border-top: 1px solid var(--g30); }
+  .prose-pulso .tabela-scroll { overflow-x: auto; margin: 1.25rem 0; }
+  .prose-pulso table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .prose-pulso th {
+    text-align: left; padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--g40);
+    font-size: 0.75rem; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--g50);
+  }
+  .prose-pulso td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--g20); vertical-align: top; }
+}
