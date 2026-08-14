@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
@@ -24,11 +25,22 @@ export default async function EditarProjetoPage({ params }: { params: { id: stri
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold tracking-tight">{projeto.title}</h1>
-        <p className="num mt-2 text-sm text-g50">
-          Última atualização: {dataLonga(projeto.last_activity_at)}
-        </p>
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <p className="num text-[0.65rem] uppercase tracking-[0.2em] text-g50">Atualizar iniciativa</p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight">{projeto.title}</h1>
+          <p className="num mt-2 text-sm text-g50">
+            Última atualização: {dataLonga(projeto.last_activity_at)}
+          </p>
+        </div>
+        <Link
+          href="/projetos"
+          aria-label="Fechar e voltar para Iniciativas"
+          title="Fechar"
+          className="shrink-0 rounded-s border border-g40 px-3 py-1.5 text-sm font-medium text-g60 hover:bg-g20"
+        >
+          ✕ Fechar
+        </Link>
       </header>
 
       {podeEditar ? (
@@ -36,7 +48,8 @@ export default async function EditarProjetoPage({ params }: { params: { id: stri
           action={acao}
           areas={areas ?? []}
           valores={projeto}
-          rotulo="Salvar alterações"
+          rotulo="Atualizar"
+          cancelHref="/projetos"
         />
       ) : (
         <div className="card space-y-3 p-6">

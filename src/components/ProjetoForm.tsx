@@ -1,12 +1,23 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useFormState, useFormStatus } from 'react-dom';
 import { EIXOS, scoreFinal, classificar, GATE_DESENVOLVIMENTO, type EixoKey } from '@/lib/scoring';
 import { STAGE_LABEL, STAGES } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
 import { ErroBox } from '@/components/ui/Card';
 import type { EstadoProjeto } from '@/app/(app)/projetos/actions';
+
+// Âncoras da escala de priorização: deixa explícito que a nota cresce com o
+// mérito — 1 é o menor peso, 5 o maior.
+const ESCALA = [
+  { n: 1, rotulo: 'Muito baixo' },
+  { n: 2, rotulo: 'Baixo' },
+  { n: 3, rotulo: 'Médio' },
+  { n: 4, rotulo: 'Alto' },
+  { n: 5, rotulo: 'Muito alto' },
+];
 
 type Area = { id: string; name: string };
 type Valores = Partial<Record<string, string | number | boolean | null>>;
@@ -17,12 +28,13 @@ function Salvar({ rotulo }: { rotulo: string }) {
 }
 
 export function ProjetoForm({
-  action, areas, valores = {}, rotulo = 'Salvar iniciativa',
+  action, areas, valores = {}, rotulo = 'Salvar iniciativa', cancelHref = '/projetos',
 }: {
   action: (prev: EstadoProjeto, form: FormData) => Promise<EstadoProjeto>;
   areas: Area[];
   valores?: Valores;
   rotulo?: string;
+  cancelHref?: string;
 }) {
   const [estado, formAction] = useFormState(action, {} as EstadoProjeto);
   const [notas, setNotas] = useState<Record<EixoKey, number | null>>({
@@ -139,9 +151,17 @@ export function ProjetoForm({
         <div>
           <h2 className="text-base font-semibold">Matriz de priorização</h2>
           <p className="mt-1 text-sm leading-relaxed text-g60">
-            Quatro eixos, nota de 1 a 5. Deixe em branco se ainda não dá para avaliar —
-            uma iniciativa não pontuada fica visível, só não entra na fila de priorização.
+            Quatro eixos, nota de <strong className="text-g90">1 a 5</strong>. A escala é crescente:
+            {' '}<strong className="text-g90">1 = muito baixo</strong> (pior) e{' '}
+            <strong className="text-g90">5 = muito alto</strong> (melhor). Quanto maior a nota, mais a
+            iniciativa contribui naquele eixo — e maior o score final. Deixe em branco se ainda não dá
+            para avaliar: uma iniciativa não pontuada fica visível, só não entra na fila de priorização.
           </p>
+          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-g50">
+            {ESCALA.map((e) => (
+              <li key={e.n}><span className="num font-semibold text-g70">{e.n}</span> · {e.rotulo}</li>
+            ))}
+          </ul>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -159,7 +179,7 @@ export function ProjetoForm({
                 }
               >
                 <option value="">Não avaliado</option>
-                {[1, 2, 3, 4, 5].map((v) => <option key={v} value={v}>{v}</option>)}
+                {ESCALA.map((v) => <option key={v.n} value={v.n}>{v.n} — {v.rotulo}</option>)}
               </select>
               <p id={`ajuda_${e.key}`} className="mt-1 text-xs leading-snug text-g50">{e.ajuda}</p>
             </div>
@@ -175,8 +195,14 @@ export function ProjetoForm({
         </p>
       </section>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <Salvar rotulo={rotulo} />
+        <Link
+          href={cancelHref}
+          className="inline-flex items-center rounded-s border border-g40 px-4 py-2 text-sm font-medium text-g80 hover:bg-g20"
+        >
+          Cancelar
+        </Link>
       </div>
     </form>
   );
