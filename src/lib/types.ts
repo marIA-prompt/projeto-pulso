@@ -72,6 +72,38 @@ export type AttendanceKpi = {
   taxa_presenca: number | null;
 };
 
+export type ExperienceLevel = 'iniciante' | 'intermediario' | 'avancado' | 'especialista';
+
+export const EXPERIENCE_LEVELS: ExperienceLevel[] = [
+  'iniciante', 'intermediario', 'avancado', 'especialista',
+];
+
+export const EXPERIENCE_LABEL: Record<ExperienceLevel, string> = {
+  iniciante: 'Iniciante',
+  intermediario: 'Intermediário',
+  avancado: 'Avançado',
+  especialista: 'Especialista',
+};
+
+/** Perfil de comunidade (Hub). Reúne os campos de profiles usados no Hub. */
+export type HubProfile = {
+  id: string;
+  full_name: string | null;
+  nickname: string | null;
+  avatar_url: string | null;
+  headline: string | null;
+  bio: string | null;
+  experience_level: ExperienceLevel | null;
+  languages: string[];
+  automations: string[];
+  interests: string[];
+  projects_done: string | null;
+  contact: string | null;
+  available: boolean;
+  role: Role;
+  area_name: string | null;
+};
+
 export const ROLE_RANK: Record<Role, number> = {
   leitor: 1,
   participante: 2,
