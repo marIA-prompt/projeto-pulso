@@ -44,9 +44,12 @@ export async function criarConvite(_prev: EstadoAdmin, form: FormData): Promise<
   });
 
   revalidatePath('/admin');
+  // O link sempre volta para a tela: mesmo com o envio automático (n8n)
+  // configurado, o administrador consegue copiar e mandar na hora. O token
+  // em claro só existe neste retorno — não fica gravado no banco.
   return enviado
-    ? { ok: `Convite enviado para ${parsed.data.email}.` }
-    : { ok: 'Convite criado. O envio automático não está configurado — copie o link abaixo.', link };
+    ? { ok: `Convite enviado para ${parsed.data.email}. Link abaixo, caso queira reenviar manualmente.`, link }
+    : { ok: `Convite criado para ${parsed.data.email}. Copie o link abaixo e envie à pessoa convidada.`, link };
 }
 
 export async function alterarPapel(form: FormData) {
@@ -153,4 +156,35 @@ export async function criarEncontro(_prev: EstadoAdmin, form: FormData): Promise
   revalidatePath('/admin');
   revalidatePath('/frequencias');
   return { ok: 'Encontro criado e participantes convidados.' };
+}
+
+const EncontroEdicao = z.object({
+  id: z.string().uuid(),
+  title: z.string().min(3, 'Dê um nome ao encontro.'),
+  scheduled_at: z.string().min(1, 'Informe data e hora.'),
+  description: z.string().optional(),
+});
+
+export async function atualizarEncontro(_prev: EstadoAdmin, form: FormData): Promise<EstadoAdmin> {
+  await requireAdmin();
+  const parsed = EncontroEdicao.safeParse({
+    id: form.get('id'),
+    title: form.get('title'),
+    scheduled_at: form.get('scheduled_at'),
+    description: form.get('description') ?? '',
+  });
+  if (!parsed.success) return { erro: parsed.error.issues[0].message };
+
+  const supabase = createClient();
+  const { error } = await supabase.from('meetings').update({
+    title: parsed.data.title,
+    scheduled_at: new Date(parsed.data.scheduled_at).toISOString(),
+    description: parsed.data.description || null,
+  }).eq('id', parsed.data.id);
+
+  if (error) return { erro: 'Não foi possível salvar as alterações do encontro.' };
+
+  revalidatePath('/admin');
+  revalidatePath('/frequencias');
+  return { ok: 'Encontro atualizado.' };
 }

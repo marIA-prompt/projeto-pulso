@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/auth';
-import { dataCurta, dataLonga } from '@/lib/format';
-import { ConviteForm, EncontroForm } from './Forms';
+import { dataCurta } from '@/lib/format';
+import { ConviteForm, EncontroForm, EncontroItem } from './Forms';
 import { cancelarConvite, reenviarConvite, alterarPapel, alternarAtivo } from './actions';
 import { Empty } from '@/components/ui/Card';
 import { ROLE_LABEL, PAPEIS } from '@/lib/types';
@@ -26,7 +26,7 @@ export default async function AdminPage() {
       .select('id, full_name, role, active, created_at, areas(name)')
       .order('full_name'),
     supabase.from('meetings')
-      .select('id, title, scheduled_at').order('scheduled_at', { ascending: false }).limit(10),
+      .select('id, title, scheduled_at, description').order('scheduled_at', { ascending: false }).limit(10),
   ]);
 
   return (
@@ -60,6 +60,7 @@ export default async function AdminPage() {
               <tbody>
                 {convites.map((c) => (
                   <tr key={c.id} className="border-b border-g20 last:border-0">
+                    <td className="p-3 text-g90">{c.email}</td>
                     <td className="p-3 text-g60">{ROLE_LABEL[c.role as keyof typeof ROLE_LABEL] ?? c.role}</td>
                     <td className="p-3 text-g60">{STATUS_LABEL[c.status] ?? c.status}</td>
                     <td className="num p-3 text-g60">{dataCurta(c.expires_at)}</td>
@@ -161,10 +162,10 @@ export default async function AdminPage() {
         ) : (
           <ul className="grid gap-2">
             {encontros.map((e) => (
-              <li key={e.id} className="card flex flex-wrap items-baseline justify-between gap-2 p-3">
-                <span className="font-medium text-g90">{e.title}</span>
-                <span className="num text-xs text-g50">{dataLonga(e.scheduled_at)}</span>
-              </li>
+              <EncontroItem
+                key={e.id}
+                encontro={e as { id: string; title: string; scheduled_at: string; description: string | null }}
+              />
             ))}
           </ul>
         )}
