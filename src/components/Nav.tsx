@@ -7,6 +7,7 @@ import { clsx } from '@/lib/clsx';
 const LINKS = [
   { href: '/dashboard', label: 'Acompanhamento' },
   { href: '/projetos', label: 'Iniciativas' },
+  { href: '/comunidade', label: 'Comunidade' },
   { href: '/frequencias', label: 'Frequências' },
   { href: '/manifesto', label: 'Manifesto' },
   { href: '/metodologia/metodologia-grupo', label: 'Metodologia' },
