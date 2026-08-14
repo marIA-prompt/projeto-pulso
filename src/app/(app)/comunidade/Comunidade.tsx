@@ -70,6 +70,7 @@ export function Comunidade({ pessoas, meuId }: { pessoas: HubProfile[]; meuId: s
   const [area, setArea] = useState('');
   const [soDisponiveis, setSoDisponiveis] = useState(false);
   const [selecionada, setSelecionada] = useState<HubProfile | null>(null);
+  const [view, setView] = useState<'tabela' | 'card'>('tabela');
 
   const langs = useMemo(() => unicos(pessoas, 'languages'), [pessoas]);
   const automs = useMemo(() => unicos(pessoas, 'automations'), [pessoas]);
@@ -128,22 +129,36 @@ export function Comunidade({ pessoas, meuId }: { pessoas: HubProfile[]; meuId: s
             Só quem está disponível para colaborar
           </label>
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <p aria-live="polite" className="text-sm text-g60">
             <strong className="num text-g90">{filtradas.length}</strong> de{' '}
             <span className="num">{pessoas.length}</span> pessoas
           </p>
-          <button onClick={limpar} className="rounded-s border border-g40 px-3 py-1.5 text-sm font-medium text-g60 hover:bg-g20">
-            Limpar filtros
-          </button>
+          <div className="flex items-center gap-2">
+            <div role="group" aria-label="Modo de visualização" className="flex overflow-hidden rounded-s border border-g40">
+              <button
+                type="button" onClick={() => setView('tabela')} aria-pressed={view === 'tabela'}
+                className={`px-3 py-1.5 text-sm font-medium ${view === 'tabela' ? 'bg-[var(--navy)] text-white' : 'text-g60 hover:bg-g20'}`}
+              >Tabela</button>
+              <button
+                type="button" onClick={() => setView('card')} aria-pressed={view === 'card'}
+                className={`px-3 py-1.5 text-sm font-medium ${view === 'card' ? 'bg-[var(--navy)] text-white' : 'text-g60 hover:bg-g20'}`}
+              >Cards</button>
+            </div>
+            <button onClick={limpar} className="rounded-s border border-g40 px-3 py-1.5 text-sm font-medium text-g60 hover:bg-g20">
+              Limpar filtros
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* Grid */}
+      {/* Resultado */}
       {filtradas.length === 0 ? (
         <p className="card p-8 text-center text-sm text-g50">
           Ninguém corresponde a esses filtros. Tente afrouxar a busca.
         </p>
+      ) : view === 'tabela' ? (
+        <TabelaPessoas pessoas={filtradas} meuId={meuId} onSelecionar={setSelecionada} />
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtradas.map((p) => {
@@ -189,6 +204,72 @@ export function Comunidade({ pessoas, meuId }: { pessoas: HubProfile[]; meuId: s
         <DetalhePessoa pessoa={selecionada} ehVoce={selecionada.id === meuId} onFechar={() => setSelecionada(null)} />
       )}
     </div>
+  );
+}
+
+function TabelaPessoas({
+  pessoas, meuId, onSelecionar,
+}: { pessoas: HubProfile[]; meuId: string; onSelecionar: (p: HubProfile) => void }) {
+  return (
+    <section className="card overflow-hidden p-0" aria-label="Pessoas da comunidade">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[52rem] border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-g30 text-left text-xs uppercase tracking-wide text-g50">
+              <th scope="col" className="p-3">Pessoa</th>
+              <th scope="col" className="p-3">Resumo</th>
+              <th scope="col" className="p-3">Área</th>
+              <th scope="col" className="p-3">Nível</th>
+              <th scope="col" className="p-3">Habilidades</th>
+              <th scope="col" className="p-3">Disponível</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pessoas.map((p) => {
+              const nome = nomeDe(p);
+              const skills = [...p.languages, ...p.automations].slice(0, 3);
+              const extra = p.languages.length + p.automations.length - skills.length;
+              return (
+                <tr
+                  key={p.id}
+                  onClick={() => onSelecionar(p)}
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter') onSelecionar(p); }}
+                  className="cursor-pointer border-b border-g20 last:border-0 hover:bg-g10 focus:bg-g10 focus:outline-none"
+                >
+                  <td className="p-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar p={p} size={36} />
+                      <div className="min-w-0">
+                        <span className="font-medium text-g90">{nome}</span>
+                        {p.id === meuId && <span className="ml-1 text-xs text-g50">(você)</span>}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="p-3 text-g60">{p.headline ?? '—'}</td>
+                  <td className="p-3 text-g60">{p.area_name ?? '—'}</td>
+                  <td className="p-3">
+                    {p.experience_level ? <Tag tom="purple">{EXPERIENCE_LABEL[p.experience_level]}</Tag> : <span className="text-g50">—</span>}
+                  </td>
+                  <td className="p-3">
+                    <div className="flex flex-wrap gap-1.5">
+                      {skills.length === 0 && <span className="text-g50">—</span>}
+                      {skills.map((s) => <Tag key={s}>{s}</Tag>)}
+                      {extra > 0 && <Tag>+{extra}</Tag>}
+                    </div>
+                  </td>
+                  <td className="p-3">
+                    {p.available
+                      ? <span className="text-[var(--sig-ok)]">Sim</span>
+                      : <span className="text-g50">Não</span>}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 
