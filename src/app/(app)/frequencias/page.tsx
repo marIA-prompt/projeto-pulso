@@ -3,7 +3,8 @@ import { requireUser } from '@/lib/auth';
 import { confirmarPresenca } from './actions';
 import { dataLonga, nf, nf1 } from '@/lib/format';
 import { Empty } from '@/components/ui/Card';
-import type { AttendanceStatus } from '@/lib/types';
+import { hasRoleAtLeast, type AttendanceStatus } from '@/lib/types';
+import { ExportarCsv } from './ExportarCsv';
 
 export const metadata = { title: 'Frequências — Pulso' };
 export const dynamic = 'force-dynamic';
@@ -37,7 +38,6 @@ export default async function FrequenciasPage() {
         <h1 className="text-2xl font-bold tracking-tight">Frequências</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-g60">
           Confirmar presença ajuda quem organiza a dimensionar a sala e a pauta.
-          A meta da metodologia é 80% da base cadastrada em cada encontro.
         </p>
       </header>
 
@@ -64,22 +64,26 @@ export default async function FrequenciasPage() {
                     {status === 'pending' && <span className="text-g50">Aguardando sua resposta.</span>}
                   </p>
 
-                  <div className="flex gap-2">
-                    <form action={confirmarPresenca}>
-                      <input type="hidden" name="meetingId" value={e.id} />
-                      <input type="hidden" name="status" value="present" />
-                      <button className="rounded-s bg-[var(--blue)] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[var(--blue-2)]">
-                        Vou participar
-                      </button>
-                    </form>
-                    <form action={confirmarPresenca}>
-                      <input type="hidden" name="meetingId" value={e.id} />
-                      <input type="hidden" name="status" value="absent" />
-                      <button className="rounded-s border border-g40 px-3 py-1.5 text-sm font-medium text-g80 hover:bg-g20">
-                        Não vou
-                      </button>
-                    </form>
-                  </div>
+                  {hasRoleAtLeast(perfil.role, 'participante') ? (
+                    <div className="flex gap-2">
+                      <form action={confirmarPresenca}>
+                        <input type="hidden" name="meetingId" value={e.id} />
+                        <input type="hidden" name="status" value="present" />
+                        <button className="rounded-s bg-[var(--blue)] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[var(--blue-2)]">
+                          Vou participar
+                        </button>
+                      </form>
+                      <form action={confirmarPresenca}>
+                        <input type="hidden" name="meetingId" value={e.id} />
+                        <input type="hidden" name="status" value="absent" />
+                        <button className="rounded-s border border-g40 px-3 py-1.5 text-sm font-medium text-g80 hover:bg-g20">
+                          Não vou
+                        </button>
+                      </form>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-g50">Somente leitura</span>
+                  )}
                 </li>
               );
             })}
@@ -87,39 +91,61 @@ export default async function FrequenciasPage() {
         )}
       </section>
 
-      {perfil.role === 'administrador' && kpis && kpis.length > 0 && (
-        <section aria-labelledby="consolidado-titulo" className="space-y-3">
-          <h2 id="consolidado-titulo" className="text-base font-semibold">Consolidado por encontro</h2>
-          <div className="card overflow-x-auto p-0">
-            <table className="w-full min-w-[36rem] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-g30 text-left text-xs uppercase tracking-wide text-g50">
-                  <th scope="col" className="p-3">Encontro</th>
-                  <th scope="col" className="p-3 text-right">Convidados</th>
-                  <th scope="col" className="p-3 text-right">Confirmaram</th>
-                  <th scope="col" className="p-3 text-right">Presentes</th>
-                  <th scope="col" className="p-3 text-right">Taxa de presença</th>
-                </tr>
-              </thead>
-              <tbody>
-                {kpis.map((k) => (
-                  <tr key={k.meeting_id} className="border-b border-g20 last:border-0">
-                    <td className="p-3 font-medium text-g90">{k.title}</td>
-                    <td className="num p-3 text-right text-g60">{nf.format(k.convidados)}</td>
-                    <td className="num p-3 text-right text-g60">{nf.format(k.confirmaram)}</td>
-                    <td className="num p-3 text-right text-g60">{nf.format(k.presentes)}</td>
-                    <td className="num p-3 text-right">
-                      <span className={(k.taxa_presenca ?? 0) >= 80 ? 'text-[var(--sig-ok)]' : 'text-[var(--sig-warn)]'}>
-                        {k.taxa_presenca == null ? '—' : `${nf1.format(k.taxa_presenca)}%`}
-                      </span>
-                    </td>
+      {perfil.role === 'administrador' && kpis && kpis.length > 0 && (() => {
+        const totConvidados = kpis.reduce((s, k) => s + (k.convidados ?? 0), 0);
+        const totConfirmaram = kpis.reduce((s, k) => s + (k.confirmaram ?? 0), 0);
+        const totPresentes = kpis.reduce((s, k) => s + (k.presentes ?? 0), 0);
+        const taxaGeral = totConvidados ? Math.round((1000 * totPresentes) / totConvidados) / 10 : null;
+        return (
+          <section aria-labelledby="consolidado-titulo" className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 id="consolidado-titulo" className="text-base font-semibold">Consolidado por encontro</h2>
+              <ExportarCsv linhas={kpis.map((k) => ({
+                meeting_id: k.meeting_id, title: k.title, scheduled_at: k.scheduled_at,
+                convidados: k.convidados, confirmaram: k.confirmaram, presentes: k.presentes,
+                taxa_presenca: k.taxa_presenca,
+              }))} />
+            </div>
+            <div className="card overflow-x-auto p-0">
+              <table className="w-full min-w-[36rem] border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-g30 text-left text-xs uppercase tracking-wide text-g50">
+                    <th scope="col" className="p-3">Encontro</th>
+                    <th scope="col" className="p-3 text-right">Convidados</th>
+                    <th scope="col" className="p-3 text-right">Confirmaram</th>
+                    <th scope="col" className="p-3 text-right">Presentes</th>
+                    <th scope="col" className="p-3 text-right">Taxa de presença</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
+                </thead>
+                <tbody>
+                  {kpis.map((k) => (
+                    <tr key={k.meeting_id} className="border-b border-g20 last:border-0">
+                      <td className="p-3 font-medium text-g90">{k.title}</td>
+                      <td className="num p-3 text-right text-g60">{nf.format(k.convidados)}</td>
+                      <td className="num p-3 text-right text-g60">{nf.format(k.confirmaram)}</td>
+                      <td className="num p-3 text-right text-g60">{nf.format(k.presentes)}</td>
+                      <td className="num p-3 text-right">
+                        <span className={(k.taxa_presenca ?? 0) >= 80 ? 'text-[var(--sig-ok)]' : 'text-[var(--sig-warn)]'}>
+                          {k.taxa_presenca == null ? '—' : `${nf1.format(k.taxa_presenca)}%`}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-g40 bg-g10 font-semibold text-g90">
+                    <td className="p-3">Total</td>
+                    <td className="num p-3 text-right">{nf.format(totConvidados)}</td>
+                    <td className="num p-3 text-right">{nf.format(totConfirmaram)}</td>
+                    <td className="num p-3 text-right">{nf.format(totPresentes)}</td>
+                    <td className="num p-3 text-right">{taxaGeral == null ? '—' : `${nf1.format(taxaGeral)}%`}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </section>
+        );
+      })()}
     </div>
   );
 }

@@ -47,6 +47,8 @@ export type DashboardRow = {
   dias_sem_atualizacao: number;
   sinal: Signal;
   alerta_14_dias: boolean;
+  description: string | null;
+  cost_saved_month: number | null;
 };
 
 export type PortfolioKpis = {

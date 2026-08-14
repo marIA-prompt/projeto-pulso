@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
-import { STAGES } from '@/lib/types';
+import { STAGES, hasRoleAtLeast } from '@/lib/types';
 import { scoreFinal, GATE_DESENVOLVIMENTO } from '@/lib/scoring';
 
 const nota = z.coerce.number().min(1).max(5).nullable().catch(null);
@@ -71,6 +71,11 @@ function validarGate(d: z.infer<typeof Projeto>): string | null {
 
 export async function criarProjeto(_prev: EstadoProjeto, form: FormData): Promise<EstadoProjeto> {
   const perfil = await requireUser();
+  // Leitor é observador: só lê. A RLS já barra no banco; aqui a mensagem
+  // fica clara em vez de um erro genérico de escrita.
+  if (!hasRoleAtLeast(perfil.role, 'participante')) {
+    return { erro: 'Seu perfil é somente leitura. Peça a um administrador para elevar seu papel para cadastrar iniciativas.' };
+  }
   const parsed = ler(form);
   if (!parsed.success) return { erro: parsed.error.issues[0].message };
 
@@ -122,6 +127,41 @@ export async function atualizarProjeto(
   revalidatePath('/projetos');
   revalidatePath('/dashboard');
   redirect('/projetos?ok=atualizada');
+}
+
+export type EstadoMover = { ok?: boolean; erro?: string };
+
+/** Move uma iniciativa de raia no Kanban. A RLS decide se a pessoa pode
+ * escrever nesta linha (dono, ou gerencial+ para qualquer uma); o gate de
+ * §9.1 continua sendo validado pelo trigger do banco. */
+export async function moverEstagio(id: string, novoEstagio: string): Promise<EstadoMover> {
+  const perfil = await requireUser();
+  if (!hasRoleAtLeast(perfil.role, 'participante')) {
+    return { erro: 'Seu perfil é somente leitura.' };
+  }
+  if (!STAGES.includes(novoEstagio as (typeof STAGES)[number])) {
+    return { erro: 'Estágio inválido.' };
+  }
+
+  const supabase = createClient();
+  const { error, count } = await supabase
+    .from('projects')
+    .update({ stage: novoEstagio }, { count: 'exact' })
+    .eq('id', id)
+    .is('archived_at', null);
+
+  if (error) {
+    // O trigger do gate (Backlog → Em Desenvolvimento exige score ≥ 3,0)
+    // chega aqui como erro do Postgres.
+    return { erro: 'Não foi possível mover: verifique se a iniciativa está pontuada para entrar em desenvolvimento.' };
+  }
+  if (!count) {
+    return { erro: 'Você só pode mover iniciativas das quais é dono (ou ter papel gerencial+).' };
+  }
+
+  revalidatePath('/projetos');
+  revalidatePath('/dashboard');
+  return { ok: true };
 }
 
 export async function arquivarProjeto(id: string) {

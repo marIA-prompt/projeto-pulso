@@ -1,12 +1,20 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { DashboardRow, Signal } from '@/lib/types';
 import { STAGE_LABEL } from '@/lib/types';
-import { nf, nf1 } from '@/lib/format';
+import { nf, nf1, moeda, dataCurta } from '@/lib/format';
 import { Donut, Barras, Ecg } from './charts';
 import { Button } from '@/components/ui/Button';
+
+const POR_PAGINA = 20;
+
+/** Impacto financeiro estimado: economia recorrente anualizada (R$/mês × 12). */
+function impactoAnual(r: DashboardRow): number | null {
+  return r.cost_saved_month == null ? null : r.cost_saved_month * 12;
+}
 
 const SINAL_LABEL: Record<Signal, string> = {
   ok: 'Em dia', warn: 'Atenção', crit: 'Crítico', done: 'Concluído',
@@ -101,6 +109,19 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
     });
   }, [rows, f]);
 
+  // Tabela: ordenada pela atualização mais recente e paginada de 20 em 20.
+  const ordenadas = useMemo(
+    () => [...filtradas].sort((a, b) => b.last_activity_at.localeCompare(a.last_activity_at)),
+    [filtradas],
+  );
+  const [pagina, setPagina] = useState(1);
+  const totalPaginas = Math.max(1, Math.ceil(ordenadas.length / POR_PAGINA));
+  useEffect(() => { setPagina(1); }, [ordenadas.length, f]);
+  const paginaAtual = Math.min(pagina, totalPaginas);
+  const linhasPagina = ordenadas.slice((paginaAtual - 1) * POR_PAGINA, paginaAtual * POR_PAGINA);
+
+  const [selecionada, setSelecionada] = useState<DashboardRow | null>(null);
+
   const contagem = useMemo(() => {
     const c: Record<Signal, number> = { ok: 0, warn: 0, crit: 0, done: 0 };
     filtradas.forEach((r) => { c[sinalDe(r, f.thOk, f.thCrit)] += 1; });
@@ -134,11 +155,11 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
   );
 
   const exportar = useCallback(() => {
-    const cab = ['Iniciativa','Estágio','Tema','Área','Diretoria','Dias sem atualização','Sinal','Horas/mês','Score','Usa IA'];
+    const cab = ['Iniciativa','Estágio','Tema','Área','Diretoria','Dias sem atualização','Sinal','Horas/mês','Impacto financeiro estimado (R$/ano)','Score','Usa IA'];
     const linhas = filtradas.map((r) => [
       r.title, STAGE_LABEL[r.stage], r.theme ?? '', r.area_name ?? '', r.directorate ?? '',
       r.dias_sem_atualizacao, SINAL_LABEL[sinalDe(r, f.thOk, f.thCrit)],
-      r.hours_saved_month ?? '', r.score_final ?? '', r.uses_ai ? 'Sim' : 'Não',
+      r.hours_saved_month ?? '', impactoAnual(r) ?? '', r.score_final ?? '', r.uses_ai ? 'Sim' : 'Não',
     ]);
     const csv = [cab, ...linhas]
       .map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(';'))
@@ -289,51 +310,176 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
       )}
 
       {/* ---------- Tabela ---------- */}
-      <section className="card overflow-x-auto p-0" aria-labelledby="tabela-titulo">
-        <h2 id="tabela-titulo" className="border-b border-g30 p-4 text-base font-semibold">
-          Todas as iniciativas do filtro
-        </h2>
-        <table className="w-full min-w-[46rem] border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-g30 text-left text-xs uppercase tracking-wide text-g50">
-              <th scope="col" className="p-3">Iniciativa</th>
-              <th scope="col" className="p-3">Estágio</th>
-              <th scope="col" className="p-3">Área</th>
-              <th scope="col" className="p-3 text-right">Horas/mês</th>
-              <th scope="col" className="p-3 text-right">Parada há</th>
-              <th scope="col" className="p-3">Sinal</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtradas.map((r) => {
-              const s = sinalDe(r, f.thOk, f.thCrit);
-              return (
-                <tr key={r.id} className="border-b border-g20 last:border-0">
-                  <td className="p-3 font-medium text-g90">{r.title}</td>
-                  <td className="p-3 text-g60">{STAGE_LABEL[r.stage]}</td>
-                  <td className="p-3 text-g60">{r.area_name ?? '—'}</td>
-                  <td className="num p-3 text-right text-g60">
-                    {r.hours_saved_month == null ? '—' : nf1.format(r.hours_saved_month)}
-                  </td>
-                  <td className="num p-3 text-right text-g60">
-                    {s === 'done' ? '—' : `${nf.format(r.dias_sem_atualizacao)} d`}
-                  </td>
-                  <td className="p-3">
-                    <span className={`rounded-s px-2 py-0.5 text-xs font-semibold ${SINAL_CLASSE[s]}`}>
-                      {SINAL_LABEL[s]}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-            {filtradas.length === 0 && (
-              <tr><td colSpan={6} className="p-8 text-center text-sm text-g50">
-                Nenhuma iniciativa corresponde a esses filtros. Limpe um deles para voltar a ver resultados.
-              </td></tr>
-            )}
-          </tbody>
-        </table>
+      <section className="card overflow-hidden p-0" aria-labelledby="tabela-titulo">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-g30 p-4">
+          <h2 id="tabela-titulo" className="text-base font-semibold">Todas as iniciativas do filtro</h2>
+          <span className="text-xs text-g50">Clique em uma linha para ver os detalhes · ordenadas pela atualização mais recente</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[52rem] border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-g30 text-left text-xs uppercase tracking-wide text-g50">
+                <th scope="col" className="p-3">Iniciativa</th>
+                <th scope="col" className="p-3">Estágio</th>
+                <th scope="col" className="p-3">Área</th>
+                <th scope="col" className="p-3 text-right">Horas/mês</th>
+                <th scope="col" className="p-3 text-right">Impacto financeiro est.</th>
+                <th scope="col" className="p-3 text-right">Parada há</th>
+                <th scope="col" className="p-3">Sinal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {linhasPagina.map((r) => {
+                const s = sinalDe(r, f.thOk, f.thCrit);
+                const imp = impactoAnual(r);
+                return (
+                  <tr
+                    key={r.id}
+                    onClick={() => setSelecionada(r)}
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter') setSelecionada(r); }}
+                    className="cursor-pointer border-b border-g20 last:border-0 hover:bg-g10 focus:bg-g10 focus:outline-none"
+                  >
+                    <td className="p-3 font-medium text-g90">{r.title}</td>
+                    <td className="p-3 text-g60">{STAGE_LABEL[r.stage]}</td>
+                    <td className="p-3 text-g60">{r.area_name ?? '—'}</td>
+                    <td className="num p-3 text-right text-g60">
+                      {r.hours_saved_month == null ? '—' : nf1.format(r.hours_saved_month)}
+                    </td>
+                    <td className="num p-3 text-right text-g60">
+                      {imp == null ? '—' : `${moeda(imp)}/ano`}
+                    </td>
+                    <td className="num p-3 text-right text-g60">
+                      {s === 'done' ? '—' : `${nf.format(r.dias_sem_atualizacao)} d`}
+                    </td>
+                    <td className="p-3">
+                      <span className={`rounded-s px-2 py-0.5 text-xs font-semibold ${SINAL_CLASSE[s]}`}>
+                        {SINAL_LABEL[s]}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+              {filtradas.length === 0 && (
+                <tr><td colSpan={7} className="p-8 text-center text-sm text-g50">
+                  Nenhuma iniciativa corresponde a esses filtros. Limpe um deles para voltar a ver resultados.
+                </td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {filtradas.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-g30 p-3">
+            <p className="text-xs text-g50">
+              Exibindo <span className="num">{nf.format((paginaAtual - 1) * POR_PAGINA + 1)}</span>–
+              <span className="num">{nf.format(Math.min(paginaAtual * POR_PAGINA, ordenadas.length))}</span> de{' '}
+              <span className="num">{nf.format(ordenadas.length)}</span>
+            </p>
+            <Paginacao pagina={paginaAtual} total={totalPaginas} onChange={setPagina} />
+          </div>
+        )}
       </section>
+
+      {selecionada && <DetalheCard row={selecionada} sinal={sinalDe(selecionada, f.thOk, f.thCrit)} onFechar={() => setSelecionada(null)} />}
+    </div>
+  );
+}
+
+function Paginacao({ pagina, total, onChange }: { pagina: number; total: number; onChange: (p: number) => void }) {
+  if (total <= 1) return null;
+  const nums: number[] = [];
+  const de = Math.max(1, pagina - 2);
+  const ate = Math.min(total, de + 4);
+  for (let i = Math.max(1, ate - 4); i <= ate; i++) nums.push(i);
+  return (
+    <nav aria-label="Paginação da tabela" className="flex items-center gap-1">
+      <button
+        onClick={() => onChange(Math.max(1, pagina - 1))} disabled={pagina === 1}
+        className="rounded-s border border-g40 px-2 py-1 text-xs text-g70 disabled:opacity-40 hover:bg-g20"
+      >Anterior</button>
+      {nums[0] > 1 && <span className="px-1 text-xs text-g50">…</span>}
+      {nums.map((n) => (
+        <button
+          key={n} onClick={() => onChange(n)} aria-current={n === pagina ? 'page' : undefined}
+          className={n === pagina
+            ? 'num rounded-s bg-[var(--navy)] px-2.5 py-1 text-xs font-semibold text-white'
+            : 'num rounded-s border border-g40 px-2.5 py-1 text-xs text-g70 hover:bg-g20'}
+        >{n}</button>
+      ))}
+      {nums[nums.length - 1] < total && <span className="px-1 text-xs text-g50">…</span>}
+      <button
+        onClick={() => onChange(Math.min(total, pagina + 1))} disabled={pagina === total}
+        className="rounded-s border border-g40 px-2 py-1 text-xs text-g70 disabled:opacity-40 hover:bg-g20"
+      >Próxima</button>
+    </nav>
+  );
+}
+
+function DetalheCard({ row, sinal, onFechar }: { row: DashboardRow; sinal: Signal; onFechar: () => void }) {
+  const imp = impactoAnual(row);
+  return (
+    <div
+      role="dialog" aria-modal="true" aria-label={`Detalhes de ${row.title}`}
+      onClick={onFechar}
+      className="fixed inset-0 z-40 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="card max-h-[85vh] w-full max-w-lg overflow-y-auto p-6 shadow-xl"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="num text-[0.65rem] uppercase tracking-[0.2em] text-g50">Iniciativa</p>
+            <h3 className="mt-1 text-lg font-bold text-g90">{row.title}</h3>
+          </div>
+          <button
+            onClick={onFechar} aria-label="Fechar"
+            className="shrink-0 rounded-s border border-g40 px-2 py-1 text-sm text-g60 hover:bg-g20"
+          >✕</button>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className={`rounded-s px-2 py-0.5 text-xs font-semibold ${SINAL_CLASSE[sinal]}`}>{SINAL_LABEL[sinal]}</span>
+          <span className="rounded-s bg-g20 px-2 py-0.5 text-xs font-medium text-g80">{STAGE_LABEL[row.stage]}</span>
+        </div>
+
+        {row.description && (
+          <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-g70">{row.description}</p>
+        )}
+
+        <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          <Info rotulo="Área" valor={row.area_name ?? '—'} />
+          <Info rotulo="Tema" valor={row.theme ?? '—'} />
+          <Info rotulo="Diretoria" valor={row.directorate ?? '—'} />
+          <Info rotulo="Horas/mês" valor={row.hours_saved_month == null ? '—' : `${nf1.format(row.hours_saved_month)} h`} />
+          <Info rotulo="Impacto financeiro est." valor={imp == null ? '—' : `${moeda(imp)}/ano`} />
+          <Info rotulo="Score" valor={row.score_final == null ? 'Não pontuada' : row.score_final.toFixed(2)} />
+          <Info rotulo="Usa IA" valor={row.uses_ai ? 'Sim' : 'Não'} />
+          <Info rotulo="Usa n8n" valor={row.uses_n8n ? 'Sim' : 'Não'} />
+          <Info rotulo="Última atualização" valor={dataCurta(row.last_activity_at)} />
+          <Info rotulo="Parada há" valor={sinal === 'done' ? '—' : `${nf.format(row.dias_sem_atualizacao)} dias`} />
+        </dl>
+
+        <div className="mt-6 flex justify-end gap-2">
+          <Link
+            href={`/projetos/${row.id}`}
+            className="rounded-s bg-[var(--blue)] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[var(--blue-2)]"
+          >Abrir iniciativa</Link>
+          <button onClick={onFechar} className="rounded-s border border-g40 px-3 py-1.5 text-sm font-medium text-g80 hover:bg-g20">
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Info({ rotulo, valor }: { rotulo: string; valor: string }) {
+  return (
+    <div>
+      <dt className="text-xs text-g50">{rotulo}</dt>
+      <dd className="mt-0.5 font-medium text-g90">{valor}</dd>
     </div>
   );
 }

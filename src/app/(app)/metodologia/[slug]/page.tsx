@@ -1,18 +1,28 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
 import { ContentPage } from '@/components/ContentPage';
 import { clsx } from '@/lib/clsx';
+import { hasRoleAtLeast } from '@/lib/types';
 
 const ABAS = [
-  { slug: 'metodologia-grupo', label: 'Metodologia do Grupo' },
-  { slug: 'metodologia-executiva', label: 'Metodologia Executiva' },
+  { slug: 'metodologia-grupo', label: 'Metodologia do Grupo', min: 'leitor' as const },
+  { slug: 'metodologia-executiva', label: 'Metodologia Executiva', min: 'gerencial' as const },
 ];
 
 export default async function MetodologiaPage({ params }: { params: { slug: string } }) {
-  await requireUser();
-  if (!ABAS.some((a) => a.slug === params.slug)) notFound();
+  const perfil = await requireUser();
+  const aba = ABAS.find((a) => a.slug === params.slug);
+  if (!aba) notFound();
+
+  // A Metodologia Executiva é dirigida à camada gerencial/executiva — só
+  // gerencial e administrador acessam. Demais papéis voltam à do Grupo.
+  if (!hasRoleAtLeast(perfil.role, aba.min)) {
+    redirect('/metodologia/metodologia-grupo?erro=sem-permissao');
+  }
+
+  const abasVisiveis = ABAS.filter((a) => hasRoleAtLeast(perfil.role, a.min));
 
   const supabase = createClient();
   const { data } = await supabase
@@ -22,7 +32,7 @@ export default async function MetodologiaPage({ params }: { params: { slug: stri
   return (
     <div className="space-y-6">
       <nav aria-label="Documentos de metodologia" className="flex flex-wrap gap-2">
-        {ABAS.map((a) => (
+        {abasVisiveis.map((a) => (
           <Link
             key={a.slug}
             href={`/metodologia/${a.slug}`}
