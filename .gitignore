@@ -2,7 +2,14 @@ node_modules
 .next
 out
 .env
-.env.local
+.env*.local
 .vercel
 *.tsbuildinfo
 next-env.d.ts
+
+# Supabase local dev — nunca versionar config/credenciais locais (project_id, chaves)
+/supabase/config.toml
+/supabase/.branches
+/supabase/.temp
+/supabase/.env
+

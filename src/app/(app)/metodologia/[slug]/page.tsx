@@ -6,6 +6,8 @@ import { ContentPage } from '@/components/ContentPage';
 import { clsx } from '@/lib/clsx';
 import { hasRoleAtLeast } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+
 const ABAS = [
   { slug: 'metodologia-grupo', label: 'Metodologia do Grupo', min: 'leitor' as const },
   { slug: 'metodologia-executiva', label: 'Metodologia Executiva', min: 'gerencial' as const },
