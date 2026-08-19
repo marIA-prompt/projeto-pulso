@@ -20,7 +20,10 @@ export function LoginForm({ next }: { next?: string }) {
 
   if (modo === 'recuperar') {
     return (
-      <form action={actionRec} className="card space-y-4 p-6">
+      // key distinto força o React a montar um formulário novo em vez de
+      // reaproveitar os <input> do login por posição — sem isso, o campo de
+      // senha (mascarado) era reusado como campo de e-mail e expunha o valor.
+      <form key="recuperar" action={actionRec} className="card space-y-4 p-6">
         <h2 className="text-base font-semibold">Redefinir senha</h2>
         {estadoRec.erro && <ErroBox mensagem={estadoRec.erro} />}
         {estadoRec.ok && (
@@ -41,7 +44,7 @@ export function LoginForm({ next }: { next?: string }) {
   }
 
   return (
-    <form action={actionLogin} className="card space-y-4 p-6">
+    <form key="login" action={actionLogin} className="card space-y-4 p-6">
       {estadoLogin.erro && <ErroBox mensagem={estadoLogin.erro} />}
       <input type="hidden" name="next" value={next ?? ''} />
       <div>
