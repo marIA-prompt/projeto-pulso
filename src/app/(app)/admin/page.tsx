@@ -1,18 +1,13 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/auth';
-import { dataCurta } from '@/lib/format';
 import { ConviteForm, EncontroForm, EncontroItem } from './Forms';
-import { cancelarConvite, reenviarConvite, alterarPapel, alternarAtivo } from './actions';
+import { ConvitesTabela } from './ConvitesTabela';
+import { alterarPapel, alternarAtivo } from './actions';
 import { Empty } from '@/components/ui/Card';
 import { ROLE_LABEL, PAPEIS } from '@/lib/types';
 
 export const metadata = { title: 'Admin — Pulso' };
 export const dynamic = 'force-dynamic';
-
-const STATUS_LABEL: Record<string, string> = {
-  pending: 'Aguardando aceite', accepted: 'Aceito',
-  expired: 'Expirado', revoked: 'Cancelado',
-};
 
 export default async function AdminPage() {
   const admin = await requireAdmin();
@@ -21,7 +16,7 @@ export default async function AdminPage() {
   const [{ data: convites }, { data: pessoas }, { data: encontros }] = await Promise.all([
     supabase.from('invitations')
       .select('id, email, role, status, expires_at, created_at')
-      .order('created_at', { ascending: false }).limit(40),
+      .order('created_at', { ascending: false }).limit(300),
     supabase.from('profiles')
       .select('id, full_name, role, active, created_at, areas(name)')
       .order('full_name'),
@@ -46,49 +41,7 @@ export default async function AdminPage() {
         {!convites?.length ? (
           <Empty titulo="Nenhum convite ainda." />
         ) : (
-          <div className="card overflow-x-auto p-0">
-            <table className="w-full min-w-[40rem] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-g30 text-left text-xs uppercase tracking-wide text-g50">
-                  <th scope="col" className="p-3">E-mail</th>
-                  <th scope="col" className="p-3">Papel</th>
-                  <th scope="col" className="p-3">Situação</th>
-                  <th scope="col" className="p-3">Expira</th>
-                  <th scope="col" className="p-3 text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {convites.map((c) => (
-                  <tr key={c.id} className="border-b border-g20 last:border-0">
-                    <td className="p-3 text-g90">{c.email}</td>
-                    <td className="p-3 text-g60">{ROLE_LABEL[c.role as keyof typeof ROLE_LABEL] ?? c.role}</td>
-                    <td className="p-3 text-g60">{STATUS_LABEL[c.status] ?? c.status}</td>
-                    <td className="num p-3 text-g60">{dataCurta(c.expires_at)}</td>
-                    <td className="p-3">
-                      <div className="flex justify-end gap-2">
-                        {c.status === 'pending' && (
-                          <>
-                            <form action={reenviarConvite}>
-                              <input type="hidden" name="id" value={c.id} />
-                              <button className="rounded-s border border-g40 px-2 py-1 text-xs text-g80 hover:bg-g20">
-                                Reenviar
-                              </button>
-                            </form>
-                            <form action={cancelarConvite}>
-                              <input type="hidden" name="id" value={c.id} />
-                              <button className="rounded-s border border-[var(--sig-crit)] px-2 py-1 text-xs text-[var(--sig-crit)] hover:bg-[var(--sig-crit-bg)]">
-                                Cancelar
-                              </button>
-                            </form>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ConvitesTabela convites={convites} />
         )}
       </section>
 
