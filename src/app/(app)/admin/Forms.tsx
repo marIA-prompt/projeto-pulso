@@ -119,7 +119,9 @@ export function EncontroItem({ encontro }: { encontro: Encontro }) {
       <li className="card flex flex-wrap items-baseline justify-between gap-2 p-3">
         <div className="min-w-0">
           <span className="font-medium text-g90">{encontro.title}</span>
-          {encontro.description && <p className="mt-0.5 text-xs text-g60">{encontro.description}</p>}
+          {encontro.description && (
+            <p className="mt-0.5 whitespace-pre-wrap text-xs text-g60">{encontro.description}</p>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <span className="num text-xs text-g50">{dataLonga(encontro.scheduled_at)}</span>
