@@ -14,8 +14,8 @@ export default function LoginPage({
           <p className="num text-[0.65rem] uppercase tracking-[0.2em] text-g50">Senff</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight">Pulso</h1>
           <p className="mt-3 text-sm leading-relaxed text-g60">
-            Plataforma do projeto de IA &amp; Automação. O acesso é por convite —
-            fale com um administrador se ainda não recebeu o seu.
+            Plataforma do projeto de IA &amp; Automação. Entre com seu e-mail Senff
+            ou crie sua conta para começar como participante.
           </p>
         </div>
 
