@@ -2,6 +2,7 @@
 
 import { useFormState, useFormStatus } from 'react-dom';
 import { useState } from 'react';
+import Link from 'next/link';
 import { entrar, recuperarSenha, type EstadoForm } from './actions';
 import { Button } from '@/components/ui/Button';
 import { ErroBox } from '@/components/ui/Card';
@@ -56,6 +57,9 @@ export function LoginForm({ next }: { next?: string }) {
         <input id="senha" name="senha" type="password" required autoComplete="current-password" className="field mt-1" />
       </div>
       <Enviar>Entrar</Enviar>
+      <p className="text-center text-sm text-g60">
+        <Link href="/cadastro" className="underline hover:text-g90">Criar conta</Link>
+      </p>
       <button type="button" onClick={() => setModo('recuperar')} className="w-full text-sm text-g60 underline">
         Esqueci minha senha
       </button>
