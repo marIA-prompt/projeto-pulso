@@ -93,7 +93,13 @@ export function EncontroForm() {
       </div>
       <div>
         <label className="label" htmlFor="enc-desc">Pauta (opcional)</label>
-        <input id="enc-desc" name="description" className="field mt-1" />
+        <textarea
+          id="enc-desc"
+          name="description"
+          rows={5}
+          className="field mt-1 min-h-[7rem] resize-y"
+          placeholder="Descreva a pauta do encontro…"
+        />
       </div>
       <label className="flex items-center gap-2 text-sm text-g80">
         <input type="checkbox" name="convidarTodos" defaultChecked /> Convidar todos os participantes ativos
@@ -119,7 +125,9 @@ export function EncontroItem({ encontro }: { encontro: Encontro }) {
       <li className="card flex flex-wrap items-baseline justify-between gap-2 p-3">
         <div className="min-w-0">
           <span className="font-medium text-g90">{encontro.title}</span>
-          {encontro.description && <p className="mt-0.5 text-xs text-g60">{encontro.description}</p>}
+          {encontro.description && (
+            <p className="mt-0.5 whitespace-pre-wrap text-xs text-g60">{encontro.description}</p>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <span className="num text-xs text-g50">{dataLonga(encontro.scheduled_at)}</span>
@@ -153,7 +161,14 @@ export function EncontroItem({ encontro }: { encontro: Encontro }) {
         </div>
         <div>
           <label className="label" htmlFor={`p-${encontro.id}`}>Pauta (opcional)</label>
-          <input id={`p-${encontro.id}`} name="description" defaultValue={encontro.description ?? ''} className="field mt-1" />
+          <textarea
+            id={`p-${encontro.id}`}
+            name="description"
+            rows={5}
+            defaultValue={encontro.description ?? ''}
+            className="field mt-1 min-h-[7rem] resize-y"
+            placeholder="Descreva a pauta do encontro…"
+          />
         </div>
         <div className="flex gap-2">
           <Enviar rotulo="Salvar encontro" />
