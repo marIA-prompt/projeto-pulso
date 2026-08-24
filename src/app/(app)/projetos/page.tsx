@@ -2,11 +2,10 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
 import { STAGE_LABEL, type Stage, hasRoleAtLeast } from '@/lib/types';
-import { classificar } from '@/lib/scoring';
-import { nf1, dataCurta } from '@/lib/format';
 import { Button } from '@/components/ui/Button';
 import { Empty } from '@/components/ui/Card';
 import { ProjetosKanban, type CardProjeto } from '@/components/ProjetosKanban';
+import { IniciativasLista } from './IniciativasLista';
 
 export const metadata = { title: 'Iniciativas — Pulso' };
 export const dynamic = 'force-dynamic';
@@ -109,47 +108,22 @@ export default async function ProjetosPage({
             : undefined}
         />
       ) : (
-        <ul className="grid gap-3">
-          {linhas.map((p) => {
-            const classe = classificar(p.score_final);
-            const meu = p.owner_id === perfil.id;
-            const podeEditar = meu || hasRoleAtLeast(perfil.role, 'gerencial');
-            return (
-              <li key={p.id} className="card flex flex-wrap items-center gap-x-6 gap-y-2 p-4">
-                <div className="min-w-[14rem] flex-1">
-                  <Link href={`/projetos/${p.id}`} className="font-medium text-g90 hover:text-[var(--blue)]">
-                    {p.title}
-                  </Link>
-                  <p className="mt-0.5 text-xs text-g50">
-                    {p.areas?.name ?? 'Área não informada'}
-                    {p.theme && ` · ${p.theme}`}
-                    {meu && ' · sua iniciativa'}
-                  </p>
-                </div>
-                <span className="rounded-s bg-g20 px-2 py-0.5 text-xs font-medium text-g80">
-                  {STAGE_LABEL[p.stage]}
-                </span>
-                <span className="num text-sm text-g60">
-                  {p.hours_saved_month == null ? '—' : `${nf1.format(p.hours_saved_month)} h/mês`}
-                </span>
-                <span className="text-xs text-g50">
-                  {p.score_final == null ? 'Não pontuada' : `${classe.label} · ${p.score_final.toFixed(2)}`}
-                </span>
-                <span className="num text-xs text-g50">
-                  atualizada em {dataCurta(p.last_activity_at)}
-                </span>
-                {podeEditar && (
-                  <Link
-                    href={`/projetos/${p.id}`}
-                    className="rounded-s border border-g40 px-3 py-1.5 text-xs font-medium text-g80 hover:bg-g20"
-                  >
-                    Atualizar
-                  </Link>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <IniciativasLista
+          key={`${searchParams.meus ?? ''}|${searchParams.stage ?? ''}`}
+          linhas={linhas.map((p) => ({
+            id: p.id,
+            title: p.title,
+            stage: p.stage,
+            theme: p.theme,
+            area_name: p.areas?.name ?? null,
+            owner_id: p.owner_id,
+            hours_saved_month: p.hours_saved_month,
+            score_final: p.score_final,
+            last_activity_at: p.last_activity_at,
+          }))}
+          meuId={perfil.id}
+          podeGerenciar={hasRoleAtLeast(perfil.role, 'gerencial')}
+        />
       )}
     </div>
   );

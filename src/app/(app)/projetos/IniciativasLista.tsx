@@ -48,17 +48,23 @@ export function IniciativasLista({
                   {meu && ' · sua iniciativa'}
                 </p>
               </div>
-              <span className="rounded-s bg-g20 px-2 py-0.5 text-xs font-medium text-g80">{STAGE_LABEL[p.stage]}</span>
+              <span className="rounded-s bg-g20 px-2 py-0.5 text-xs font-medium text-g80">
+                {STAGE_LABEL[p.stage]}
+              </span>
               <span className="num text-sm text-g60">
                 {p.hours_saved_month == null ? '—' : `${nf1.format(p.hours_saved_month)} h/mês`}
               </span>
               <span className="text-xs text-g50">
                 {p.score_final == null ? 'Não pontuada' : `${classe.label} · ${p.score_final.toFixed(2)}`}
               </span>
-              <span className="num text-xs text-g50">atualizada em {dataCurta(p.last_activity_at)}</span>
+              <span className="num text-xs text-g50">
+                atualizada em {dataCurta(p.last_activity_at)}
+              </span>
               {podeEditar && (
-                <Link href={`/projetos/${p.id}`}
-                      className="rounded-s border border-g40 px-3 py-1.5 text-xs font-medium text-g80 hover:bg-g20">
+                <Link
+                  href={`/projetos/${p.id}`}
+                  className="rounded-s border border-g40 px-3 py-1.5 text-xs font-medium text-g80 hover:bg-g20"
+                >
                   Atualizar
                 </Link>
               )}
@@ -75,19 +81,44 @@ export function IniciativasLista({
             <span className="num">{linhas.length}</span>
           </p>
           <nav aria-label="Paginação das iniciativas" className="flex items-center gap-1">
-            <button onClick={() => setPagina(Math.max(1, atual - 1))} disabled={atual === 1}
-                    className="rounded-s border border-g40 px-2 py-1 text-xs text-g70 hover:bg-g20 disabled:opacity-40">Anterior</button>
+            <button
+              type="button"
+              onClick={() => setPagina(Math.max(1, atual - 1))}
+              disabled={atual === 1}
+              className="rounded-s border border-g40 px-2 py-1 text-xs text-g70 hover:bg-g20 disabled:opacity-40"
+            >
+              Anterior
+            </button>
             {Array.from({ length: total }, (_, i) => i + 1)
               .filter((n) => Math.abs(n - atual) <= 2 || n === 1 || n === total)
-              .reduce<number[]>((acc, n) => { if (acc.length && n - acc[acc.length - 1] > 1) acc.push(-1); acc.push(n); return acc; }, [])
+              .reduce<number[]>((acc, n) => {
+                if (acc.length && n - acc[acc.length - 1] > 1) acc.push(-1);
+                acc.push(n);
+                return acc;
+              }, [])
               .map((n, i) => n === -1
                 ? <span key={`e${i}`} className="px-1 text-xs text-g50">…</span>
-                : <button key={n} onClick={() => setPagina(n)} aria-current={n === atual ? 'page' : undefined}
-                          className={n === atual
-                            ? 'num rounded-s bg-[var(--navy)] px-2.5 py-1 text-xs font-semibold text-white'
-                            : 'num rounded-s border border-g40 px-2.5 py-1 text-xs text-g70 hover:bg-g20'}>{n}</button>)}
-            <button onClick={() => setPagina(Math.min(total, atual + 1))} disabled={atual === total}
-                    className="rounded-s border border-g40 px-2 py-1 text-xs text-g70 hover:bg-g20 disabled:opacity-40">Próxima</button>
+                : (
+                  <button
+                    type="button"
+                    key={n}
+                    onClick={() => setPagina(n)}
+                    aria-current={n === atual ? 'page' : undefined}
+                    className={n === atual
+                      ? 'num rounded-s bg-[var(--navy)] px-2.5 py-1 text-xs font-semibold text-white'
+                      : 'num rounded-s border border-g40 px-2.5 py-1 text-xs text-g70 hover:bg-g20'}
+                  >
+                    {n}
+                  </button>
+                ))}
+            <button
+              type="button"
+              onClick={() => setPagina(Math.min(total, atual + 1))}
+              disabled={atual === total}
+              className="rounded-s border border-g40 px-2 py-1 text-xs text-g70 hover:bg-g20 disabled:opacity-40"
+            >
+              Próxima
+            </button>
           </nav>
         </div>
       )}

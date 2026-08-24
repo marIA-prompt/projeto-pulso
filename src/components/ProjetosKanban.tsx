@@ -23,6 +23,7 @@ export type CardProjeto = {
 // As raias do Kanban seguem o pipeline da Metodologia (§4). 'cancelado' fica
 // fora do fluxo linear, mas ganha raia própria para não sumir do quadro.
 const RAIAS: Stage[] = [...STAGES];
+const POR_RAIA = 6;
 
 export function ProjetosKanban({
   projetos, meuId, podeMover,
@@ -68,61 +69,125 @@ export function ProjetosKanban({
         <p className="text-xs text-g50">Arraste um card para outra raia para mudar o estágio da iniciativa.</p>
       )}
 
-      <div className="grid grid-flow-col auto-cols-[16rem] gap-3 overflow-x-auto pb-3">
-        {RAIAS.map((stage) => {
-          const daRaia = cards.filter((c) => c.stage === stage);
-          return (
-            <section
-              key={stage}
-              onDragOver={(e) => { if (podeMover && arrastando) { e.preventDefault(); setAlvo(stage); } }}
-              onDrop={(e) => { e.preventDefault(); if (podeMover) soltar(stage); }}
-              className={`flex flex-col rounded-m border p-2 ${
-                alvo === stage ? 'border-[var(--blue)] bg-[var(--blue-tint,rgba(37,99,235,.06))]' : 'border-g30 bg-g10'
-              }`}
-            >
-              <header className="mb-2 flex items-center justify-between px-1">
-                <h3 className="text-sm font-semibold text-g80">{STAGE_LABEL[stage]}</h3>
-                <span className="num rounded-s bg-g20 px-1.5 text-xs text-g60">{daRaia.length}</span>
-              </header>
+      <div className="grid w-full grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8">
+        {RAIAS.map((stage) => (
+          <Raia
+            key={stage}
+            stage={stage}
+            cards={cards.filter((c) => c.stage === stage)}
+            meuId={meuId}
+            podeMover={podeMover}
+            arrastando={arrastando}
+            alvo={alvo}
+            onDragOver={() => { if (podeMover && arrastando) setAlvo(stage); }}
+            onDrop={() => { if (podeMover) soltar(stage); }}
+            onDragStart={(id) => setArrastando(id)}
+            onDragEnd={() => { setArrastando(null); setAlvo(null); }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
-              <div className="flex min-h-[3rem] flex-col gap-2">
-                {daRaia.map((c) => {
-                  const classe = classificar(c.score_final);
-                  const meu = c.owner_id === meuId;
-                  return (
-                    <article
-                      key={c.id}
-                      draggable={podeMover}
-                      onDragStart={() => setArrastando(c.id)}
-                      onDragEnd={() => { setArrastando(null); setAlvo(null); }}
-                      className={`rounded-s border border-g30 bg-white p-3 shadow-sm ${
-                        podeMover ? 'cursor-grab active:cursor-grabbing' : ''
-                      } ${arrastando === c.id ? 'opacity-50' : ''}`}
-                    >
-                      <Link href={`/projetos/${c.id}`} className="text-sm font-medium text-g90 hover:text-[var(--blue)]">
-                        {c.title}
-                      </Link>
-                      <p className="mt-1 text-xs text-g50">
-                        {c.area_name ?? 'Área não informada'}
-                        {meu && ' · sua'}
-                      </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.7rem] text-g60">
-                        <span className="num">{c.hours_saved_month == null ? '—' : `${nf1.format(c.hours_saved_month)} h/mês`}</span>
-                        {c.cost_saved_month != null && (
-                          <span className="num">· {moeda(c.cost_saved_month * 12)}/ano</span>
-                        )}
-                      </div>
-                      <p className="mt-1 text-[0.7rem] text-g50">
-                        {c.score_final == null ? 'Não pontuada' : `${classe.label} · ${c.score_final.toFixed(2)}`}
-                      </p>
-                    </article>
-                  );
-                })}
+function Raia({
+  stage, cards, meuId, podeMover, arrastando, alvo,
+  onDragOver, onDrop, onDragStart, onDragEnd,
+}: {
+  stage: Stage;
+  cards: CardProjeto[];
+  meuId: string;
+  podeMover: boolean;
+  arrastando: string | null;
+  alvo: Stage | null;
+  onDragOver: () => void;
+  onDrop: () => void;
+  onDragStart: (id: string) => void;
+  onDragEnd: () => void;
+}) {
+  const [pagina, setPagina] = useState(1);
+  const totalPaginas = Math.max(1, Math.ceil(cards.length / POR_RAIA));
+  const atual = Math.min(pagina, totalPaginas);
+  const visiveis = cards.slice((atual - 1) * POR_RAIA, atual * POR_RAIA);
+
+  return (
+    <section
+      onDragOver={(e) => { if (podeMover && arrastando) { e.preventDefault(); onDragOver(); } }}
+      onDrop={(e) => { e.preventDefault(); onDrop(); }}
+      className={`flex min-w-0 flex-col rounded-m border p-2 ${
+        alvo === stage ? 'border-[var(--blue)] bg-[var(--blue-tint,rgba(37,99,235,.06))]' : 'border-g30 bg-g10'
+      }`}
+    >
+      <header className="mb-2 flex items-center justify-between gap-1 px-1">
+        <h3 className="truncate text-sm font-semibold text-g80">{STAGE_LABEL[stage]}</h3>
+        <span className="num shrink-0 rounded-s bg-g20 px-1.5 text-xs text-g60">{cards.length}</span>
+      </header>
+
+      <div className="flex min-h-[3rem] flex-1 flex-col gap-2">
+        {visiveis.map((c) => {
+          const classe = classificar(c.score_final);
+          const meu = c.owner_id === meuId;
+          return (
+            <article
+              key={c.id}
+              draggable={podeMover}
+              onDragStart={() => onDragStart(c.id)}
+              onDragEnd={onDragEnd}
+              className={`rounded-s border border-g30 bg-white p-2 shadow-sm ${
+                podeMover ? 'cursor-grab active:cursor-grabbing' : ''
+              } ${arrastando === c.id ? 'opacity-50' : ''}`}
+            >
+              <Link
+                href={`/projetos/${c.id}`}
+                className="line-clamp-2 break-words text-xs font-medium text-g90 hover:text-[var(--blue)]"
+              >
+                {c.title}
+              </Link>
+              <p className="mt-1 truncate text-[0.65rem] text-g50">
+                {c.area_name ?? 'Área não informada'}
+                {meu && ' · sua'}
+              </p>
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[0.65rem] text-g60">
+                <span className="num">{c.hours_saved_month == null ? '—' : `${nf1.format(c.hours_saved_month)} h/mês`}</span>
+                {c.cost_saved_month != null && (
+                  <span className="num truncate">· {moeda(c.cost_saved_month * 12)}/ano</span>
+                )}
               </div>
-            </section>
+              <p className="mt-1 truncate text-[0.65rem] text-g50">
+                {c.score_final == null ? 'Não pontuada' : `${classe.label} · ${c.score_final.toFixed(2)}`}
+              </p>
+            </article>
           );
         })}
       </div>
-    </div>
+
+      {cards.length > POR_RAIA && (
+        <footer className="mt-2 flex items-center justify-center gap-0.5">
+          <nav aria-label={`Paginação da raia ${STAGE_LABEL[stage]}`} className="flex items-center gap-0.5">
+            <button
+              type="button"
+              aria-label="Página anterior"
+              onClick={() => setPagina(Math.max(1, atual - 1))}
+              disabled={atual === 1}
+              className="rounded-s px-1.5 py-0.5 text-sm leading-none text-g70 hover:bg-g20 disabled:opacity-40"
+            >
+              ‹
+            </button>
+            <span className="num px-0.5 text-[0.65rem] tabular-nums text-g60">
+              {atual}/{totalPaginas}
+            </span>
+            <button
+              type="button"
+              aria-label="Próxima página"
+              onClick={() => setPagina(Math.min(totalPaginas, atual + 1))}
+              disabled={atual === totalPaginas}
+              className="rounded-s px-1.5 py-0.5 text-sm leading-none text-g70 hover:bg-g20 disabled:opacity-40"
+            >
+              ›
+            </button>
+          </nav>
+        </footer>
+      )}
+    </section>
   );
 }
