@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { STAGES, STAGE_LABEL, type Stage } from '@/lib/types';
@@ -23,6 +23,7 @@ export type CardProjeto = {
 // As raias do Kanban seguem o pipeline da Metodologia (§4). 'cancelado' fica
 // fora do fluxo linear, mas ganha raia própria para não sumir do quadro.
 const RAIAS: Stage[] = [...STAGES];
+const CARDS_POR_RAIA = 6;
 
 export function ProjetosKanban({
   projetos, meuId, podeMover,
@@ -32,7 +33,18 @@ export function ProjetosKanban({
   const [arrastando, setArrastando] = useState<string | null>(null);
   const [alvo, setAlvo] = useState<Stage | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [paginas, setPaginas] = useState<Partial<Record<Stage, number>>>({});
   const [, startTransition] = useTransition();
+
+  useEffect(() => { setCards(projetos); }, [projetos]);
+
+  function paginaDa(stage: Stage) {
+    return paginas[stage] ?? 1;
+  }
+
+  function setPaginaDa(stage: Stage, n: number) {
+    setPaginas((p) => ({ ...p, [stage]: n }));
+  }
 
   function soltar(stage: Stage) {
     const id = arrastando;
@@ -45,6 +57,8 @@ export function ProjetosKanban({
     const anterior = atual.stage;
     setCards((cs) => cs.map((c) => (c.id === id ? { ...c, stage } : c)));
     setErro(null);
+    // Ao receber um card, volta à 1ª página da raia de destino para o card aparecer.
+    setPaginaDa(stage, 1);
 
     startTransition(async () => {
       const res = await moverEstagio(id, stage);
@@ -68,25 +82,34 @@ export function ProjetosKanban({
         <p className="text-xs text-g50">Arraste um card para outra raia para mudar o estágio da iniciativa.</p>
       )}
 
-      <div className="grid grid-flow-col auto-cols-[16rem] gap-3 overflow-x-auto pb-3">
+      {/*
+        Sem scroll horizontal: as 8 raias cabem lado a lado em telas largas
+        (minimax ~11rem) e quebram em linhas conforme a largura disponível.
+      */}
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-3">
         {RAIAS.map((stage) => {
           const daRaia = cards.filter((c) => c.stage === stage);
+          const totalPaginas = Math.max(1, Math.ceil(daRaia.length / CARDS_POR_RAIA));
+          const pagina = Math.min(paginaDa(stage), totalPaginas);
+          const inicio = (pagina - 1) * CARDS_POR_RAIA;
+          const visiveis = daRaia.slice(inicio, inicio + CARDS_POR_RAIA);
+
           return (
             <section
               key={stage}
               onDragOver={(e) => { if (podeMover && arrastando) { e.preventDefault(); setAlvo(stage); } }}
               onDrop={(e) => { e.preventDefault(); if (podeMover) soltar(stage); }}
-              className={`flex flex-col rounded-m border p-2 ${
+              className={`flex min-w-0 flex-col rounded-m border p-2 ${
                 alvo === stage ? 'border-[var(--blue)] bg-[var(--blue-tint,rgba(37,99,235,.06))]' : 'border-g30 bg-g10'
               }`}
             >
-              <header className="mb-2 flex items-center justify-between px-1">
-                <h3 className="text-sm font-semibold text-g80">{STAGE_LABEL[stage]}</h3>
-                <span className="num rounded-s bg-g20 px-1.5 text-xs text-g60">{daRaia.length}</span>
+              <header className="mb-2 flex items-center justify-between gap-1 px-1">
+                <h3 className="truncate text-sm font-semibold text-g80">{STAGE_LABEL[stage]}</h3>
+                <span className="num shrink-0 rounded-s bg-g20 px-1.5 text-xs text-g60">{daRaia.length}</span>
               </header>
 
-              <div className="flex min-h-[3rem] flex-col gap-2">
-                {daRaia.map((c) => {
+              <div className="flex min-h-[3rem] flex-1 flex-col gap-2">
+                {visiveis.map((c) => {
                   const classe = classificar(c.score_final);
                   const meu = c.owner_id === meuId;
                   return (
@@ -119,6 +142,35 @@ export function ProjetosKanban({
                   );
                 })}
               </div>
+
+              {daRaia.length > CARDS_POR_RAIA && (
+                <nav
+                  aria-label={`Paginação da raia ${STAGE_LABEL[stage]}`}
+                  className="mt-2 flex items-center justify-center gap-1 border-t border-g30 pt-2"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setPaginaDa(stage, Math.max(1, pagina - 1))}
+                    disabled={pagina === 1}
+                    aria-label="Página anterior"
+                    className="rounded-s px-1.5 py-0.5 text-xs text-g70 hover:bg-g20 disabled:opacity-40"
+                  >
+                    ‹
+                  </button>
+                  <span className="num text-[0.7rem] text-g60">
+                    {pagina}/{totalPaginas}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPaginaDa(stage, Math.min(totalPaginas, pagina + 1))}
+                    disabled={pagina === totalPaginas}
+                    aria-label="Próxima página"
+                    className="rounded-s px-1.5 py-0.5 text-xs text-g70 hover:bg-g20 disabled:opacity-40"
+                  >
+                    ›
+                  </button>
+                </nav>
+              )}
             </section>
           );
         })}
