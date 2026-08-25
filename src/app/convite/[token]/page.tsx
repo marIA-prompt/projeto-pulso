@@ -11,12 +11,11 @@ export default async function ConvitePage({ params }: { params: { token: string 
 
   const { data: convite } = await admin
     .from('invitations')
-    .select('email, role, status, expires_at')
+    .select('email, role, status')
     .eq('token_hash', hashToken(params.token))
     .maybeSingle();
 
-  const valido =
-    convite && convite.status === 'pending' && new Date(convite.expires_at) > new Date();
+  const valido = convite && convite.status === 'pending';
 
   if (!valido) {
     return (
@@ -24,7 +23,7 @@ export default async function ConvitePage({ params }: { params: { token: string 
         <div className="card max-w-sm p-6 text-center">
           <h1 className="text-xl font-bold">Convite indisponível</h1>
           <p className="mt-3 text-sm leading-relaxed text-g60">
-            Este link já foi usado, expirou ou foi cancelado. Peça um novo convite
+            Este link já foi usado ou foi cancelado. Peça um novo convite
             a um administrador do Pulso.
           </p>
         </div>

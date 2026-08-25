@@ -36,19 +36,15 @@ export async function aceitarConvite(
 
   // Revalida o convite no servidor. A tela já validou, mas a tela não é
   // fronteira de segurança: entre carregar e enviar, o convite pode ter
-  // expirado ou sido revogado.
+  // sido aceito ou cancelado por um administrador.
   const { data: convite } = await admin
     .from('invitations')
-    .select('id, email, role, status, expires_at')
+    .select('id, email, role, status')
     .eq('token_hash', hashToken(parsed.data.token))
     .maybeSingle();
 
   if (!convite || convite.status !== 'pending') {
     return { erro: 'Este convite não está mais válido. Peça um novo a um administrador.' };
-  }
-  if (new Date(convite.expires_at) < new Date()) {
-    await admin.from('invitations').update({ status: 'expired' }).eq('id', convite.id);
-    return { erro: 'Este convite expirou. Peça um novo a um administrador.' };
   }
 
   const { data: criado, error: erroCriacao } = await admin.auth.admin.createUser({

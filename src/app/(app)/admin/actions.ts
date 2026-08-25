@@ -77,7 +77,6 @@ export async function reenviarConvite(form: FormData): Promise<void> {
     .update({
       token_hash,
       status: 'pending',
-      expires_at: new Date(Date.now() + 7 * 864e5).toISOString(),
     })
     .eq('id', id).select('email, role').single();
 

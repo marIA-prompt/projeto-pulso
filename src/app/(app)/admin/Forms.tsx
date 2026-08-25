@@ -69,7 +69,7 @@ export function ConviteForm() {
         </div>
         <Enviar rotulo="Enviar convite" />
       </div>
-      <p className="text-xs text-g50">O convite vale por 7 dias e pode ser reenviado ou cancelado.</p>
+      <p className="text-xs text-g50">O convite fica válido até um administrador cancelar. Pode ser reenviado ou cancelado a qualquer momento.</p>
     </form>
   );
 }

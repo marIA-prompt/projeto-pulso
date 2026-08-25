@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { cancelarConvite, reenviarConvite } from './actions';
-import { dataCurta } from '@/lib/format';
 import { ROLE_LABEL } from '@/lib/types';
 
 const POR_PAGINA = 10;
@@ -27,13 +26,12 @@ export function ConvitesTabela({ convites }: { convites: Convite[] }) {
   return (
     <div className="card overflow-hidden p-0">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[40rem] border-collapse text-sm">
+        <table className="w-full min-w-[36rem] border-collapse text-sm">
           <thead>
             <tr className="border-b border-g30 text-left text-xs uppercase tracking-wide text-g50">
               <th scope="col" className="p-3">E-mail</th>
               <th scope="col" className="p-3">Papel</th>
               <th scope="col" className="p-3">Situação</th>
-              <th scope="col" className="p-3">Expira</th>
               <th scope="col" className="p-3 text-right">Ações</th>
             </tr>
           </thead>
@@ -43,7 +41,6 @@ export function ConvitesTabela({ convites }: { convites: Convite[] }) {
                 <td className="p-3 text-g90">{c.email}</td>
                 <td className="p-3 text-g60">{ROLE_LABEL[c.role as keyof typeof ROLE_LABEL] ?? c.role}</td>
                 <td className="p-3 text-g60">{STATUS_LABEL[c.status] ?? c.status}</td>
-                <td className="num p-3 text-g60">{dataCurta(c.expires_at)}</td>
                 <td className="p-3">
                   <div className="flex justify-end gap-2">
                     {c.status === 'pending' && (
