@@ -8,6 +8,7 @@ import { STAGE_LABEL } from '@/lib/types';
 import { nf, nf1, moeda, dataCurta, diaISO } from '@/lib/format';
 import { Donut, Barras, Ecg } from './charts';
 import { Button } from '@/components/ui/Button';
+import { FiltroPeriodo } from './FiltroPeriodo';
 
 const POR_PAGINA = 20;
 
@@ -252,38 +253,18 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
               <option value="false">Não</option>
             </select>
           </div>
-          <div>
-            <label className="label" htmlFor="fDe">Atualizada de</label>
-            <input
-              id="fDe" type="date" className="field mt-1" value={f.de}
-              max={f.ate || undefined}
-              onChange={(e) => set('de', e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="label" htmlFor="fAte">Atualizada até</label>
-            <input
-              id="fAte" type="date" className="field mt-1" value={f.ate}
-              min={f.de || undefined}
-              onChange={(e) => set('ate', e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="label" htmlFor="fCriadaDe">Criada de</label>
-            <input
-              id="fCriadaDe" type="date" className="field mt-1" value={f.criada_de}
-              max={f.criada_ate || undefined}
-              onChange={(e) => set('criada_de', e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="label" htmlFor="fCriadaAte">Criada até</label>
-            <input
-              id="fCriadaAte" type="date" className="field mt-1" value={f.criada_ate}
-              min={f.criada_de || undefined}
-              onChange={(e) => set('criada_ate', e.target.value)}
-            />
-          </div>
+          <FiltroPeriodo
+            rotulo="Atualizada"
+            de={f.de}
+            ate={f.ate}
+            onChange={(de, ate) => setF((prev) => ({ ...prev, de, ate }))}
+          />
+          <FiltroPeriodo
+            rotulo="Criada"
+            de={f.criada_de}
+            ate={f.criada_ate}
+            onChange={(de, ate) => setF((prev) => ({ ...prev, criada_de: de, criada_ate: ate }))}
+          />
         </div>
 
         <p aria-live="polite" className="mt-3 text-sm text-g60">

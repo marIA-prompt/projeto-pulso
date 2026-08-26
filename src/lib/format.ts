@@ -47,6 +47,14 @@ export function diaISO(iso: string | null | undefined) {
   return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(d);
 }
 
+/** Data curta a partir de YYYY-MM-DD (sem deslocar o dia no fuso). */
+export function diaCurto(ymd: string | null | undefined) {
+  if (!ymd) return '—';
+  const [y, m, d] = ymd.split('-');
+  if (!y || !m || !d) return '—';
+  return `${d}/${m}/${y}`;
+}
+
 export function plural(n: number, um: string, muitos: string) {
   return `${nf.format(n)} ${n === 1 ? um : muitos}`;
 }
