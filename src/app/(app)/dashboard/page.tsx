@@ -21,14 +21,18 @@ export default async function DashboardPage() {
     supabase.from('v_projects_dashboard').select('*').order('dias_sem_atualizacao', { ascending: false }),
     supabase.from('v_portfolio_kpis').select('*').single(),
     supabase.from('v_attendance_kpis').select('*').order('scheduled_at', { ascending: false }).limit(1),
-    supabase.from('projects').select('id, owner_id, profiles!owner_id(full_name)').is('archived_at', null),
+    supabase.from('projects').select('id, owner_id, created_at, profiles!owner_id(full_name)').is('archived_at', null),
   ]);
 
   const donoPorId = new Map(
     (donos ?? []).map((d) => {
       const perfil = d.profiles as unknown as { full_name: string | null } | { full_name: string | null }[] | null;
       const p = Array.isArray(perfil) ? perfil[0] : perfil;
-      return [d.id as string, { owner_id: (d.owner_id as string | null) ?? null, owner_name: nomeProprietario(d.owner_id as string | null, p) }];
+      return [d.id as string, {
+        owner_id: (d.owner_id as string | null) ?? null,
+        owner_name: nomeProprietario(d.owner_id as string | null, p),
+        created_at: (d.created_at as string | null) ?? null,
+      }];
     }),
   );
 
@@ -38,6 +42,7 @@ export default async function DashboardPage() {
       ...r,
       owner_id: extra?.owner_id ?? r.owner_id ?? null,
       owner_name: extra?.owner_name ?? r.owner_name ?? 'Sem proprietário',
+      created_at: extra?.created_at ?? r.created_at ?? null,
     };
   });
   const indicadores = (kpis ?? {

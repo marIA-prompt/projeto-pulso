@@ -30,12 +30,13 @@ type Filtros = {
   q: string; tema: string; area: string; dir: string;
   stage: string; potencial: string; ia: string; owner: string;
   de: string; ate: string;
+  criada_de: string; criada_ate: string;
   thOk: number; thCrit: number;
 };
 
 const PADRAO: Filtros = {
   q: '', tema: '', area: '', dir: '', stage: '', potencial: '', ia: '', owner: '',
-  de: '', ate: '',
+  de: '', ate: '', criada_de: '', criada_ate: '',
   thOk: 30, thCrit: 90,
 };
 
@@ -51,6 +52,8 @@ function lerFiltros(sp: URLSearchParams): Filtros {
     owner: sp.get('owner') ?? '',
     de: sp.get('de') ?? '',
     ate: sp.get('ate') ?? '',
+    criada_de: sp.get('criada_de') ?? '',
+    criada_ate: sp.get('criada_ate') ?? '',
     thOk: Number(sp.get('thOk') ?? PADRAO.thOk),
     thCrit: Number(sp.get('thCrit') ?? PADRAO.thCrit),
   };
@@ -62,6 +65,15 @@ function sinalDe(r: DashboardRow, thOk: number, thCrit: number): Signal {
   if (r.dias_sem_atualizacao <= thOk) return 'ok';
   if (r.dias_sem_atualizacao > thCrit) return 'crit';
   return 'warn';
+}
+
+function noPeriodo(iso: string | null | undefined, de: string, ate: string) {
+  if (!de && !ate) return true;
+  const dia = diaISO(iso);
+  if (!dia) return false;
+  if (de && dia < de) return false;
+  if (ate && dia > ate) return false;
+  return true;
 }
 
 function unicos(rows: DashboardRow[], campo: keyof DashboardRow) {
@@ -111,9 +123,8 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
       if (f.potencial && r.legacy_priority !== f.potencial) return false;
       if (f.ia && String(r.uses_ai === true) !== f.ia) return false;
       if (f.owner && r.owner_id !== f.owner) return false;
-      const dia = diaISO(r.last_activity_at);
-      if (f.de && dia && dia < f.de) return false;
-      if (f.ate && dia && dia > f.ate) return false;
+      if (!noPeriodo(r.last_activity_at, f.de, f.ate)) return false;
+      if (!noPeriodo(r.created_at, f.criada_de, f.criada_ate)) return false;
       return true;
     });
   }, [rows, f]);
@@ -164,9 +175,10 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
   );
 
   const exportar = useCallback(() => {
-    const cab = ['Iniciativa','Estágio','Tema','Área','Proprietário','Diretoria','Dias sem atualização','Sinal','Horas/mês','Impacto financeiro estimado (R$/ano)','Score','Usa IA'];
+    const cab = ['Iniciativa','Estágio','Tema','Área','Proprietário','Diretoria','Criada em','Atualizada em','Dias sem atualização','Sinal','Horas/mês','Impacto financeiro estimado (R$/ano)','Score','Usa IA'];
     const linhas = filtradas.map((r) => [
       r.title, STAGE_LABEL[r.stage], r.theme ?? '', r.area_name ?? '', r.owner_name ?? '', r.directorate ?? '',
+      dataCurta(r.created_at), dataCurta(r.last_activity_at),
       r.dias_sem_atualizacao, SINAL_LABEL[sinalDe(r, f.thOk, f.thCrit)],
       r.hours_saved_month ?? '', impactoAnual(r) ?? '', r.score_final ?? '', r.uses_ai ? 'Sim' : 'Não',
     ]);
@@ -254,6 +266,22 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
               id="fAte" type="date" className="field mt-1" value={f.ate}
               min={f.de || undefined}
               onChange={(e) => set('ate', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="fCriadaDe">Criada de</label>
+            <input
+              id="fCriadaDe" type="date" className="field mt-1" value={f.criada_de}
+              max={f.criada_ate || undefined}
+              onChange={(e) => set('criada_de', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="fCriadaAte">Criada até</label>
+            <input
+              id="fCriadaAte" type="date" className="field mt-1" value={f.criada_ate}
+              min={f.criada_de || undefined}
+              onChange={(e) => set('criada_ate', e.target.value)}
             />
           </div>
         </div>
@@ -501,6 +529,7 @@ function DetalheCard({ row, sinal, onFechar }: { row: DashboardRow; sinal: Signa
           <Info rotulo="Score" valor={row.score_final == null ? 'Não pontuada' : row.score_final.toFixed(2)} />
           <Info rotulo="Usa IA" valor={row.uses_ai ? 'Sim' : 'Não'} />
           <Info rotulo="Usa n8n" valor={row.uses_n8n ? 'Sim' : 'Não'} />
+          <Info rotulo="Criada em" valor={dataCurta(row.created_at)} />
           <Info rotulo="Última atualização" valor={dataCurta(row.last_activity_at)} />
           <Info rotulo="Parada há" valor={sinal === 'done' ? '—' : `${nf.format(row.dias_sem_atualizacao)} dias`} />
         </dl>
