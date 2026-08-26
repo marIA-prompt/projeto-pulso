@@ -51,6 +51,7 @@ export type DashboardRow = {
   cost_saved_month: number | null;
   owner_id: string | null;
   owner_name: string | null;
+  created_at: string | null;
 };
 
 export type PortfolioKpis = {
