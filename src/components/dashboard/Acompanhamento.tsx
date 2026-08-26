@@ -28,12 +28,12 @@ const SINAL_CLASSE: Record<Signal, string> = {
 
 type Filtros = {
   q: string; tema: string; area: string; dir: string;
-  stage: string; potencial: string; ia: string;
+  stage: string; potencial: string; ia: string; owner: string;
   thOk: number; thCrit: number;
 };
 
 const PADRAO: Filtros = {
-  q: '', tema: '', area: '', dir: '', stage: '', potencial: '', ia: '',
+  q: '', tema: '', area: '', dir: '', stage: '', potencial: '', ia: '', owner: '',
   thOk: 30, thCrit: 90,
 };
 
@@ -46,6 +46,7 @@ function lerFiltros(sp: URLSearchParams): Filtros {
     stage: sp.get('stage') ?? '',
     potencial: sp.get('potencial') ?? '',
     ia: sp.get('ia') ?? '',
+    owner: sp.get('owner') ?? '',
     thOk: Number(sp.get('thOk') ?? PADRAO.thOk),
     thCrit: Number(sp.get('thCrit') ?? PADRAO.thCrit),
   };
@@ -98,13 +99,14 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
   const filtradas = useMemo(() => {
     const q = f.q.trim().toLowerCase();
     return rows.filter((r) => {
-      if (q && !`${r.title} ${r.area_name ?? ''} ${r.theme ?? ''}`.toLowerCase().includes(q)) return false;
+      if (q && !`${r.title} ${r.area_name ?? ''} ${r.theme ?? ''} ${r.owner_name ?? ''}`.toLowerCase().includes(q)) return false;
       if (f.tema && r.theme !== f.tema) return false;
       if (f.area && r.area_name !== f.area) return false;
       if (f.dir && r.directorate !== f.dir) return false;
       if (f.stage && r.stage !== f.stage) return false;
       if (f.potencial && r.legacy_priority !== f.potencial) return false;
       if (f.ia && String(r.uses_ai === true) !== f.ia) return false;
+      if (f.owner && r.owner_id !== f.owner) return false;
       return true;
     });
   }, [rows, f]);
@@ -155,9 +157,9 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
   );
 
   const exportar = useCallback(() => {
-    const cab = ['Iniciativa','Estágio','Tema','Área','Diretoria','Dias sem atualização','Sinal','Horas/mês','Impacto financeiro estimado (R$/ano)','Score','Usa IA'];
+    const cab = ['Iniciativa','Estágio','Tema','Área','Proprietário','Diretoria','Dias sem atualização','Sinal','Horas/mês','Impacto financeiro estimado (R$/ano)','Score','Usa IA'];
     const linhas = filtradas.map((r) => [
-      r.title, STAGE_LABEL[r.stage], r.theme ?? '', r.area_name ?? '', r.directorate ?? '',
+      r.title, STAGE_LABEL[r.stage], r.theme ?? '', r.area_name ?? '', r.owner_name ?? '', r.directorate ?? '',
       r.dias_sem_atualizacao, SINAL_LABEL[sinalDe(r, f.thOk, f.thCrit)],
       r.hours_saved_month ?? '', impactoAnual(r) ?? '', r.score_final ?? '', r.uses_ai ? 'Sim' : 'Não',
     ]);
@@ -176,6 +178,13 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
   const areas = unicos(rows, 'area_name');
   const dirs = unicos(rows, 'directorate');
   const potenciais = unicos(rows, 'legacy_priority');
+  const proprietarios = Array.from(
+    new Map(
+      rows
+        .filter((r) => r.owner_id)
+        .map((r) => [r.owner_id as string, r.owner_name || 'Sem nome']),
+    ).entries(),
+  ).sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'));
 
   return (
     <div className="space-y-6">
@@ -194,13 +203,20 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
             <label className="label" htmlFor="fq">Buscar</label>
             <input
               id="fq" type="search" className="field mt-1" value={f.q}
-              placeholder="Nome da iniciativa, área ou tema"
+              placeholder="Nome da iniciativa, área, tema ou proprietário"
               onChange={(e) => set('q', e.target.value)}
             />
           </div>
           <Select id="fTema" rotulo="Tema" valor={f.tema} opcoes={temas} onChange={(v) => set('tema', v)} />
           <Select id="fArea" rotulo="Área" valor={f.area} opcoes={areas} onChange={(v) => set('area', v)} />
           <Select id="fDir" rotulo="Diretoria" valor={f.dir} opcoes={dirs} onChange={(v) => set('dir', v)} />
+          <div>
+            <label className="label" htmlFor="fOwner">Proprietário</label>
+            <select id="fOwner" className="field mt-1" value={f.owner} onChange={(e) => set('owner', e.target.value)}>
+              <option value="">Todos</option>
+              {proprietarios.map(([id, nome]) => <option key={id} value={id}>{nome}</option>)}
+            </select>
+          </div>
           <div>
             <label className="label" htmlFor="fStage">Estágio</label>
             <select id="fStage" className="field mt-1" value={f.stage} onChange={(e) => set('stage', e.target.value)}>
@@ -300,7 +316,9 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
               <li key={r.id} className="flex flex-wrap items-baseline justify-between gap-2 py-2">
                 <span className="text-sm font-medium text-g90">{r.title}</span>
                 <span className="text-xs text-g50">
-                  {r.area_name ?? 'Área não informada'} ·{' '}
+                  {r.area_name ?? 'Área não informada'}
+                  {r.owner_name ? ` · ${r.owner_name}` : ''}
+                  {' · '}
                   <span className="num">{nf.format(r.dias_sem_atualizacao)}</span> dias
                 </span>
               </li>
@@ -316,12 +334,13 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
           <span className="text-xs text-g50">Clique em uma linha para ver os detalhes · ordenadas pela atualização mais recente</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[52rem] border-collapse text-sm">
+          <table className="w-full min-w-[60rem] border-collapse text-sm">
             <thead>
               <tr className="border-b border-g30 text-left text-xs uppercase tracking-wide text-g50">
                 <th scope="col" className="p-3">Iniciativa</th>
                 <th scope="col" className="p-3">Estágio</th>
                 <th scope="col" className="p-3">Área</th>
+                <th scope="col" className="p-3">Proprietário</th>
                 <th scope="col" className="p-3 text-right">Horas/mês</th>
                 <th scope="col" className="p-3 text-right">Impacto financeiro est.</th>
                 <th scope="col" className="p-3 text-right">Parada há</th>
@@ -343,6 +362,7 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
                     <td className="p-3 font-medium text-g90">{r.title}</td>
                     <td className="p-3 text-g60">{STAGE_LABEL[r.stage]}</td>
                     <td className="p-3 text-g60">{r.area_name ?? '—'}</td>
+                    <td className="p-3 text-g60">{r.owner_name ?? '—'}</td>
                     <td className="num p-3 text-right text-g60">
                       {r.hours_saved_month == null ? '—' : nf1.format(r.hours_saved_month)}
                     </td>
@@ -361,7 +381,7 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
                 );
               })}
               {filtradas.length === 0 && (
-                <tr><td colSpan={7} className="p-8 text-center text-sm text-g50">
+                <tr><td colSpan={8} className="p-8 text-center text-sm text-g50">
                   Nenhuma iniciativa corresponde a esses filtros. Limpe um deles para voltar a ver resultados.
                 </td></tr>
               )}
@@ -450,6 +470,7 @@ function DetalheCard({ row, sinal, onFechar }: { row: DashboardRow; sinal: Signa
 
         <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
           <Info rotulo="Área" valor={row.area_name ?? '—'} />
+          <Info rotulo="Proprietário" valor={row.owner_name ?? '—'} />
           <Info rotulo="Tema" valor={row.theme ?? '—'} />
           <Info rotulo="Diretoria" valor={row.directorate ?? '—'} />
           <Info rotulo="Horas/mês" valor={row.hours_saved_month == null ? '—' : `${nf1.format(row.hours_saved_month)} h`} />

@@ -2,10 +2,12 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
 import { STAGE_LABEL, type Stage, hasRoleAtLeast } from '@/lib/types';
+import { nomeProprietario } from '@/lib/pessoas';
 import { Button } from '@/components/ui/Button';
 import { Empty } from '@/components/ui/Card';
 import { ProjetosKanban, type CardProjeto } from '@/components/ProjetosKanban';
 import { IniciativasLista } from './IniciativasLista';
+import { FiltroProprietario } from './FiltroProprietario';
 
 export const metadata = { title: 'Iniciativas — Pulso' };
 export const dynamic = 'force-dynamic';
@@ -16,31 +18,40 @@ type Linha = {
   cost_saved_month: number | null;
   score_final: number | null; last_activity_at: string;
   areas: { name: string } | null;
+  profiles: { full_name: string | null } | null;
 };
 
 export default async function ProjetosPage({
   searchParams,
-}: { searchParams: { stage?: string; meus?: string; ok?: string; view?: string } }) {
+}: { searchParams: { stage?: string; meus?: string; ok?: string; view?: string; owner?: string } }) {
   const perfil = await requireUser();
   const supabase = createClient();
   const podeCadastrar = hasRoleAtLeast(perfil.role, 'participante');
   const kanban = searchParams.view === 'kanban';
+  const ownerFiltro = searchParams.meus === '1' ? perfil.id : (searchParams.owner || '');
 
-  let q = supabase
-    .from('projects')
-    .select('id, title, stage, theme, owner_id, hours_saved_month, cost_saved_month, score_final, last_activity_at, areas(name)')
-    .is('archived_at', null)
-    .order('last_activity_at', { ascending: false });
+  const [{ data }, { data: pessoas }] = await Promise.all([
+    (function () {
+      let q = supabase
+        .from('projects')
+        .select('id, title, stage, theme, owner_id, hours_saved_month, cost_saved_month, score_final, last_activity_at, areas(name), profiles!owner_id(full_name)')
+        .is('archived_at', null)
+        .order('last_activity_at', { ascending: false });
 
-  if (searchParams.stage && !kanban) q = q.eq('stage', searchParams.stage);
-  if (searchParams.meus === '1') q = q.eq('owner_id', perfil.id);
-
-  const { data } = await q;
-  const linhas = (data ?? []) as unknown as Linha[];
+      if (searchParams.stage && !kanban) q = q.eq('stage', searchParams.stage);
+      if (ownerFiltro) q = q.eq('owner_id', ownerFiltro);
+      return q;
+    })(),
+    supabase.from('profiles').select('id, full_name').eq('active', true).order('full_name'),
+  ]);
+  const linhas = ((data ?? []) as unknown as Linha[]).map((p) => ({
+    ...p,
+    profiles: Array.isArray(p.profiles) ? (p.profiles[0] ?? null) : p.profiles,
+  }));
 
   const preservar = (extra: Record<string, string>) => {
     const sp = new URLSearchParams();
-    if (searchParams.meus === '1') sp.set('meus', '1');
+    if (ownerFiltro && extra.owner === undefined && extra.meus === undefined) sp.set('owner', ownerFiltro);
     if (searchParams.stage && !kanban) sp.set('stage', searchParams.stage);
     Object.entries(extra).forEach(([k, v]) => (v ? sp.set(k, v) : sp.delete(k)));
     const s = sp.toString();
@@ -52,7 +63,10 @@ export default async function ProjetosPage({
     owner_id: p.owner_id, hours_saved_month: p.hours_saved_month,
     cost_saved_month: p.cost_saved_month, score_final: p.score_final,
     area_name: p.areas?.name ?? null,
+    owner_name: nomeProprietario(p.owner_id, p.profiles),
   }));
+
+  const minhasAtivo = ownerFiltro === perfil.id;
 
   return (
     <div className="space-y-6">
@@ -78,20 +92,31 @@ export default async function ProjetosPage({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <nav aria-label="Filtros rápidos" className="flex flex-wrap gap-2">
-          <FiltroLink href={preservar({ view: kanban ? 'kanban' : '', meus: '', stage: '' })}
-                      ativo={!searchParams.stage && searchParams.meus !== '1'}>Todas</FiltroLink>
-          <FiltroLink href={`/projetos?meus=1${kanban ? '&view=kanban' : ''}`} ativo={searchParams.meus === '1'}>As minhas</FiltroLink>
+          <FiltroLink href={preservar({ view: kanban ? 'kanban' : '', owner: '', meus: '', stage: '' })}
+                      ativo={!searchParams.stage && !ownerFiltro}>Todas</FiltroLink>
+          <FiltroLink href={preservar({ owner: perfil.id, meus: '', view: kanban ? 'kanban' : '' })}
+                      ativo={minhasAtivo}>As minhas</FiltroLink>
           {!kanban && (['backlog', 'em_desenvolvimento', 'em_teste', 'concluido'] as Stage[]).map((s) => (
-            <FiltroLink key={s} href={`/projetos?stage=${s}`} ativo={searchParams.stage === s}>
+            <FiltroLink key={s} href={preservar({ stage: s, view: '' })} ativo={searchParams.stage === s}>
               {STAGE_LABEL[s]}
             </FiltroLink>
           ))}
         </nav>
 
-        <nav aria-label="Modo de visualização" className="flex gap-2">
-          <FiltroLink href={preservar({ view: '' })} ativo={!kanban}>Lista</FiltroLink>
-          <FiltroLink href={preservar({ view: 'kanban' })} ativo={kanban}>Kanban</FiltroLink>
-        </nav>
+        <div className="flex flex-wrap items-center gap-3">
+          <FiltroProprietario
+            pessoas={pessoas ?? []}
+            valor={ownerFiltro}
+            query={{
+              ...(kanban ? { view: 'kanban' } : {}),
+              ...(searchParams.stage && !kanban ? { stage: searchParams.stage } : {}),
+            }}
+          />
+          <nav aria-label="Modo de visualização" className="flex gap-2">
+            <FiltroLink href={preservar({ view: '' })} ativo={!kanban}>Lista</FiltroLink>
+            <FiltroLink href={preservar({ view: 'kanban' })} ativo={kanban}>Kanban</FiltroLink>
+          </nav>
+        </div>
       </div>
 
       {kanban ? (
@@ -116,6 +141,7 @@ export default async function ProjetosPage({
             theme: p.theme,
             area_name: p.areas?.name ?? null,
             owner_id: p.owner_id,
+            owner_name: nomeProprietario(p.owner_id, p.profiles),
             hours_saved_month: p.hours_saved_month,
             score_final: p.score_final,
             last_activity_at: p.last_activity_at,

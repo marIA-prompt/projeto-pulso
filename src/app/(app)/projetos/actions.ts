@@ -16,6 +16,7 @@ const Projeto = z.object({
   stage: z.enum(STAGES),
   theme: z.string().optional(),
   area_id: z.string().uuid().nullable().catch(null),
+  owner_id: z.string().uuid().nullable().catch(null),
   directorate: z.string().optional(),
   uses_ai: z.coerce.boolean(),
   uses_n8n: z.coerce.boolean(),
@@ -39,6 +40,7 @@ function ler(form: FormData) {
     stage: form.get('stage'),
     theme: form.get('theme') ?? '',
     area_id: vazio(form.get('area_id')),
+    owner_id: vazio(form.get('owner_id')),
     directorate: form.get('directorate') ?? '',
     uses_ai: form.get('uses_ai') === 'on',
     uses_n8n: form.get('uses_n8n') === 'on',
@@ -87,7 +89,7 @@ export async function criarProjeto(_prev: EstadoProjeto, form: FormData): Promis
   const { error } = await supabase.from('projects').insert({
     ...parsed.data,
     target_date: parsed.data.target_date || null,
-    owner_id: perfil.id,
+    owner_id: parsed.data.owner_id ?? perfil.id,
     scoring_source: pontuada ? 'matriz_4_eixos' : 'nao_pontuado',
   });
 

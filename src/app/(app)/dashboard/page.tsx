@@ -5,6 +5,7 @@ import { Kpis } from '@/components/dashboard/Kpis';
 import { Acompanhamento } from '@/components/dashboard/Acompanhamento';
 import { Empty } from '@/components/ui/Card';
 import { dataLonga } from '@/lib/format';
+import { nomeProprietario } from '@/lib/pessoas';
 import type { DashboardRow, PortfolioKpis, AttendanceKpi } from '@/lib/types';
 
 export const metadata = { title: 'Acompanhamento — Pulso' };
@@ -16,13 +17,29 @@ export default async function DashboardPage() {
 
   // Server Component busca os dados agregados sob RLS; o filtro/gráfico
   // roda no cliente sobre o conjunto já autorizado (decisão D2).
-  const [{ data: rows }, { data: kpis }, { data: encontros }] = await Promise.all([
+  const [{ data: rows }, { data: kpis }, { data: encontros }, { data: donos }] = await Promise.all([
     supabase.from('v_projects_dashboard').select('*').order('dias_sem_atualizacao', { ascending: false }),
     supabase.from('v_portfolio_kpis').select('*').single(),
     supabase.from('v_attendance_kpis').select('*').order('scheduled_at', { ascending: false }).limit(1),
+    supabase.from('projects').select('id, owner_id, profiles!owner_id(full_name)').is('archived_at', null),
   ]);
 
-  const lista = (rows ?? []) as DashboardRow[];
+  const donoPorId = new Map(
+    (donos ?? []).map((d) => {
+      const perfil = d.profiles as unknown as { full_name: string | null } | { full_name: string | null }[] | null;
+      const p = Array.isArray(perfil) ? perfil[0] : perfil;
+      return [d.id as string, { owner_id: (d.owner_id as string | null) ?? null, owner_name: nomeProprietario(d.owner_id as string | null, p) }];
+    }),
+  );
+
+  const lista = ((rows ?? []) as DashboardRow[]).map((r) => {
+    const extra = donoPorId.get(r.id);
+    return {
+      ...r,
+      owner_id: extra?.owner_id ?? r.owner_id ?? null,
+      owner_name: extra?.owner_name ?? r.owner_name ?? 'Sem proprietário',
+    };
+  });
   const indicadores = (kpis ?? {
     total_iniciativas: 0, concluidas: 0, ativas: 0,
     horas_mes_devolvidas: 0, horas_mes_portfolio_total: 0,

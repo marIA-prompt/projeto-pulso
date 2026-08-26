@@ -18,6 +18,7 @@ export type CardProjeto = {
   cost_saved_month: number | null;
   score_final: number | null;
   area_name: string | null;
+  owner_name: string | null;
 };
 
 // As raias do Kanban seguem o pipeline da Metodologia (§4). 'cancelado' fica
@@ -127,6 +128,7 @@ export function ProjetosKanban({
                       </Link>
                       <p className="mt-1 text-xs text-g50">
                         {c.area_name ?? 'Área não informada'}
+                        {c.owner_name && ` · ${c.owner_name}`}
                         {meu && ' · sua'}
                       </p>
                       <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.7rem] text-g60">
