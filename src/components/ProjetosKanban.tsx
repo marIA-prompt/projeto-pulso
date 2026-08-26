@@ -119,7 +119,7 @@ export function ProjetosKanban({
                       draggable={podeMover}
                       onDragStart={() => setArrastando(c.id)}
                       onDragEnd={() => { setArrastando(null); setAlvo(null); }}
-                      className={`rounded-s border border-g30 bg-white p-3 shadow-sm ${
+                      className={`rounded-s border border-g30 bg-[var(--white)] p-3 shadow-sm ${
                         podeMover ? 'cursor-grab active:cursor-grabbing' : ''
                       } ${arrastando === c.id ? 'opacity-50' : ''}`}
                     >
