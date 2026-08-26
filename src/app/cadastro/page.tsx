@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { CadastroForm } from './CadastroForm';
+import { TemaPublico } from '@/components/TemaToggle';
 
 export const metadata = { title: 'Criar conta — Pulso' };
 export const dynamic = 'force-dynamic';
@@ -21,6 +22,7 @@ export default async function CadastroPage() {
 
   return (
     <main className="grid min-h-screen place-items-center bg-[var(--g10)] px-4 py-12">
+      <TemaPublico />
       <div className="w-full max-w-md">
         <div className="mb-8">
           <p className="num text-[0.65rem] uppercase tracking-[0.2em] text-g50">Senff</p>

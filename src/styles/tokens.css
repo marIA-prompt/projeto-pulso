@@ -79,12 +79,11 @@
 }
 
 /* =============================================================
-   Tema escuro. O arquivo de referência trata ESCURO como padrão
-   e claro como opt-in via [data-theme="light"]. Para o Next.js
-   recomenda-se inverter (claro por padrão, escuro por opt-in ou
-   prefers-color-scheme) — ver PATCH, item B2.
+   Tema escuro. Claro é o padrão (data-theme="light" no <html>).
+   Escuro entra só com data-theme="dark", escolhido no seletor
+   Claro/Escuro e gravado em localStorage (ver src/lib/tema.ts).
    ============================================================= */
-:root:not([data-theme="light"]) {
+html[data-theme="dark"] {
   color-scheme: dark;
 
   --ink-strong:  #8FB4FF;

@@ -1,4 +1,5 @@
 import { LoginForm } from './LoginForm';
+import { TemaPublico } from '@/components/TemaToggle';
 
 export const metadata = { title: 'Entrar — Pulso' };
 
@@ -9,6 +10,7 @@ export default function LoginPage({
 }) {
   return (
     <main className="grid min-h-screen place-items-center bg-[var(--g10)] px-4 py-12">
+      <TemaPublico />
       <div className="w-full max-w-sm">
         <div className="mb-8">
           <p className="num text-[0.65rem] uppercase tracking-[0.2em] text-g50">Senff</p>

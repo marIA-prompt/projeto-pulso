@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { hashToken } from '@/lib/invite-token';
 import { AceiteForm } from './AceiteForm';
 import { ROLE_LABEL, type Role } from '@/lib/types';
+import { TemaPublico } from '@/components/TemaToggle';
 
 export const metadata = { title: 'Aceitar convite — Pulso' };
 export const dynamic = 'force-dynamic';
@@ -20,7 +21,8 @@ export default async function ConvitePage({ params }: { params: { token: string 
 
   if (!valido) {
     return (
-      <main className="grid min-h-screen place-items-center px-4">
+      <main className="grid min-h-screen place-items-center bg-[var(--g10)] px-4">
+        <TemaPublico />
         <div className="card max-w-sm p-6 text-center">
           <h1 className="text-xl font-bold">Convite indisponível</h1>
           <p className="mt-3 text-sm leading-relaxed text-g60">
@@ -37,6 +39,7 @@ export default async function ConvitePage({ params }: { params: { token: string 
 
   return (
     <main className="grid min-h-screen place-items-center bg-[var(--g10)] px-4 py-12">
+      <TemaPublico />
       <div className="w-full max-w-md">
         <p className="num text-[0.65rem] uppercase tracking-[0.2em] text-g50">Bem-vindo ao</p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight">Pulso</h1>

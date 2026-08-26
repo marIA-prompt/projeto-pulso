@@ -29,7 +29,7 @@ function CopiarLink({ link }: { link: string }) {
           setCopiado(true);
           setTimeout(() => setCopiado(false), 2000);
         }}
-        className="shrink-0 rounded-s border border-g40 bg-white px-2 py-1 text-xs font-medium text-g80 hover:bg-g20"
+        className="shrink-0 rounded-s border border-g40 bg-[var(--white)] px-2 py-1 text-xs font-medium text-g80 hover:bg-g20"
       >
         {copiado ? 'Copiado!' : 'Copiar link'}
       </button>

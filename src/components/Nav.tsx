@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from '@/lib/clsx';
+import { TemaToggle } from '@/components/TemaToggle';
 
 const LINKS = [
   { href: '/dashboard', label: 'Acompanhamento' },
@@ -21,7 +22,7 @@ export function Nav({ isAdmin, nome }: { isAdmin: boolean; nome: string }) {
     <header className="sticky top-0 z-20 border-b border-g30 bg-[var(--topbar-bg)] backdrop-blur">
       <div className="mx-auto flex max-w-shell flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
         <Link href="/dashboard" className="flex items-baseline gap-2">
-          <span className="text-lg font-bold tracking-tight text-[var(--navy)]">Pulso</span>
+          <span className="text-lg font-bold tracking-tight text-[var(--ink-strong)]">Pulso</span>
           <span className="num text-[0.65rem] uppercase tracking-widest text-g50">Senff</span>
         </Link>
 
@@ -45,6 +46,7 @@ export function Nav({ isAdmin, nome }: { isAdmin: boolean; nome: string }) {
         </nav>
 
         <div className="ml-auto flex items-center gap-3">
+          <TemaToggle compacto />
           <span className="hidden text-sm text-g60 sm:inline">{nome}</span>
           <form action="/auth/sair" method="post">
             <button className="rounded-s border border-g40 px-3 py-1.5 text-sm text-g80 hover:bg-g20">
