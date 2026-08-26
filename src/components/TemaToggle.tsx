@@ -4,10 +4,32 @@ import { useEffect, useState } from 'react';
 import { aplicarTema, temaAtual, TEMA_KEY, type Tema } from '@/lib/tema';
 import { clsx } from '@/lib/clsx';
 
-const OPCOES: { id: Tema; emoji: string; rotulo: string }[] = [
-  { id: 'light', emoji: '☀️', rotulo: 'Tema claro' },
-  { id: 'dark', emoji: '🌙', rotulo: 'Tema escuro' },
+const OPCOES: { id: Tema; rotulo: string }[] = [
+  { id: 'light', rotulo: 'Tema claro' },
+  { id: 'dark', rotulo: 'Tema escuro' },
 ];
+
+function IconeSol() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" className="block">
+      <circle cx="12" cy="12" r="4" fill="currentColor" />
+      <g stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none">
+        <path d="M12 3v2M12 19v2M5.05 5.05l1.4 1.4M17.55 17.55l1.4 1.4M3 12h2M19 12h2M5.05 18.95l1.4-1.4M17.55 6.45l1.4-1.4" />
+      </g>
+    </svg>
+  );
+}
+
+function IconeLua() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" className="block">
+      <path
+        fill="currentColor"
+        d="M20.5 15.2A8.2 8.2 0 0 1 8.8 3.5 8.5 8.5 0 1 0 20.5 15.2z"
+      />
+    </svg>
+  );
+}
 
 export function TemaToggle({ compacto = false }: { compacto?: boolean }) {
   const [tema, setTema] = useState<Tema>('light');
@@ -44,12 +66,16 @@ export function TemaToggle({ compacto = false }: { compacto?: boolean }) {
             title={o.rotulo}
             onClick={() => escolher(o.id)}
             className={clsx(
-              'rounded-[6px] px-2 py-1 text-sm leading-none transition-colors',
-              compacto && 'px-1.5',
-              ativo ? 'bg-g20' : 'opacity-55 hover:opacity-100',
+              'rounded-[6px] p-1.5 transition-colors',
+              compacto && 'p-1',
+              ativo
+                ? o.id === 'light'
+                  ? 'bg-g20 text-[var(--yellow)]'
+                  : 'bg-g20 text-[var(--blue)]'
+                : 'text-g50 hover:text-g80',
             )}
           >
-            <span aria-hidden="true">{o.emoji}</span>
+            {o.id === 'light' ? <IconeSol /> : <IconeLua />}
           </button>
         );
       })}
