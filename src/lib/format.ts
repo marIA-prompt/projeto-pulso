@@ -36,6 +36,17 @@ export function dataLonga(iso: string | null | undefined) {
   }).format(new Date(iso));
 }
 
+/** YYYY-MM-DD no fuso de São Paulo — para <input type="date"> e recortes. */
+export function diaISO(iso: string | null | undefined) {
+  if (!iso) return '';
+  let d = new Date(iso);
+  if (Number.isNaN(d.getTime())) {
+    d = new Date(iso.replace(/([+-]\d{2})$/, '$1:00'));
+  }
+  if (Number.isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(d);
+}
+
 export function plural(n: number, um: string, muitos: string) {
   return `${nf.format(n)} ${n === 1 ? um : muitos}`;
 }

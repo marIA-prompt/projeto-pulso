@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { DashboardRow, Signal } from '@/lib/types';
 import { STAGE_LABEL } from '@/lib/types';
-import { nf, nf1, moeda, dataCurta } from '@/lib/format';
+import { nf, nf1, moeda, dataCurta, diaISO } from '@/lib/format';
 import { Donut, Barras, Ecg } from './charts';
 import { Button } from '@/components/ui/Button';
 
@@ -29,11 +29,13 @@ const SINAL_CLASSE: Record<Signal, string> = {
 type Filtros = {
   q: string; tema: string; area: string; dir: string;
   stage: string; potencial: string; ia: string; owner: string;
+  de: string; ate: string;
   thOk: number; thCrit: number;
 };
 
 const PADRAO: Filtros = {
   q: '', tema: '', area: '', dir: '', stage: '', potencial: '', ia: '', owner: '',
+  de: '', ate: '',
   thOk: 30, thCrit: 90,
 };
 
@@ -47,6 +49,8 @@ function lerFiltros(sp: URLSearchParams): Filtros {
     potencial: sp.get('potencial') ?? '',
     ia: sp.get('ia') ?? '',
     owner: sp.get('owner') ?? '',
+    de: sp.get('de') ?? '',
+    ate: sp.get('ate') ?? '',
     thOk: Number(sp.get('thOk') ?? PADRAO.thOk),
     thCrit: Number(sp.get('thCrit') ?? PADRAO.thCrit),
   };
@@ -107,6 +111,9 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
       if (f.potencial && r.legacy_priority !== f.potencial) return false;
       if (f.ia && String(r.uses_ai === true) !== f.ia) return false;
       if (f.owner && r.owner_id !== f.owner) return false;
+      const dia = diaISO(r.last_activity_at);
+      if (f.de && dia && dia < f.de) return false;
+      if (f.ate && dia && dia > f.ate) return false;
       return true;
     });
   }, [rows, f]);
@@ -232,6 +239,22 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
               <option value="true">Sim</option>
               <option value="false">Não</option>
             </select>
+          </div>
+          <div>
+            <label className="label" htmlFor="fDe">Atualizada de</label>
+            <input
+              id="fDe" type="date" className="field mt-1" value={f.de}
+              max={f.ate || undefined}
+              onChange={(e) => set('de', e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="fAte">Atualizada até</label>
+            <input
+              id="fAte" type="date" className="field mt-1" value={f.ate}
+              min={f.de || undefined}
+              onChange={(e) => set('ate', e.target.value)}
+            />
           </div>
         </div>
 
