@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from '@/lib/clsx';
 import { TemaToggle } from '@/components/TemaToggle';
+import { MenuConta } from '@/components/MenuConta';
 
 const LINKS = [
   { href: '/dashboard', label: 'Acompanhamento' },
@@ -14,7 +15,15 @@ const LINKS = [
   { href: '/metodologia/metodologia-grupo', label: 'Metodologia' },
 ];
 
-export function Nav({ isAdmin, nome }: { isAdmin: boolean; nome: string }) {
+export function Nav({
+  isAdmin, nome, apelido, avatarUrl, userId,
+}: {
+  isAdmin: boolean;
+  nome: string;
+  apelido: string | null;
+  avatarUrl: string | null;
+  userId: string;
+}) {
   const path = usePathname();
   const links = isAdmin ? [...LINKS, { href: '/admin', label: 'Admin' }] : LINKS;
 
@@ -45,14 +54,9 @@ export function Nav({ isAdmin, nome }: { isAdmin: boolean; nome: string }) {
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex shrink-0 items-center gap-3">
           <TemaToggle compacto />
-          <span className="hidden text-sm text-g60 sm:inline">{nome}</span>
-          <form action="/auth/sair" method="post">
-            <button className="rounded-s border border-g40 px-3 py-1.5 text-sm text-g80 hover:bg-g20">
-              Sair
-            </button>
-          </form>
+          <MenuConta nome={nome} apelido={apelido} avatarUrl={avatarUrl} userId={userId} />
         </div>
       </div>
     </header>

@@ -5,6 +5,8 @@ import type { Role } from '@/lib/types';
 export type SessionProfile = {
   id: string;
   full_name: string | null;
+  nickname: string | null;
+  avatar_url: string | null;
   role: Role;
   area_id: string | null;
 };
@@ -17,7 +19,7 @@ export async function requireUser(): Promise<SessionProfile> {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, full_name, role, area_id')
+    .select('id, full_name, nickname, avatar_url, role, area_id')
     .eq('id', user.id)
     .single();
 
