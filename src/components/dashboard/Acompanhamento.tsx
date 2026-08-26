@@ -27,21 +27,39 @@ const SINAL_CLASSE: Record<Signal, string> = {
   done: 'bg-[var(--sig-done-bg)] text-[var(--sig-done)]',
 };
 
+type ColunaOrdem = 'horas' | 'impacto' | 'sinal';
+type Sentido = 'asc' | 'desc';
+
 type Filtros = {
   q: string; tema: string; area: string; dir: string;
   stage: string; potencial: string; ia: string; owner: string;
   de: string; ate: string;
   criada_de: string; criada_ate: string;
   thOk: number; thCrit: number;
+  ord: '' | ColunaOrdem;
+  sentido: Sentido;
 };
 
 const PADRAO: Filtros = {
   q: '', tema: '', area: '', dir: '', stage: '', potencial: '', ia: '', owner: '',
   de: '', ate: '', criada_de: '', criada_ate: '',
   thOk: 30, thCrit: 90,
+  ord: '', sentido: 'desc',
+};
+
+/** Gravidade do sinal: crítico primeiro quando a ordem é decrescente. */
+const SINAL_PESO: Record<Signal, number> = { crit: 3, warn: 2, ok: 1, done: 0 };
+
+const ROTULO_ORDEM: Record<ColunaOrdem, string> = {
+  horas: 'Horas/mês',
+  impacto: 'impacto financeiro',
+  sinal: 'sinal',
 };
 
 function lerFiltros(sp: URLSearchParams): Filtros {
+  const ordRaw = sp.get('ord');
+  const ord: Filtros['ord'] =
+    ordRaw === 'horas' || ordRaw === 'impacto' || ordRaw === 'sinal' ? ordRaw : '';
   return {
     q: sp.get('q') ?? '',
     tema: sp.get('tema') ?? '',
@@ -57,7 +75,17 @@ function lerFiltros(sp: URLSearchParams): Filtros {
     criada_ate: sp.get('criada_ate') ?? '',
     thOk: Number(sp.get('thOk') ?? PADRAO.thOk),
     thCrit: Number(sp.get('thCrit') ?? PADRAO.thCrit),
+    ord,
+    sentido: sp.get('sentido') === 'asc' ? 'asc' : 'desc',
   };
+}
+
+/** Valores vazios vão para o fim, em qualquer sentido. */
+function cmpNum(a: number | null, b: number | null, sentido: Sentido): number {
+  if (a == null && b == null) return 0;
+  if (a == null) return 1;
+  if (b == null) return -1;
+  return sentido === 'asc' ? a - b : b - a;
 }
 
 /** Recalcula o sinal no cliente para refletir os limites escolhidos. */
@@ -113,6 +141,15 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
     });
   }, []);
 
+  // 1º clique: maior/mais grave primeiro; 2º: o inverso; 3º: volta à atualização recente.
+  const clicarOrdem = useCallback((coluna: ColunaOrdem) => {
+    setF((prev) => {
+      if (prev.ord !== coluna) return { ...prev, ord: coluna, sentido: 'desc' };
+      if (prev.sentido === 'desc') return { ...prev, sentido: 'asc' };
+      return { ...prev, ord: '', sentido: 'desc' };
+    });
+  }, []);
+
   const filtradas = useMemo(() => {
     const q = f.q.trim().toLowerCase();
     return rows.filter((r) => {
@@ -130,11 +167,32 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
     });
   }, [rows, f]);
 
-  // Tabela: ordenada pela atualização mais recente e paginada de 20 em 20.
-  const ordenadas = useMemo(
-    () => [...filtradas].sort((a, b) => b.last_activity_at.localeCompare(a.last_activity_at)),
-    [filtradas],
-  );
+  // Padrão: atualização mais recente. Cabeçalhos de Horas, Impacto e Sinal
+  // trocam a ordem; empate continua pela atualização.
+  const ordenadas = useMemo(() => {
+    const lista = [...filtradas];
+    lista.sort((a, b) => {
+      let cmp = 0;
+      if (f.ord === 'horas') cmp = cmpNum(a.hours_saved_month, b.hours_saved_month, f.sentido);
+      else if (f.ord === 'impacto') cmp = cmpNum(impactoAnual(a), impactoAnual(b), f.sentido);
+      else if (f.ord === 'sinal') {
+        cmp = cmpNum(
+          SINAL_PESO[sinalDe(a, f.thOk, f.thCrit)],
+          SINAL_PESO[sinalDe(b, f.thOk, f.thCrit)],
+          f.sentido,
+        );
+      }
+      if (cmp !== 0) return cmp;
+      return b.last_activity_at.localeCompare(a.last_activity_at);
+    });
+    return lista;
+  }, [filtradas, f.ord, f.sentido, f.thOk, f.thCrit]);
+
+  const textoOrdem = !f.ord
+    ? 'ordenadas pela atualização mais recente'
+    : f.ord === 'sinal'
+      ? `ordenadas por sinal · ${f.sentido === 'desc' ? 'crítico primeiro' : 'concluído primeiro'}`
+      : `ordenadas por ${ROTULO_ORDEM[f.ord]} · ${f.sentido === 'desc' ? 'maior primeiro' : 'menor primeiro'}`;
   const [pagina, setPagina] = useState(1);
   const totalPaginas = Math.max(1, Math.ceil(ordenadas.length / POR_PAGINA));
   useEffect(() => { setPagina(1); }, [ordenadas.length, f]);
@@ -177,7 +235,7 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
 
   const exportar = useCallback(() => {
     const cab = ['Iniciativa','Estágio','Tema','Área','Proprietário','Diretoria','Criada em','Atualizada em','Dias sem atualização','Sinal','Horas/mês','Impacto financeiro estimado (R$/ano)','Score','Usa IA'];
-    const linhas = filtradas.map((r) => [
+    const linhas = ordenadas.map((r) => [
       r.title, STAGE_LABEL[r.stage], r.theme ?? '', r.area_name ?? '', r.owner_name ?? '', r.directorate ?? '',
       dataCurta(r.created_at), dataCurta(r.last_activity_at),
       r.dias_sem_atualizacao, SINAL_LABEL[sinalDe(r, f.thOk, f.thCrit)],
@@ -192,7 +250,7 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
     a.download = `pulso-iniciativas-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [filtradas, f.thOk, f.thCrit]);
+  }, [ordenadas, f.thOk, f.thCrit]);
 
   const temas = unicos(rows, 'theme');
   const areas = unicos(rows, 'area_name');
@@ -363,7 +421,7 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
       <section className="card overflow-hidden p-0" aria-labelledby="tabela-titulo">
         <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-g30 p-4">
           <h2 id="tabela-titulo" className="text-base font-semibold">Todas as iniciativas do filtro</h2>
-          <span className="text-xs text-g50">Clique em uma linha para ver os detalhes · ordenadas pela atualização mais recente</span>
+          <span className="text-xs text-g50">Clique em uma linha para ver os detalhes · {textoOrdem}</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[60rem] border-collapse text-sm">
@@ -373,10 +431,19 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
                 <th scope="col" className="p-3">Estágio</th>
                 <th scope="col" className="p-3">Área</th>
                 <th scope="col" className="p-3">Proprietário</th>
-                <th scope="col" className="p-3 text-right">Horas/mês</th>
-                <th scope="col" className="p-3 text-right">Impacto financeiro est.</th>
+                <CabecalhoOrdenavel
+                  rotulo="Horas/mês" ativo={f.ord === 'horas'} sentido={f.sentido}
+                  alinhado="right" onClick={() => clicarOrdem('horas')}
+                />
+                <CabecalhoOrdenavel
+                  rotulo="Impacto financeiro est." ativo={f.ord === 'impacto'} sentido={f.sentido}
+                  alinhado="right" onClick={() => clicarOrdem('impacto')}
+                />
                 <th scope="col" className="p-3 text-right">Parada há</th>
-                <th scope="col" className="p-3">Sinal</th>
+                <CabecalhoOrdenavel
+                  rotulo="Sinal" ativo={f.ord === 'sinal'} sentido={f.sentido}
+                  onClick={() => clicarOrdem('sinal')}
+                />
               </tr>
             </thead>
             <tbody>
@@ -435,6 +502,46 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
 
       {selecionada && <DetalheCard row={selecionada} sinal={sinalDe(selecionada, f.thOk, f.thCrit)} onFechar={() => setSelecionada(null)} />}
     </div>
+  );
+}
+
+function CabecalhoOrdenavel({
+  rotulo, ativo, sentido, alinhado = 'left', onClick,
+}: {
+  rotulo: string;
+  ativo: boolean;
+  sentido: Sentido;
+  alinhado?: 'left' | 'right';
+  onClick: () => void;
+}) {
+  const ariaSort = !ativo ? 'none' : sentido === 'asc' ? 'ascending' : 'descending';
+  const dica = !ativo
+    ? `Ordenar por ${rotulo}, maior primeiro`
+    : sentido === 'desc'
+      ? `Ordenar por ${rotulo}, menor primeiro`
+      : `Tirar ordenação de ${rotulo}`;
+  return (
+    <th
+      scope="col"
+      aria-sort={ariaSort}
+      className={`p-3 ${alinhado === 'right' ? 'text-right' : ''}`}
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        title={dica}
+        aria-label={dica}
+        className={`inline-flex w-full items-center gap-1 whitespace-nowrap hover:text-g90 ${
+          ativo ? 'font-semibold text-g90' : ''
+        } ${alinhado === 'right' ? 'justify-end' : ''}`}
+      >
+        <span>{rotulo}</span>
+        <span className="inline-flex flex-col leading-none" aria-hidden="true">
+          <span className={`text-[0.5rem] ${ativo && sentido === 'asc' ? 'text-[var(--blue)]' : 'text-g40'}`}>▲</span>
+          <span className={`-mt-px text-[0.5rem] ${ativo && sentido === 'desc' ? 'text-[var(--blue)]' : 'text-g40'}`}>▼</span>
+        </span>
+      </button>
+    </th>
   );
 }
 
