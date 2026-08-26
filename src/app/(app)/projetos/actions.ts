@@ -6,9 +6,7 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
 import { STAGES, hasRoleAtLeast } from '@/lib/types';
-import { scoreFinal, GATE_DESENVOLVIMENTO } from '@/lib/scoring';
-
-const nota = z.coerce.number().min(1).max(5).nullable().catch(null);
+import { TRIAGEM_RESPOSTAS } from '@/lib/lei-do-bem';
 
 const Projeto = z.object({
   title: z.string().min(3, 'O título precisa de pelo menos 3 caracteres.'),
@@ -24,10 +22,6 @@ const Projeto = z.object({
   target_date: z.string().optional(),
   links: z.string().optional(),
   notes: z.string().optional(),
-  score_impacto: nota,
-  score_viabilidade: nota,
-  score_alinhamento: nota,
-  score_urgencia: nota,
 });
 
 export type EstadoProjeto = { erro?: string };
@@ -48,27 +42,25 @@ function ler(form: FormData) {
     target_date: form.get('target_date') ?? '',
     links: form.get('links') ?? '',
     notes: form.get('notes') ?? '',
-    score_impacto: vazio(form.get('score_impacto')),
-    score_viabilidade: vazio(form.get('score_viabilidade')),
-    score_alinhamento: vazio(form.get('score_alinhamento')),
-    score_urgencia: vazio(form.get('score_urgencia')),
   });
 }
 
-/** Gate da Metodologia Executiva §9.1 — validado no servidor, não só na tela. */
-function validarGate(d: z.infer<typeof Projeto>): string | null {
-  if (d.stage !== 'em_desenvolvimento') return null;
-  const s = scoreFinal({
-    impacto: d.score_impacto, viabilidade: d.score_viabilidade,
-    alinhamento: d.score_alinhamento, urgencia: d.score_urgencia,
-  });
-  if (s == null) {
-    return 'Para entrar em desenvolvimento, a iniciativa precisa estar pontuada nos quatro eixos.';
+const CAMPOS_LEI = [
+  'objetivo_estrategico_okr', 'contexto_problema', 'o_que_sera_desenvolvido',
+  'resultados_esperados', 'como_sera_desenvolvido', 'fora_do_escopo', 'desafios_riscos',
+  'descricao_projeto', 'elemento_tecnologico_novo', 'barreira_desafio_tecnologico',
+  'metodologia_metodos', 'descritivo_complementar',
+] as const;
+
+function lerLeiDoBem(form: FormData) {
+  if (form.get('lei_do_bem') !== 'on') return null;
+  const dados: Record<string, string | null> = {};
+  for (const campo of CAMPOS_LEI) dados[campo] = String(form.get(campo) ?? '').trim() || null;
+  for (let i = 1; i <= 12; i++) {
+    const valor = String(form.get(`triagem_${String(i).padStart(2, '0')}`) ?? '');
+    dados[`triagem_${String(i).padStart(2, '0')}`] = TRIAGEM_RESPOSTAS.includes(valor as (typeof TRIAGEM_RESPOSTAS)[number]) ? valor : null;
   }
-  if (s < GATE_DESENVOLVIMENTO) {
-    return `Score ${s.toFixed(2)} está abaixo do mínimo de ${GATE_DESENVOLVIMENTO.toFixed(1)} exigido para entrar em desenvolvimento.`;
-  }
-  return null;
+  return dados;
 }
 
 export async function criarProjeto(_prev: EstadoProjeto, form: FormData): Promise<EstadoProjeto> {
@@ -81,22 +73,24 @@ export async function criarProjeto(_prev: EstadoProjeto, form: FormData): Promis
   const parsed = ler(form);
   if (!parsed.success) return { erro: parsed.error.issues[0].message };
 
-  const gate = validarGate(parsed.data);
-  if (gate) return { erro: gate };
-
-  const pontuada = parsed.data.score_impacto != null;
   const supabase = createClient();
-  const { error } = await supabase.from('projects').insert({
+  const { data: projeto, error } = await supabase.from('projects').insert({
     ...parsed.data,
     target_date: parsed.data.target_date || null,
     owner_id: parsed.data.owner_id ?? perfil.id,
-    scoring_source: pontuada ? 'matriz_4_eixos' : 'nao_pontuado',
-  });
+    scoring_source: 'nao_pontuado',
+  }).select('id').single();
 
   if (error) return { erro: 'Não foi possível salvar a iniciativa. Revise os campos e tente de novo.' };
+  const avaliacao = lerLeiDoBem(form);
+  if (avaliacao) {
+    const { error: erroLei } = await supabase.from('lei_do_bem_avaliacoes').insert({ project_id: projeto.id, ...avaliacao });
+    if (erroLei) return { erro: 'A iniciativa foi salva, mas não foi possível salvar a pré-avaliação Lei do Bem.' };
+  }
 
   revalidatePath('/projetos');
   revalidatePath('/dashboard');
+  revalidatePath('/lei-do-bem');
   redirect('/projetos?ok=criada');
 }
 
@@ -107,10 +101,6 @@ export async function atualizarProjeto(
   const parsed = ler(form);
   if (!parsed.success) return { erro: parsed.error.issues[0].message };
 
-  const gate = validarGate(parsed.data);
-  if (gate) return { erro: gate };
-
-  const pontuada = parsed.data.score_impacto != null;
   const supabase = createClient();
   // A RLS decide se esta pessoa pode escrever nesta linha. Se não puder,
   // o update afeta zero linhas — não vaza a existência do registro.
@@ -119,15 +109,25 @@ export async function atualizarProjeto(
     .update({
       ...parsed.data,
       target_date: parsed.data.target_date || null,
-      scoring_source: pontuada ? 'matriz_4_eixos' : 'nao_pontuado',
+      scoring_source: 'nao_pontuado',
     }, { count: 'exact' })
     .eq('id', id);
 
   if (error) return { erro: 'Não foi possível salvar as alterações.' };
   if (!count) return { erro: 'Você só pode editar iniciativas das quais é dono.' };
+  const avaliacao = lerLeiDoBem(form);
+  if (avaliacao) {
+    const { error: erroLei } = await supabase.from('lei_do_bem_avaliacoes')
+      .upsert({ project_id: id, ...avaliacao }, { onConflict: 'project_id' });
+    if (erroLei) return { erro: 'A iniciativa foi atualizada, mas não foi possível salvar a pré-avaliação Lei do Bem.' };
+  } else {
+    const { error: erroLei } = await supabase.from('lei_do_bem_avaliacoes').delete().eq('project_id', id);
+    if (erroLei) return { erro: 'A iniciativa foi atualizada, mas não foi possível remover a pré-avaliação Lei do Bem.' };
+  }
 
   revalidatePath('/projetos');
   revalidatePath('/dashboard');
+  revalidatePath('/lei-do-bem');
   redirect('/projetos?ok=atualizada');
 }
 
