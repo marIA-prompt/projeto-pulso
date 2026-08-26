@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { aplicarTema, temaAtual, TEMA_KEY, type Tema } from '@/lib/tema';
 import { clsx } from '@/lib/clsx';
 
-const OPCOES: { id: Tema; rotulo: string }[] = [
-  { id: 'light', rotulo: 'Claro' },
-  { id: 'dark', rotulo: 'Escuro' },
+const OPCOES: { id: Tema; emoji: string; rotulo: string }[] = [
+  { id: 'light', emoji: '☀️', rotulo: 'Tema claro' },
+  { id: 'dark', emoji: '🌙', rotulo: 'Tema escuro' },
 ];
 
 export function TemaToggle({ compacto = false }: { compacto?: boolean }) {
@@ -39,15 +39,17 @@ export function TemaToggle({ compacto = false }: { compacto?: boolean }) {
           <button
             key={o.id}
             type="button"
+            aria-label={o.rotulo}
             aria-pressed={ativo}
+            title={o.rotulo}
             onClick={() => escolher(o.id)}
             className={clsx(
-              'rounded-[6px] px-2.5 py-1 text-xs font-medium transition-colors',
-              compacto && 'px-2',
-              ativo ? 'bg-g20 text-g90' : 'text-g50 hover:text-g80',
+              'rounded-[6px] px-2 py-1 text-sm leading-none transition-colors',
+              compacto && 'px-1.5',
+              ativo ? 'bg-g20' : 'opacity-55 hover:opacity-100',
             )}
           >
-            {o.rotulo}
+            <span aria-hidden="true">{o.emoji}</span>
           </button>
         );
       })}
