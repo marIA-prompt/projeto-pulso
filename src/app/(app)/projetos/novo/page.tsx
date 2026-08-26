@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
 import { hasRoleAtLeast } from '@/lib/types';
-import { ProjetoForm } from '@/components/ProjetoForm';
+import { IniciativaWizard } from '@/components/leidobem/IniciativaWizard';
 import { criarProjeto } from '../actions';
 
 export const metadata = { title: 'Nova iniciativa — Pulso' };
@@ -26,7 +26,8 @@ export default async function NovoProjetoPage() {
           <h1 className="text-2xl font-bold tracking-tight">Cadastrar iniciativa</h1>
           <p className="mt-2 text-sm leading-relaxed text-g60">
             Descreva o problema antes da solução — é assim que outras áreas descobrem
-            que têm a mesma dor.
+            que têm a mesma dor. Se a iniciativa envolve desafio técnico real, o cadastro
+            também alimenta a pré-análise da Lei do Bem.
           </p>
         </div>
         <Link
@@ -38,7 +39,7 @@ export default async function NovoProjetoPage() {
           ✕ Fechar
         </Link>
       </header>
-      <ProjetoForm
+      <IniciativaWizard
         action={criarProjeto}
         areas={areas ?? []}
         pessoas={pessoas ?? []}

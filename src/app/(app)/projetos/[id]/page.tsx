@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
-import { ProjetoForm } from '@/components/ProjetoForm';
+import { IniciativaWizard } from '@/components/leidobem/IniciativaWizard';
 import { atualizarProjeto } from '../actions';
 import { dataLonga } from '@/lib/format';
 import { hasRoleAtLeast } from '@/lib/types';
@@ -13,10 +13,11 @@ export default async function EditarProjetoPage({ params }: { params: { id: stri
   const perfil = await requireUser();
   const supabase = createClient();
 
-  const [{ data: projeto }, { data: areas }, { data: pessoas }] = await Promise.all([
+  const [{ data: projeto }, { data: areas }, { data: pessoas }, { data: avaliacao }] = await Promise.all([
     supabase.from('projects').select('*').eq('id', params.id).maybeSingle(),
     supabase.from('areas').select('id, name').eq('is_real_area', true).order('name'),
     supabase.from('profiles').select('id, full_name').eq('active', true).order('full_name'),
+    supabase.from('lei_do_bem_avaliacoes').select('*').eq('project_id', params.id).maybeSingle(),
   ]);
 
   if (!projeto) notFound();
@@ -45,11 +46,12 @@ export default async function EditarProjetoPage({ params }: { params: { id: stri
       </header>
 
       {podeEditar ? (
-        <ProjetoForm
+        <IniciativaWizard
           action={acao}
           areas={areas ?? []}
           pessoas={pessoas ?? []}
           valores={projeto}
+          avaliacao={avaliacao ?? null}
           rotulo="Atualizar"
           cancelHref="/projetos"
         />
