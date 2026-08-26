@@ -180,8 +180,7 @@ export async function atualizarProjeto(
 export type EstadoMover = { ok?: boolean; erro?: string };
 
 /** Move uma iniciativa de raia no Kanban. A RLS decide se a pessoa pode
- * escrever nesta linha (dono, ou gerencial+ para qualquer uma); o gate de
- * §9.1 continua sendo validado pelo trigger do banco. */
+ * escrever nesta linha (dono, ou gerencial+ para qualquer uma). */
 export async function moverEstagio(id: string, novoEstagio: string): Promise<EstadoMover> {
   const perfil = await requireUser();
   if (!hasRoleAtLeast(perfil.role, 'participante')) {
@@ -199,9 +198,7 @@ export async function moverEstagio(id: string, novoEstagio: string): Promise<Est
     .is('archived_at', null);
 
   if (error) {
-    // O trigger do gate (Backlog → Em Desenvolvimento exige score ≥ 3,0)
-    // chega aqui como erro do Postgres.
-    return { erro: 'Não foi possível mover: verifique se a iniciativa está pontuada para entrar em desenvolvimento.' };
+    return { erro: 'Não foi possível mover a iniciativa para o estágio selecionado.' };
   }
   if (!count) {
     return { erro: 'Você só pode mover iniciativas das quais é dono (ou ter papel gerencial+).' };
