@@ -25,8 +25,8 @@ export default async function NovoProjetoPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Cadastrar iniciativa</h1>
           <p className="mt-2 text-sm leading-relaxed text-g60">
-            Descreva o problema antes da solução — é assim que outras áreas descobrem
-            que têm a mesma dor.
+            Descreva o problema antes da solução. Se a iniciativa puder se enquadrar
+            na Lei do Bem, o fluxo segue para a triagem preliminar da equipe de PD&amp;I.
           </p>
         </div>
         <Link

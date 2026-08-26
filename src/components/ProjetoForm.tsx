@@ -1,36 +1,70 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useFormState, useFormStatus } from 'react-dom';
-import { EIXOS, scoreFinal, classificar, GATE_DESENVOLVIMENTO, type EixoKey } from '@/lib/scoring';
 import { STAGE_LABEL, STAGES } from '@/lib/types';
 import { rotuloPessoa, type PessoaOpcao } from '@/lib/pessoas';
 import { Button } from '@/components/ui/Button';
 import { ErroBox } from '@/components/ui/Card';
+import { clsx } from '@/lib/clsx';
 import type { EstadoProjeto } from '@/app/(app)/projetos/actions';
-
-// Âncoras da escala de priorização: deixa explícito que a nota cresce com o
-// mérito — 1 é o menor peso, 5 o maior.
-const ESCALA = [
-  { n: 1, rotulo: 'Muito baixo' },
-  { n: 2, rotulo: 'Baixo' },
-  { n: 3, rotulo: 'Médio' },
-  { n: 4, rotulo: 'Alto' },
-  { n: 5, rotulo: 'Muito alto' },
-];
+import {
+  AVISO_TRIAGEM,
+  COMO_INTERPRETAR,
+  GRUPO1_CAMPOS,
+  GRUPO2_CAMPOS,
+  LEI_DO_BEM_CLASSIFICACAO_LABEL,
+  LEI_DO_BEM_CLASSIFICACAO_TOM,
+  LEI_DO_BEM_RESPOSTA_LABEL,
+  LEI_DO_BEM_RESPOSTAS,
+  REFERENCIAS_METODOLOGICAS,
+  TRIAGEM_ITENS,
+  classeBadgeTom,
+  classificarTriagem,
+  type LeiDoBemResposta,
+  type TriagemCampo,
+} from '@/lib/lei-do-bem';
 
 type Area = { id: string; name: string };
 type Valores = Partial<Record<string, string | number | boolean | null>>;
 
+type EtapaId = 'dados' | 'optin' | 'cadastro' | 'tecnica' | 'triagem' | 'revisao';
+
+const ETAPAS_TODAS: { id: EtapaId; rotulo: string }[] = [
+  { id: 'dados', rotulo: 'Dados da iniciativa' },
+  { id: 'optin', rotulo: 'Lei do Bem' },
+  { id: 'cadastro', rotulo: 'Cadastro do projeto' },
+  { id: 'tecnica', rotulo: 'Avaliação técnica' },
+  { id: 'triagem', rotulo: 'Triagem preliminar' },
+  { id: 'revisao', rotulo: 'Revisão e salvar' },
+];
+
+function etapasVisiveis(opta: 'sim' | 'nao' | ''): { id: EtapaId; rotulo: string }[] {
+  return ETAPAS_TODAS.filter((e) => {
+    if (e.id === 'dados' || e.id === 'optin') return true;
+    if (e.id === 'revisao') return opta === 'sim' || opta === 'nao';
+    return opta === 'sim';
+  });
+}
+
 function Salvar({ rotulo }: { rotulo: string }) {
   const { pending } = useFormStatus();
-  return <Button type="submit" disabled={pending}>{pending ? 'Salvando…' : rotulo}</Button>;
+  return (
+    <Button type="submit" formNoValidate disabled={pending}>
+      {pending ? 'Salvando…' : rotulo}
+    </Button>
+  );
+}
+
+function vStr(valores: Valores, k: string): string {
+  const v = valores[k];
+  return v == null ? '' : String(v);
 }
 
 export function ProjetoForm({
   action, areas, pessoas = [], valores = {}, rotulo = 'Salvar iniciativa',
-  cancelHref = '/projetos', ownerPadrao,
+  cancelHref = '/projetos', ownerPadrao, leiDoBem = null,
 }: {
   action: (prev: EstadoProjeto, form: FormData) => Promise<EstadoProjeto>;
   areas: Area[];
@@ -39,24 +73,99 @@ export function ProjetoForm({
   rotulo?: string;
   cancelHref?: string;
   ownerPadrao?: string;
+  leiDoBem?: Valores | null;
 }) {
   const [estado, formAction] = useFormState(action, {} as EstadoProjeto);
-  const [notas, setNotas] = useState<Record<EixoKey, number | null>>({
-    impacto: (valores.score_impacto as number) ?? null,
-    viabilidade: (valores.score_viabilidade as number) ?? null,
-    alinhamento: (valores.score_alinhamento as number) ?? null,
-    urgencia: (valores.score_urgencia as number) ?? null,
+  const jaOptou = !!leiDoBem;
+  const [opta, setOpta] = useState<'sim' | 'nao' | ''>(jaOptou ? 'sim' : '');
+  const [etapa, setEtapa] = useState<EtapaId>('dados');
+  const [ajudaAberta, setAjudaAberta] = useState(false);
+
+  const [ldb, setLdb] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    for (const c of [...GRUPO1_CAMPOS, ...GRUPO2_CAMPOS]) {
+      init[c.name] = vStr(leiDoBem ?? {}, c.name);
+    }
+    for (const item of TRIAGEM_ITENS) {
+      init[item.campo] = vStr(leiDoBem ?? {}, item.campo);
+    }
+    return init;
   });
 
-  const score = scoreFinal(notas);
-  const classe = classificar(score);
-  const abaixoDoGate = score != null && score < GATE_DESENVOLVIMENTO;
+  const etapas = useMemo(() => etapasVisiveis(opta), [opta]);
+
+  const triagem = useMemo(() => {
+    const r: Partial<Record<TriagemCampo, LeiDoBemResposta>> = {};
+    for (const item of TRIAGEM_ITENS) {
+      const v = ldb[item.campo];
+      if (v === 'sim' || v === 'parcialmente' || v === 'nao' || v === 'nao_sei') r[item.campo] = v;
+    }
+    return classificarTriagem(r);
+  }, [ldb]);
+
+  const idx = etapas.findIndex((e) => e.id === etapa);
+  const atual = etapas[idx] ?? etapas[0];
+  const ehUltima = atual.id === 'revisao';
+
+  function irPara(id: EtapaId) {
+    if (etapas.some((e) => e.id === id)) setEtapa(id);
+  }
+
+  function escolherOpta(v: 'sim' | 'nao') {
+    setOpta(v);
+  }
+
+  function proximo() {
+    if (etapa === 'optin' && !opta) return;
+    const lista = etapasVisiveis(opta);
+    const i = lista.findIndex((e) => e.id === etapa);
+    const next = lista[Math.min(lista.length - 1, i + 1)];
+    if (next) setEtapa(next.id);
+  }
+
+  function voltar() {
+    const i = etapas.findIndex((e) => e.id === etapa);
+    const prev = etapas[Math.max(0, i - 1)];
+    if (prev) setEtapa(prev.id);
+  }
+
+  function setCampo(name: string, value: string) {
+    setLdb((prev) => ({ ...prev, [name]: value }));
+  }
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form
+      action={formAction}
+      onSubmit={(e) => { if (!ehUltima) e.preventDefault(); }}
+      className="space-y-6"
+    >
       {estado.erro && <ErroBox mensagem={estado.erro} />}
 
-      <section className="card space-y-4 p-6">
+      <ol className="flex flex-wrap gap-2" aria-label="Etapas do cadastro">
+        {etapas.map((e, i) => {
+          const ativa = e.id === etapa;
+          return (
+            <li key={e.id}>
+              <button
+                type="button"
+                onClick={() => irPara(e.id)}
+                aria-current={ativa ? 'step' : undefined}
+                className={clsx(
+                  'rounded-s px-3 py-1.5 text-xs font-medium transition-colors',
+                  ativa
+                    ? 'bg-[var(--navy)] text-white'
+                    : 'border border-g40 text-g60 hover:bg-g20',
+                )}
+              >
+                <span className="num mr-1">{i + 1}.</span>
+                {e.rotulo}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+
+      <section className={clsx('card space-y-4 p-6', etapa !== 'dados' && 'hidden')}>
         <h2 className="text-base font-semibold">A iniciativa</h2>
 
         <div>
@@ -79,12 +188,6 @@ export function ProjetoForm({
                     defaultValue={(valores.stage as string) ?? 'ideia'}>
               {STAGES.map((s) => <option key={s} value={s}>{STAGE_LABEL[s]}</option>)}
             </select>
-            {abaixoDoGate && (
-              <p className="mt-1 text-xs text-[var(--sig-warn)]">
-                Com score abaixo de {GATE_DESENVOLVIMENTO.toFixed(1)}, a iniciativa ainda não passa
-                o gate para Em Desenvolvimento.
-              </p>
-            )}
           </div>
           <div>
             <label className="label" htmlFor="area_id">Área</label>
@@ -164,56 +267,191 @@ export function ProjetoForm({
         </div>
       </section>
 
-      <section className="card space-y-4 p-6">
-        <div>
-          <h2 className="text-base font-semibold">Matriz de priorização</h2>
-          <p className="mt-1 text-sm leading-relaxed text-g60">
-            Quatro eixos, nota de <strong className="text-g90">1 a 5</strong>. A escala é crescente:
-            {' '}<strong className="text-g90">1 = muito baixo</strong> (pior) e{' '}
-            <strong className="text-g90">5 = muito alto</strong> (melhor). Quanto maior a nota, mais a
-            iniciativa contribui naquele eixo — e maior o score final. Deixe em branco se ainda não dá
-            para avaliar: uma iniciativa não pontuada fica visível, só não entra na fila de priorização.
-          </p>
-          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-g50">
-            {ESCALA.map((e) => (
-              <li key={e.n}><span className="num font-semibold text-g70">{e.n}</span> · {e.rotulo}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          {EIXOS.map((e) => (
-            <div key={e.key}>
-              <label className="label" htmlFor={`score_${e.key}`}>
-                {e.label} <span className="num font-normal text-g50">· peso {e.peso}%</span>
-              </label>
-              <select
-                id={`score_${e.key}`} name={`score_${e.key}`} className="field mt-1"
-                defaultValue={notas[e.key] ?? ''}
-                aria-describedby={`ajuda_${e.key}`}
-                onChange={(ev) =>
-                  setNotas((n) => ({ ...n, [e.key]: ev.target.value ? Number(ev.target.value) : null }))
-                }
-              >
-                <option value="">Não avaliado</option>
-                {ESCALA.map((v) => <option key={v.n} value={v.n}>{v.n} — {v.rotulo}</option>)}
-              </select>
-              <p id={`ajuda_${e.key}`} className="mt-1 text-xs leading-snug text-g50">{e.ajuda}</p>
-            </div>
-          ))}
-        </div>
-
-        <p aria-live="polite" className="rounded-s bg-g20 px-4 py-3 text-sm">
-          Score final:{' '}
-          <strong className="num text-base text-[var(--ink-strong)]">
-            {score == null ? '—' : score.toFixed(2)}
-          </strong>{' '}
-          <span className="text-g60">· {classe.label}</span>
+      <section className={clsx('card space-y-4 p-6', etapa !== 'optin' && 'hidden')}>
+        <h2 className="text-base font-semibold">Esta iniciativa pode se enquadrar na Lei do Bem?</h2>
+        <p className="text-sm leading-relaxed text-g60">
+          A Lei do Bem (11.196/2005) permite deduzir investimentos em pesquisa, desenvolvimento
+          e inovação. Se esta iniciativa pode envolver PD&amp;I — algo novo, incerto e sistemático,
+          não só implantação de ferramenta pronta — marque sim. A equipe de PD&amp;I usa a triagem
+          para decidir se vale virar projeto formal reportado ao MCTI.
         </p>
+        <p className="text-xs leading-relaxed text-g50">{AVISO_TRIAGEM}</p>
+        <input type="hidden" name="opta_lei_do_bem" value={opta} />
+        <fieldset className="flex flex-wrap gap-3">
+          <legend className="sr-only">Pode se enquadrar na Lei do Bem?</legend>
+          {(['sim', 'nao'] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => escolherOpta(v)}
+              aria-pressed={opta === v}
+              className={clsx(
+                'rounded-s px-4 py-2 text-sm font-medium',
+                opta === v
+                  ? 'bg-[var(--navy)] text-white'
+                  : 'border border-g40 text-g80 hover:bg-g20',
+              )}
+            >
+              {v === 'sim' ? 'Sim, seguir para a triagem' : 'Não, só cadastrar a iniciativa'}
+            </button>
+          ))}
+        </fieldset>
+        {opta === 'nao' && (
+          <p className="text-sm text-g60">
+            A iniciativa entra no portfólio normalmente, sem aparecer na aba Lei do Bem.
+          </p>
+        )}
+        {opta === 'sim' && (
+          <p className="text-sm text-g60">
+            Nas próximas etapas você descreve o projeto, preenche os blocos técnicos do MCTI
+            e responde as 12 perguntas da triagem. Nada disso bloqueia o cadastro.
+          </p>
+        )}
       </section>
 
-      <div className="flex flex-wrap gap-3">
-        <Salvar rotulo={rotulo} />
+      <section className={clsx('card space-y-4 p-6', etapa !== 'cadastro' && 'hidden')}>
+        <div>
+          <h2 className="text-base font-semibold">Cadastro do projeto</h2>
+          <p className="mt-1 text-sm leading-relaxed text-g60">
+            Nome, responsável e data já vêm da iniciativa — não pedimos de novo.
+            Estes campos alimentam a pré-análise da equipe de PD&amp;I.
+          </p>
+        </div>
+        {GRUPO1_CAMPOS.map((c) => (
+          <div key={c.name}>
+            <label className="label" htmlFor={c.name}>{c.label}</label>
+            <textarea
+              id={c.name} name={c.name} rows={c.rows} className="field mt-1"
+              value={ldb[c.name] ?? ''}
+              onChange={(e) => setCampo(c.name, e.target.value)}
+              aria-describedby={`ajuda_${c.name}`}
+            />
+            <p id={`ajuda_${c.name}`} className="mt-1 text-xs leading-snug text-g50">{c.ajuda}</p>
+          </div>
+        ))}
+      </section>
+
+      <section className={clsx('card space-y-4 p-6', etapa !== 'tecnica' && 'hidden')}>
+        <div>
+          <h2 className="text-base font-semibold">Avaliação técnica (MCTI)</h2>
+          <p className="mt-1 text-sm leading-relaxed text-g60">
+            Cinco blocos equivalentes aos critérios de PD&amp;I do Manual de Frascati:
+            inovadora, criativa, incerta, sistemática e transferível/reprodutível.
+          </p>
+        </div>
+        {GRUPO2_CAMPOS.map((c) => (
+          <div key={c.name}>
+            <label className="label" htmlFor={c.name}>{c.label}</label>
+            <textarea
+              id={c.name} name={c.name} rows={c.rows} className="field mt-1"
+              value={ldb[c.name] ?? ''}
+              onChange={(e) => setCampo(c.name, e.target.value)}
+              aria-describedby={`ajuda_${c.name}`}
+            />
+            <p id={`ajuda_${c.name}`} className="mt-1 text-xs leading-snug text-g50">{c.ajuda}</p>
+          </div>
+        ))}
+      </section>
+
+      <section className={clsx('card space-y-4 p-6', etapa !== 'triagem' && 'hidden')}>
+        <div>
+          <h2 className="text-base font-semibold">Triagem preliminar</h2>
+          <p className="mt-1 text-sm leading-relaxed text-g60">
+            Questionário validado pela auditoria. Cada item tem quatro opções, sem valor pré-selecionado.
+            A classificação aparece ao final desta etapa — é sinalização, nunca bloqueio.
+          </p>
+          <button
+            type="button"
+            className="mt-2 text-xs font-medium text-[var(--blue)] hover:underline"
+            onClick={() => setAjudaAberta((v) => !v)}
+            aria-expanded={ajudaAberta}
+          >
+            {ajudaAberta ? 'Fechar “Como interpretar”' : 'Como interpretar'}
+          </button>
+          {ajudaAberta && (
+            <div className="mt-3 space-y-3 rounded-s bg-g10 p-4 text-sm text-g70">
+              <p className="text-xs leading-relaxed text-g50">{AVISO_TRIAGEM}</p>
+              <ul className="space-y-2">
+                {COMO_INTERPRETAR.map((c) => (
+                  <li key={c.classe}>
+                    <span className={clsx('mr-2 inline-block rounded-s px-2 py-0.5 text-xs font-semibold', classeBadgeTom(LEI_DO_BEM_CLASSIFICACAO_TOM[c.classe]))}>
+                      {LEI_DO_BEM_CLASSIFICACAO_LABEL[c.classe]}
+                    </span>
+                    {c.texto}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs font-medium text-g60">Referências metodológicas</p>
+              <ul className="space-y-1 text-xs">
+                {REFERENCIAS_METODOLOGICAS.map((r) => (
+                  <li key={r.href}>
+                    <a href={r.href} target="_blank" rel="noreferrer" className="text-[var(--blue)] hover:underline">
+                      {r.rotulo}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <ol className="space-y-4">
+          {TRIAGEM_ITENS.map((item) => (
+            <li key={item.campo}>
+              <label className="label" htmlFor={item.campo}>
+                <span className="num text-g50">{item.n}.</span>{' '}
+                {item.pergunta}
+                {item.bloqueioDuro && (
+                  <span className="ml-2 text-[0.65rem] font-normal uppercase tracking-wide text-g50">
+                    bloqueio duro se Não
+                  </span>
+                )}
+              </label>
+              <select
+                id={item.campo}
+                name={item.campo}
+                className="field mt-1"
+                value={ldb[item.campo] ?? ''}
+                onChange={(e) => setCampo(item.campo, e.target.value)}
+              >
+                <option value="">Selecione…</option>
+                {LEI_DO_BEM_RESPOSTAS.map((r) => (
+                  <option key={r} value={r}>{LEI_DO_BEM_RESPOSTA_LABEL[r]}</option>
+                ))}
+              </select>
+            </li>
+          ))}
+        </ol>
+
+        <ResultadoTriagemBox resultado={triagem} />
+      </section>
+
+      <section className={clsx('card space-y-4 p-6', etapa !== 'revisao' && 'hidden')}>
+        <h2 className="text-base font-semibold">Revisão</h2>
+        <p className="text-sm leading-relaxed text-g60">
+          Confira o recorte abaixo. Você pode voltar a qualquer etapa antes de salvar.
+          {opta === 'sim'
+            ? ' A classificação da triagem não impede o cadastro — a iniciativa entra na aba Lei do Bem para revisão humana.'
+            : ' Sem triagem Lei do Bem: a iniciativa vai só para o portfólio geral.'}
+        </p>
+        {opta === 'sim' && <ResultadoTriagemBox resultado={triagem} />}
+      </section>
+
+      <div className="flex flex-wrap items-center gap-3">
+        {idx > 0 && (
+          <Button type="button" variant="ghost" onClick={voltar}>Voltar</Button>
+        )}
+        {!ehUltima ? (
+          <Button
+            type="button"
+            onClick={proximo}
+            disabled={etapa === 'optin' && !opta}
+          >
+            Continuar
+          </Button>
+        ) : (
+          <Salvar rotulo={rotulo} />
+        )}
         <Link
           href={cancelHref}
           className="inline-flex items-center rounded-s border border-g40 px-4 py-2 text-sm font-medium text-g80 hover:bg-g20"
@@ -222,5 +460,29 @@ export function ProjetoForm({
         </Link>
       </div>
     </form>
+  );
+}
+
+function ResultadoTriagemBox({
+  resultado,
+}: {
+  resultado: ReturnType<typeof classificarTriagem>;
+}) {
+  const tom = LEI_DO_BEM_CLASSIFICACAO_TOM[resultado.classificacao];
+  return (
+    <div aria-live="polite" className="space-y-2 rounded-s bg-g10 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className={clsx('rounded-s px-2 py-0.5 text-xs font-semibold', classeBadgeTom(tom))}>
+          {LEI_DO_BEM_CLASSIFICACAO_LABEL[resultado.classificacao]}
+        </span>
+        <span className="num text-sm text-g70">
+          Índice de aderência:{' '}
+          {resultado.indice == null ? '—' : `${Math.round(resultado.indice * 100)}%`}
+        </span>
+      </div>
+      <p className="text-sm leading-relaxed text-g70">{resultado.sintese}</p>
+      <p className="text-xs font-medium text-g60">Próxima ação: {resultado.proximaAcao}</p>
+      <p className="text-xs text-g50">{AVISO_TRIAGEM}</p>
+    </div>
   );
 }
