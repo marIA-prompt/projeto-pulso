@@ -118,3 +118,10 @@ export const ROLE_RANK: Record<Role, number> = {
 export function hasRoleAtLeast(role: Role | string | null | undefined, min: Role): boolean {
   return (ROLE_RANK[role as Role] ?? 0) >= ROLE_RANK[min];
 }
+
+export type {
+  LeiDoBemClassificacao,
+  LeiDoBemPrioridade,
+  LeiDoBemResposta,
+  LeiDoBemStatus,
+} from './lei-do-bem';

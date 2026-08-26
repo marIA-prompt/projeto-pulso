@@ -13,8 +13,9 @@ export default async function EditarProjetoPage({ params }: { params: { id: stri
   const perfil = await requireUser();
   const supabase = createClient();
 
-  const [{ data: projeto }, { data: areas }, { data: pessoas }] = await Promise.all([
+  const [{ data: projeto }, { data: avaliacao }, { data: areas }, { data: pessoas }] = await Promise.all([
     supabase.from('projects').select('*').eq('id', params.id).maybeSingle(),
+    supabase.from('lei_do_bem_avaliacoes').select('*').eq('project_id', params.id).maybeSingle(),
     supabase.from('areas').select('id, name').eq('is_real_area', true).order('name'),
     supabase.from('profiles').select('id, full_name').eq('active', true).order('full_name'),
   ]);
@@ -25,7 +26,7 @@ export default async function EditarProjetoPage({ params }: { params: { id: stri
   const acao = atualizarProjeto.bind(null, params.id);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <header className="flex items-start justify-between gap-4">
         <div>
           <p className="num text-[0.65rem] uppercase tracking-[0.2em] text-g50">Atualizar iniciativa</p>
@@ -49,7 +50,7 @@ export default async function EditarProjetoPage({ params }: { params: { id: stri
           action={acao}
           areas={areas ?? []}
           pessoas={pessoas ?? []}
-          valores={projeto}
+          valores={{ ...projeto, ...(avaliacao ?? {}), lei_do_bem: !!avaliacao }}
           rotulo="Atualizar"
           cancelHref="/projetos"
         />
