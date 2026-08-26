@@ -15,6 +15,7 @@ export type LinhaIniciativa = {
   theme: string | null;
   area_name: string | null;
   owner_id: string | null;
+  owner_name: string | null;
   hours_saved_month: number | null;
   score_final: number | null;
   last_activity_at: string;
@@ -45,6 +46,7 @@ export function IniciativasLista({
                 <p className="mt-0.5 text-xs text-g50">
                   {p.area_name ?? 'Área não informada'}
                   {p.theme && ` · ${p.theme}`}
+                  {` · ${p.owner_name ?? 'Sem proprietário'}`}
                   {meu && ' · sua iniciativa'}
                 </p>
               </div>

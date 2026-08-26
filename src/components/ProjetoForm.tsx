@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useFormState, useFormStatus } from 'react-dom';
 import { EIXOS, scoreFinal, classificar, GATE_DESENVOLVIMENTO, type EixoKey } from '@/lib/scoring';
 import { STAGE_LABEL, STAGES } from '@/lib/types';
+import { rotuloPessoa, type PessoaOpcao } from '@/lib/pessoas';
 import { Button } from '@/components/ui/Button';
 import { ErroBox } from '@/components/ui/Card';
 import type { EstadoProjeto } from '@/app/(app)/projetos/actions';
@@ -28,13 +29,16 @@ function Salvar({ rotulo }: { rotulo: string }) {
 }
 
 export function ProjetoForm({
-  action, areas, valores = {}, rotulo = 'Salvar iniciativa', cancelHref = '/projetos',
+  action, areas, pessoas = [], valores = {}, rotulo = 'Salvar iniciativa',
+  cancelHref = '/projetos', ownerPadrao,
 }: {
   action: (prev: EstadoProjeto, form: FormData) => Promise<EstadoProjeto>;
   areas: Area[];
+  pessoas?: PessoaOpcao[];
   valores?: Valores;
   rotulo?: string;
   cancelHref?: string;
+  ownerPadrao?: string;
 }) {
   const [estado, formAction] = useFormState(action, {} as EstadoProjeto);
   const [notas, setNotas] = useState<Record<EixoKey, number | null>>({
@@ -89,6 +93,19 @@ export function ProjetoForm({
               <option value="">Não informada</option>
               {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
+          </div>
+          <div>
+            <label className="label" htmlFor="owner_id">Criado / proprietário</label>
+            <select id="owner_id" name="owner_id" className="field mt-1"
+                    defaultValue={(valores.owner_id as string) || ownerPadrao || ''}>
+              <option value="">Não informado</option>
+              {pessoas.map((p) => (
+                <option key={p.id} value={p.id}>{rotuloPessoa(p)}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-g50">
+              Quem responde por esta iniciativa. Pode ser você ou outra pessoa do Pulso.
+            </p>
           </div>
           <div>
             <label className="label" htmlFor="theme">Tema</label>

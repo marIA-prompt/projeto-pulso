@@ -14,8 +14,10 @@ export default async function NovoProjetoPage() {
   if (!hasRoleAtLeast(perfil.role, 'participante')) redirect('/projetos');
 
   const supabase = createClient();
-  const { data: areas } = await supabase
-    .from('areas').select('id, name').eq('is_real_area', true).order('name');
+  const [{ data: areas }, { data: pessoas }] = await Promise.all([
+    supabase.from('areas').select('id, name').eq('is_real_area', true).order('name'),
+    supabase.from('profiles').select('id, full_name').eq('active', true).order('full_name'),
+  ]);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -36,7 +38,14 @@ export default async function NovoProjetoPage() {
           ✕ Fechar
         </Link>
       </header>
-      <ProjetoForm action={criarProjeto} areas={areas ?? []} rotulo="Cadastrar iniciativa" cancelHref="/projetos" />
+      <ProjetoForm
+        action={criarProjeto}
+        areas={areas ?? []}
+        pessoas={pessoas ?? []}
+        ownerPadrao={perfil.id}
+        rotulo="Cadastrar iniciativa"
+        cancelHref="/projetos"
+      />
     </div>
   );
 }

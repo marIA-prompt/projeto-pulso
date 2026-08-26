@@ -13,9 +13,10 @@ export default async function EditarProjetoPage({ params }: { params: { id: stri
   const perfil = await requireUser();
   const supabase = createClient();
 
-  const [{ data: projeto }, { data: areas }] = await Promise.all([
+  const [{ data: projeto }, { data: areas }, { data: pessoas }] = await Promise.all([
     supabase.from('projects').select('*').eq('id', params.id).maybeSingle(),
     supabase.from('areas').select('id, name').eq('is_real_area', true).order('name'),
+    supabase.from('profiles').select('id, full_name').eq('active', true).order('full_name'),
   ]);
 
   if (!projeto) notFound();
@@ -47,6 +48,7 @@ export default async function EditarProjetoPage({ params }: { params: { id: stri
         <ProjetoForm
           action={acao}
           areas={areas ?? []}
+          pessoas={pessoas ?? []}
           valores={projeto}
           rotulo="Atualizar"
           cancelHref="/projetos"
@@ -55,6 +57,12 @@ export default async function EditarProjetoPage({ params }: { params: { id: stri
         <div className="card space-y-3 p-6">
           <p className="text-sm text-g60">
             Você pode acompanhar esta iniciativa, mas só o dono ou um administrador edita.
+          </p>
+          <p className="text-sm text-g70">
+            Proprietário:{' '}
+            <strong className="font-medium text-g90">
+              {pessoas?.find((p) => p.id === projeto.owner_id)?.full_name?.trim() || 'Sem proprietário'}
+            </strong>
           </p>
           {projeto.description && (
             <p className="whitespace-pre-line text-sm leading-relaxed text-g80">{projeto.description}</p>

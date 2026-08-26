@@ -49,6 +49,8 @@ export type DashboardRow = {
   alerta_14_dias: boolean;
   description: string | null;
   cost_saved_month: number | null;
+  owner_id: string | null;
+  owner_name: string | null;
 };
 
 export type PortfolioKpis = {
