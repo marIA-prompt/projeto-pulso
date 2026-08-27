@@ -44,5 +44,5 @@ export function classificar(score: number | null) {
   return { label: 'Backlog', tone: 'g60' as const };
 }
 
-/** Gate da Metodologia Executiva §9.1: Backlog → Em Desenvolvimento exige ≥ 3,0. */
+/** Corte de rótulo no dashboard (≥ 3,0 = prioridade média). Não bloqueia o estágio. */
 export const GATE_DESENVOLVIMENTO = 3.0;
