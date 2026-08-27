@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import {
   classificarTriagem,
+  cicloOrdemLeiDoBem,
+  ordenarLinhasLeiDoBem,
+  textoOrdemLeiDoBem,
   TRIAGEM_CAMPOS,
   TRIAGEM_ITENS,
   SINTESSE_PENDENTE,
@@ -8,6 +11,7 @@ import {
   SINTESSE_SEM_BLOQUEIO,
   PROXIMA_ACAO,
   type LeiDoBemResposta,
+  type LinhaOrdenavelLeiDoBem,
   type RespostasTriagem,
 } from './lei-do-bem';
 
@@ -161,8 +165,92 @@ caso('cada item de bloqueio duro em Não sozinho classifica baixo potencial', ()
   }
 });
 
+function linha(p: Partial<LinhaOrdenavelLeiDoBem> & { title: string }): LinhaOrdenavelLeiDoBem {
+  return {
+    status: 'backlog',
+    triagem_classificacao: 'baixo_potencial',
+    triagem_indice_aderencia: 0.2,
+    prioridade: 'baixa',
+    updated_at: '2026-08-01T00:00:00Z',
+    ...p,
+  };
+}
+
+caso('ciclo da ordem: inativo → desc → asc → limpa', () => {
+  const a = cicloOrdemLeiDoBem('', 'desc', 'indice');
+  assert.deepEqual(a, { coluna: 'indice', sentido: 'desc' });
+  const b = cicloOrdemLeiDoBem('indice', 'desc', 'indice');
+  assert.deepEqual(b, { coluna: 'indice', sentido: 'asc' });
+  const c = cicloOrdemLeiDoBem('indice', 'asc', 'indice');
+  assert.deepEqual(c, { coluna: '', sentido: 'desc' });
+  const d = cicloOrdemLeiDoBem('indice', 'desc', 'status');
+  assert.deepEqual(d, { coluna: 'status', sentido: 'desc' });
+});
+
+caso('ordenar por índice desc coloca o maior no topo e nulos no fim', () => {
+  const lista = [
+    linha({ title: 'A', triagem_indice_aderencia: 0.21 }),
+    linha({ title: 'B', triagem_indice_aderencia: 0.92 }),
+    linha({ title: 'C', triagem_indice_aderencia: null }),
+    linha({ title: 'D', triagem_indice_aderencia: 0.63 }),
+  ];
+  const desc = ordenarLinhasLeiDoBem(lista, 'indice', 'desc').map((r) => r.title);
+  assert.deepEqual(desc, ['B', 'D', 'A', 'C']);
+  const asc = ordenarLinhasLeiDoBem(lista, 'indice', 'asc').map((r) => r.title);
+  assert.deepEqual(asc, ['A', 'D', 'B', 'C']);
+});
+
+caso('ordenar por status desc coloca Enquadrado no topo', () => {
+  const lista = [
+    linha({ title: 'Backlog', status: 'backlog' }),
+    linha({ title: 'Enquadrado', status: 'enquadrado' }),
+    linha({ title: 'Avaliação', status: 'em_avaliacao_interna' }),
+    linha({ title: 'Não', status: 'nao_enquadrado' }),
+  ];
+  const desc = ordenarLinhasLeiDoBem(lista, 'status', 'desc').map((r) => r.title);
+  assert.deepEqual(desc, ['Enquadrado', 'Não', 'Avaliação', 'Backlog']);
+  const asc = ordenarLinhasLeiDoBem(lista, 'status', 'asc').map((r) => r.title);
+  assert.deepEqual(asc, ['Backlog', 'Avaliação', 'Não', 'Enquadrado']);
+});
+
+caso('ordenar por triagem desc coloca potencialmente elegível no topo', () => {
+  const lista = [
+    linha({ title: 'Baixo', triagem_classificacao: 'baixo_potencial' }),
+    linha({ title: 'Elegível', triagem_classificacao: 'potencialmente_elegivel' }),
+    linha({ title: 'Parcial', triagem_classificacao: 'potencial_parcial' }),
+    linha({ title: 'Sem', triagem_classificacao: null }),
+  ];
+  const desc = ordenarLinhasLeiDoBem(lista, 'triagem', 'desc').map((r) => r.title);
+  assert.deepEqual(desc, ['Elegível', 'Parcial', 'Baixo', 'Sem']);
+});
+
+caso('ordenar por prioridade desc coloca Alta no topo e vazios no fim', () => {
+  const lista = [
+    linha({ title: 'Baixa', prioridade: 'baixa' }),
+    linha({ title: 'Alta', prioridade: 'alta' }),
+    linha({ title: 'Média', prioridade: 'media' }),
+    linha({ title: 'Vazia', prioridade: null }),
+  ];
+  const desc = ordenarLinhasLeiDoBem(lista, 'prioridade', 'desc').map((r) => r.title);
+  assert.deepEqual(desc, ['Alta', 'Média', 'Baixa', 'Vazia']);
+  const asc = ordenarLinhasLeiDoBem(lista, 'prioridade', 'asc').map((r) => r.title);
+  assert.deepEqual(asc, ['Baixa', 'Média', 'Alta', 'Vazia']);
+});
+
+caso('sem coluna de ordem devolve a lista original', () => {
+  const lista = [linha({ title: 'A' }), linha({ title: 'B' })];
+  assert.equal(ordenarLinhasLeiDoBem(lista, '', 'desc'), lista);
+});
+
+caso('texto da ordem descreve o sentido ativo', () => {
+  assert.equal(textoOrdemLeiDoBem('', 'desc'), null);
+  assert.equal(textoOrdemLeiDoBem('indice', 'desc'), 'ordenadas por Índice · maior primeiro');
+  assert.equal(textoOrdemLeiDoBem('prioridade', 'asc'), 'ordenadas por Prioridade · baixa primeiro');
+});
+
 if (falhas) {
   console.error(`\n${falhas} caso(s) falharam`);
   process.exit(1);
 }
 console.log('\ntodos os casos passaram');
+

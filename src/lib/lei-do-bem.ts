@@ -314,6 +314,135 @@ export function classeBadgeTom(tom: 'ok' | 'warn' | 'crit' | 'g'): string {
   return 'bg-g20 text-g80';
 }
 
+/** Colunas da lista Lei do Bem que aceitam ordenação crescente/decrescente. */
+export type LeiDoBemColunaOrdem = 'status' | 'triagem' | 'indice' | 'prioridade';
+export type SentidoOrdem = 'asc' | 'desc';
+
+/**
+ * Peso do status da auditoria: backlog → avaliação → não enquadrado → enquadrado.
+ * O primeiro clique (desc) coloca Enquadrado no topo.
+ */
+export const LEI_DO_BEM_STATUS_PESO: Record<LeiDoBemStatus, number> = {
+  backlog: 0,
+  em_avaliacao_interna: 1,
+  nao_enquadrado: 2,
+  enquadrado: 3,
+};
+
+/** Peso da classificação: pendente → insuficiente → baixo → parcial → elegível. */
+export const LEI_DO_BEM_TRIAGEM_PESO: Record<LeiDoBemClassificacao, number> = {
+  pendente: 0,
+  informacoes_insuficientes: 1,
+  baixo_potencial: 2,
+  potencial_parcial: 3,
+  potencialmente_elegivel: 4,
+};
+
+export const LEI_DO_BEM_PRIORIDADE_PESO: Record<LeiDoBemPrioridade, number> = {
+  baixa: 1,
+  media: 2,
+  alta: 3,
+};
+
+export const LEI_DO_BEM_ORDEM_ROTULO: Record<LeiDoBemColunaOrdem, string> = {
+  status: 'Status',
+  triagem: 'Triagem',
+  indice: 'Índice',
+  prioridade: 'Prioridade',
+};
+
+export function pesoTriagemLeiDoBem(c: LeiDoBemClassificacao | null): number | null {
+  return c == null ? null : LEI_DO_BEM_TRIAGEM_PESO[c];
+}
+
+export function pesoPrioridadeLeiDoBem(p: LeiDoBemPrioridade | null): number | null {
+  return p == null ? null : LEI_DO_BEM_PRIORIDADE_PESO[p];
+}
+
+/** Valores vazios vão para o fim, em qualquer sentido. */
+export function cmpNumNulosNoFim(a: number | null, b: number | null, sentido: SentidoOrdem): number {
+  if (a == null && b == null) return 0;
+  if (a == null) return 1;
+  if (b == null) return -1;
+  return sentido === 'asc' ? a - b : b - a;
+}
+
+/**
+ * 1º clique: maior primeiro; 2º: o inverso; 3º: tira a ordenação.
+ * Mesmo ciclo da tabela de Acompanhamento.
+ */
+export function cicloOrdemLeiDoBem(
+  atual: '' | LeiDoBemColunaOrdem,
+  sentido: SentidoOrdem,
+  clicada: LeiDoBemColunaOrdem,
+): { coluna: '' | LeiDoBemColunaOrdem; sentido: SentidoOrdem } {
+  if (atual !== clicada) return { coluna: clicada, sentido: 'desc' };
+  if (sentido === 'desc') return { coluna: atual, sentido: 'asc' };
+  return { coluna: '', sentido: 'desc' };
+}
+
+export type LinhaOrdenavelLeiDoBem = {
+  title: string;
+  status: LeiDoBemStatus;
+  triagem_classificacao: LeiDoBemClassificacao | null;
+  triagem_indice_aderencia: number | null;
+  prioridade: LeiDoBemPrioridade | null;
+  updated_at?: string;
+};
+
+export function ordenarLinhasLeiDoBem<T extends LinhaOrdenavelLeiDoBem>(
+  linhas: T[],
+  coluna: '' | LeiDoBemColunaOrdem,
+  sentido: SentidoOrdem,
+): T[] {
+  if (!coluna) return linhas;
+  const lista = [...linhas];
+  lista.sort((a, b) => {
+    let cmp = 0;
+    if (coluna === 'status') {
+      cmp = cmpNumNulosNoFim(LEI_DO_BEM_STATUS_PESO[a.status], LEI_DO_BEM_STATUS_PESO[b.status], sentido);
+    } else if (coluna === 'triagem') {
+      cmp = cmpNumNulosNoFim(
+        pesoTriagemLeiDoBem(a.triagem_classificacao),
+        pesoTriagemLeiDoBem(b.triagem_classificacao),
+        sentido,
+      );
+    } else if (coluna === 'indice') {
+      cmp = cmpNumNulosNoFim(a.triagem_indice_aderencia, b.triagem_indice_aderencia, sentido);
+    } else if (coluna === 'prioridade') {
+      cmp = cmpNumNulosNoFim(
+        pesoPrioridadeLeiDoBem(a.prioridade),
+        pesoPrioridadeLeiDoBem(b.prioridade),
+        sentido,
+      );
+    }
+    if (cmp !== 0) return cmp;
+    if (a.updated_at && b.updated_at) {
+      const u = b.updated_at.localeCompare(a.updated_at);
+      if (u !== 0) return u;
+    }
+    return a.title.localeCompare(b.title, 'pt-BR');
+  });
+  return lista;
+}
+
+export function textoOrdemLeiDoBem(coluna: '' | LeiDoBemColunaOrdem, sentido: SentidoOrdem): string | null {
+  if (!coluna) return null;
+  const maior = {
+    status: 'enquadrado primeiro',
+    triagem: 'maior potencial primeiro',
+    indice: 'maior primeiro',
+    prioridade: 'alta primeiro',
+  }[coluna];
+  const menor = {
+    status: 'backlog primeiro',
+    triagem: 'menor potencial primeiro',
+    indice: 'menor primeiro',
+    prioridade: 'baixa primeiro',
+  }[coluna];
+  return `ordenadas por ${LEI_DO_BEM_ORDEM_ROTULO[coluna]} · ${sentido === 'desc' ? maior : menor}`;
+}
+
 export const GRUPO1_CAMPOS = [
   {
     name: 'objetivo_estrategico_okr',
