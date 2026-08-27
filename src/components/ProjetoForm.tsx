@@ -366,11 +366,6 @@ export function ProjetoForm({
               <label className="label" htmlFor={item.campo}>
                 <span className="num text-g50">{item.n}.</span>{' '}
                 {item.pergunta}
-                {item.bloqueioDuro && (
-                  <span className="ml-2 text-[0.65rem] font-normal uppercase tracking-wide text-g50">
-                    bloqueio duro se Não
-                  </span>
-                )}
               </label>
               <select
                 id={item.campo}
