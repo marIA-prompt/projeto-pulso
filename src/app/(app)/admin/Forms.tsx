@@ -46,7 +46,7 @@ export function ConviteForm() {
         </div>
         <Enviar rotulo="Enviar convite" />
       </div>
-      <p className="text-xs text-g50">O convite vale por 7 dias. Reenviar gera um link novo — o anterior deixa de valer; copie o link que aparece na tela.</p>
+      <p className="text-xs text-g50">O convite vale por 7 dias. Gerar novo link invalida o anterior; copie o link que aparece na tela e envie à pessoa.</p>
     </form>
   );
 }
