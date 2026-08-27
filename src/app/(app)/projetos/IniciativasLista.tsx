@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { STAGE_LABEL, type Stage } from '@/lib/types';
-import { classificar } from '@/lib/scoring';
 import { nf1, dataCurta } from '@/lib/format';
 
 const POR_PAGINA = 10;
@@ -17,7 +16,6 @@ export type LinhaIniciativa = {
   owner_id: string | null;
   owner_name: string | null;
   hours_saved_month: number | null;
-  score_final: number | null;
   last_activity_at: string;
 };
 
@@ -34,7 +32,6 @@ export function IniciativasLista({
     <div className="space-y-3">
       <ul className="grid gap-3">
         {visiveis.map((p) => {
-          const classe = classificar(p.score_final);
           const meu = p.owner_id === meuId;
           const podeEditar = meu || podeGerenciar;
           return (
@@ -53,9 +50,6 @@ export function IniciativasLista({
               <span className="rounded-s bg-g20 px-2 py-0.5 text-xs font-medium text-g80">{STAGE_LABEL[p.stage]}</span>
               <span className="num text-sm text-g60">
                 {p.hours_saved_month == null ? '—' : `${nf1.format(p.hours_saved_month)} h/mês`}
-              </span>
-              <span className="text-xs text-g50">
-                {p.score_final == null ? 'Não pontuada' : `${classe.label} · ${p.score_final.toFixed(2)}`}
               </span>
               <span className="num text-xs text-g50">atualizada em {dataCurta(p.last_activity_at)}</span>
               {podeEditar && (

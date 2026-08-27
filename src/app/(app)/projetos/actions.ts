@@ -130,7 +130,6 @@ export async function criarProjeto(_prev: EstadoProjeto, form: FormData): Promis
     uses_ai: parsed.data.uses_ai_tradicional || parsed.data.uses_ai_generativa,
     target_date: parsed.data.target_date || null,
     owner_id: parsed.data.owner_id ?? perfil.id,
-    scoring_source: 'nao_pontuado',
   }).select('id').single();
 
   if (error || !data) {
@@ -151,8 +150,6 @@ export async function atualizarProjeto(
   if (!parsed.success) return { erro: parsed.error.issues[0].message };
 
   const supabase = createClient();
-  // Não mexe nos 4 eixos: a Matriz saiu do cadastro. O gate de estágio
-  // Backlog → Em Desenvolvimento foi desligado na migration 0013.
   const { error, count } = await supabase
     .from('projects')
     .update({

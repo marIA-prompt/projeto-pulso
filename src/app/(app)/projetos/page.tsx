@@ -16,7 +16,7 @@ type Linha = {
   id: string; title: string; stage: Stage; theme: string | null;
   owner_id: string | null; hours_saved_month: number | null;
   cost_saved_month: number | null;
-  score_final: number | null; last_activity_at: string;
+  last_activity_at: string;
   areas: { name: string } | null;
   profiles: { full_name: string | null } | null;
 };
@@ -34,7 +34,7 @@ export default async function ProjetosPage({
     (function () {
       let q = supabase
         .from('projects')
-        .select('id, title, stage, theme, owner_id, hours_saved_month, cost_saved_month, score_final, last_activity_at, areas(name), profiles!owner_id(full_name)')
+        .select('id, title, stage, theme, owner_id, hours_saved_month, cost_saved_month, last_activity_at, areas(name), profiles!owner_id(full_name)')
         .is('archived_at', null)
         .order('last_activity_at', { ascending: false });
 
@@ -61,7 +61,7 @@ export default async function ProjetosPage({
   const cards: CardProjeto[] = linhas.map((p) => ({
     id: p.id, title: p.title, stage: p.stage, theme: p.theme,
     owner_id: p.owner_id, hours_saved_month: p.hours_saved_month,
-    cost_saved_month: p.cost_saved_month, score_final: p.score_final,
+    cost_saved_month: p.cost_saved_month,
     area_name: p.areas?.name ?? null,
     owner_name: nomeProprietario(p.owner_id, p.profiles),
   }));
@@ -143,7 +143,6 @@ export default async function ProjetosPage({
             owner_id: p.owner_id,
             owner_name: nomeProprietario(p.owner_id, p.profiles),
             hours_saved_month: p.hours_saved_month,
-            score_final: p.score_final,
             last_activity_at: p.last_activity_at,
           }))}
           meuId={perfil.id}

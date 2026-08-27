@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {
+  eColunaAusente,
   eGateEstagio,
   mensagemErroCriarProjeto,
   mensagemErroMoverEstagio,
@@ -31,19 +32,37 @@ caso('reconhece a recusa do gate de Em Desenvolvimento', () => {
   assert.equal(eGateEstagio(undefined), false);
 });
 
-caso('salvar aponta o campo Estágio, não uma mensagem genérica', () => {
-  const msg = mensagemErroSalvarProjeto({
+caso('reconhece coluna nova ausente no schema cache', () => {
+  assert.equal(
+    eColunaAusente("Could not find the 'objetivo_contexto' column of 'projects' in the schema cache"),
+    true,
+  );
+  assert.equal(eColunaAusente('duplicate key'), false);
+});
+
+caso('criar aponta Estágio quando o gate da Matriz ainda dispara', () => {
+  const msg = mensagemErroCriarProjeto({
     message: 'Pontue os 4 eixos da Matriz de Priorização antes de mover para Em Desenvolvimento.',
   });
   assert.ok(msg.includes('Estágio no pipeline'));
   assert.ok(msg.includes('Em Desenvolvimento'));
-  assert.equal(mensagemErroSalvarProjeto({ message: 'boom' }), 'Não foi possível salvar as alterações.');
+  assert.equal(
+    mensagemErroCriarProjeto({ message: 'boom' }),
+    'Não foi possível salvar a iniciativa. Revise os campos e tente de novo.',
+  );
 });
 
-caso('criar e mover usam o mesmo diagnóstico de campo', () => {
-  const gate = { message: 'Pontue os 4 eixos da Matriz de Priorização.' };
-  assert.ok(mensagemErroCriarProjeto(gate).includes('Estágio no pipeline'));
-  assert.ok(mensagemErroMoverEstagio(gate).includes('Em Desenvolvimento'));
+caso('criar aponta migration quando falta coluna nova', () => {
+  const msg = mensagemErroCriarProjeto({
+    message: "Could not find the 'uses_ai_tradicional' column of 'projects' in the schema cache",
+  });
+  assert.ok(msg.includes('migrations'));
+});
+
+caso('salvar e mover usam o mesmo diagnóstico de gate', () => {
+  const gate = { message: 'Pontue os 4 eixos da Matriz de Priorização.', details: '' };
+  assert.ok(mensagemErroSalvarProjeto(gate).includes('Estágio no pipeline'));
+  assert.ok(mensagemErroMoverEstagio(gate).includes('Estágio no pipeline'));
 });
 
 if (falhas) {

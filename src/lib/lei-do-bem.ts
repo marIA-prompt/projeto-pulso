@@ -67,7 +67,7 @@ export const LEI_DO_BEM_CLASSIFICACAO_TOM: Record<LeiDoBemClassificacao, 'ok' | 
   informacoes_insuficientes: 'g',
 };
 
-/** Escala da auditoria (a Matriz de 4 eixos saiu do cadastro). */
+/** Escala da auditoria. */
 export const LEI_DO_BEM_PRIORIDADES = ['alta', 'media', 'baixa'] as const;
 export type LeiDoBemPrioridade = (typeof LEI_DO_BEM_PRIORIDADES)[number];
 

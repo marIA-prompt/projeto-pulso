@@ -4,7 +4,6 @@ import { useEffect, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { STAGES, STAGE_LABEL, type Stage } from '@/lib/types';
-import { classificar } from '@/lib/scoring';
 import { nf1, moeda } from '@/lib/format';
 import { moverEstagio } from '@/app/(app)/projetos/actions';
 
@@ -16,7 +15,6 @@ export type CardProjeto = {
   owner_id: string | null;
   hours_saved_month: number | null;
   cost_saved_month: number | null;
-  score_final: number | null;
   area_name: string | null;
   owner_name: string | null;
 };
@@ -111,7 +109,6 @@ export function ProjetosKanban({
 
               <div className="flex min-h-[3rem] flex-1 flex-col gap-2">
                 {visiveis.map((c) => {
-                  const classe = classificar(c.score_final);
                   const meu = c.owner_id === meuId;
                   return (
                     <article
@@ -137,9 +134,6 @@ export function ProjetosKanban({
                           <span className="num">· {moeda(c.cost_saved_month * 12)}/ano</span>
                         )}
                       </div>
-                      <p className="mt-1 text-[0.7rem] text-g50">
-                        {c.score_final == null ? 'Não pontuada' : `${classe.label} · ${c.score_final.toFixed(2)}`}
-                      </p>
                     </article>
                   );
                 })}
