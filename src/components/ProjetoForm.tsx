@@ -275,6 +275,15 @@ export function ProjetoForm({
           não só implantação de ferramenta pronta — marque sim. A equipe de PD&amp;I usa a triagem
           para decidir se vale virar projeto formal reportado ao MCTI.
         </p>
+        <p className="text-sm leading-relaxed text-g60">
+          A triagem são <strong className="font-semibold text-g90">12 escolhas</strong>, não 12 textos:
+          cada item é um menu com Sim, Parcialmente, Não ou Não sei. Leva poucos minutos.
+        </p>
+        <p className="rounded-s border-l-[3px] border-[var(--yellow)] bg-[var(--now-tint-bg)] px-4 py-3 text-sm font-medium leading-relaxed text-g90">
+          O preenchimento das 12 escolhas é <strong>fortemente recomendado</strong>.
+          Sem elas a classificação fica pendente, mas a iniciativa ainda é cadastrada
+          e entra na aba Lei do Bem para a auditoria revisar.
+        </p>
         <p className="text-xs leading-relaxed text-g50">{AVISO_TRIAGEM}</p>
         <input type="hidden" name="opta_lei_do_bem" value={opta} />
         <fieldset className="flex flex-wrap gap-3">
@@ -304,7 +313,7 @@ export function ProjetoForm({
         {opta === 'sim' && (
           <p className="text-sm text-g60">
             Nas próximas etapas você descreve o projeto, preenche os blocos técnicos do MCTI
-            e responde as 12 perguntas da triagem. Nada disso bloqueia o cadastro.
+            e faz as 12 escolhas da triagem. Nada disso bloqueia o cadastro.
           </p>
         )}
       </section>
@@ -357,8 +366,9 @@ export function ProjetoForm({
         <div>
           <h2 className="text-base font-semibold">Triagem preliminar</h2>
           <p className="mt-1 text-sm leading-relaxed text-g60">
-            Questionário validado pela auditoria. Cada item tem quatro opções, sem valor pré-selecionado.
-            A classificação aparece ao final desta etapa — é sinalização, nunca bloqueio.
+            São as 12 escolhas do instrumento da auditoria — cada uma com Sim, Parcialmente, Não ou Não sei,
+            sem valor pré-selecionado. O preenchimento completo é fortemente recomendado: a classificação
+            só é gerada com as 12 respondidas. É sinalização, nunca bloqueio.
           </p>
           <button
             type="button"
