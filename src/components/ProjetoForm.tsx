@@ -10,10 +10,15 @@ import { ErroBox } from '@/components/ui/Card';
 import { clsx } from '@/lib/clsx';
 import type { EstadoProjeto } from '@/app/(app)/projetos/actions';
 import {
+  etapaAnteriorCadastro,
+  etapasCadastroIniciativa,
+  proximaEtapaCadastro,
+  type EtapaCadastro,
+  type OptaLeiDoBem,
+} from '@/lib/cadastro-iniciativa';
+import {
   AVISO_TRIAGEM,
   COMO_INTERPRETAR,
-  GRUPO1_CAMPOS,
-  GRUPO2_CAMPOS,
   LEI_DO_BEM_CLASSIFICACAO_LABEL,
   LEI_DO_BEM_CLASSIFICACAO_TOM,
   LEI_DO_BEM_RESPOSTA_LABEL,
@@ -29,25 +34,6 @@ import {
 type Area = { id: string; name: string };
 type Valores = Partial<Record<string, string | number | boolean | null>>;
 
-type EtapaId = 'dados' | 'optin' | 'cadastro' | 'tecnica' | 'triagem' | 'revisao';
-
-const ETAPAS_TODAS: { id: EtapaId; rotulo: string }[] = [
-  { id: 'dados', rotulo: 'Dados da iniciativa' },
-  { id: 'optin', rotulo: 'Lei do Bem' },
-  { id: 'cadastro', rotulo: 'Cadastro do projeto' },
-  { id: 'tecnica', rotulo: 'Avaliação técnica' },
-  { id: 'triagem', rotulo: 'Triagem preliminar' },
-  { id: 'revisao', rotulo: 'Revisão e salvar' },
-];
-
-function etapasVisiveis(opta: 'sim' | 'nao' | ''): { id: EtapaId; rotulo: string }[] {
-  return ETAPAS_TODAS.filter((e) => {
-    if (e.id === 'dados' || e.id === 'optin') return true;
-    if (e.id === 'revisao') return opta === 'sim' || opta === 'nao';
-    return opta === 'sim';
-  });
-}
-
 function Salvar({ rotulo }: { rotulo: string }) {
   const { pending } = useFormStatus();
   return (
@@ -60,6 +46,10 @@ function Salvar({ rotulo }: { rotulo: string }) {
 function vStr(valores: Valores, k: string): string {
   const v = valores[k];
   return v == null ? '' : String(v);
+}
+
+function vBool(valores: Valores, k: string): boolean {
+  return !!valores[k];
 }
 
 export function ProjetoForm({
@@ -77,22 +67,19 @@ export function ProjetoForm({
 }) {
   const [estado, formAction] = useFormState(action, {} as EstadoProjeto);
   const jaOptou = !!leiDoBem;
-  const [opta, setOpta] = useState<'sim' | 'nao' | ''>(jaOptou ? 'sim' : '');
-  const [etapa, setEtapa] = useState<EtapaId>('dados');
+  const [opta, setOpta] = useState<OptaLeiDoBem>(jaOptou ? 'sim' : '');
+  const [etapa, setEtapa] = useState<EtapaCadastro>('dados');
   const [ajudaAberta, setAjudaAberta] = useState(false);
 
   const [ldb, setLdb] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
-    for (const c of [...GRUPO1_CAMPOS, ...GRUPO2_CAMPOS]) {
-      init[c.name] = vStr(leiDoBem ?? {}, c.name);
-    }
     for (const item of TRIAGEM_ITENS) {
       init[item.campo] = vStr(leiDoBem ?? {}, item.campo);
     }
     return init;
   });
 
-  const etapas = useMemo(() => etapasVisiveis(opta), [opta]);
+  const etapas = useMemo(() => etapasCadastroIniciativa(opta), [opta]);
 
   const triagem = useMemo(() => {
     const r: Partial<Record<TriagemCampo, LeiDoBemResposta>> = {};
@@ -106,27 +93,26 @@ export function ProjetoForm({
   const idx = etapas.findIndex((e) => e.id === etapa);
   const atual = etapas[idx] ?? etapas[0];
   const ehUltima = atual.id === 'revisao';
+  const usaIaTradicional = vBool(valores, 'uses_ai_tradicional') || (
+    vBool(valores, 'uses_ai') && !vBool(valores, 'uses_ai_generativa')
+  );
 
-  function irPara(id: EtapaId) {
+  function irPara(id: EtapaCadastro) {
     if (etapas.some((e) => e.id === id)) setEtapa(id);
   }
 
   function escolherOpta(v: 'sim' | 'nao') {
     setOpta(v);
+    setEtapa(proximaEtapaCadastro('optin', v));
   }
 
   function proximo() {
     if (etapa === 'optin' && !opta) return;
-    const lista = etapasVisiveis(opta);
-    const i = lista.findIndex((e) => e.id === etapa);
-    const next = lista[Math.min(lista.length - 1, i + 1)];
-    if (next) setEtapa(next.id);
+    setEtapa(proximaEtapaCadastro(etapa, opta));
   }
 
   function voltar() {
-    const i = etapas.findIndex((e) => e.id === etapa);
-    const prev = etapas[Math.max(0, i - 1)];
-    if (prev) setEtapa(prev.id);
+    setEtapa(etapaAnteriorCadastro(etapa, opta));
   }
 
   function setCampo(name: string, value: string) {
@@ -175,10 +161,26 @@ export function ProjetoForm({
         </div>
 
         <div>
-          <label className="label" htmlFor="description">O que ela resolve</label>
+          <label className="label" htmlFor="objetivo_contexto">Objetivo e Contexto</label>
+          <textarea id="objetivo_contexto" name="objetivo_contexto" rows={4} className="field mt-1"
+                    defaultValue={(valores.objetivo_contexto as string) ?? ''}
+                    aria-describedby="ajuda_objetivo_contexto" />
+          <p id="ajuda_objetivo_contexto" className="mt-1 text-xs leading-snug text-g50">
+            A que objetivo, necessidade ou oportunidade identificada esta iniciativa se liga.
+            Qual é a situação atual e quem é afetado — o problema que a iniciativa enfrenta.
+          </p>
+        </div>
+
+        <div>
+          <label className="label" htmlFor="description">Descrição da iniciativa</label>
           <textarea id="description" name="description" rows={4} className="field mt-1"
                     defaultValue={(valores.description as string) ?? ''}
-                    placeholder="Que processo hoje consome tempo, e o que muda depois dela." />
+                    aria-describedby="ajuda_description" />
+          <p id="ajuda_description" className="mt-1 text-xs leading-snug text-g50">
+            Produto, processo, sistema, serviço ou funcionalidade criado ou modificado de forma relevante.
+            O que se espera obter ao final, em termos técnicos e de negócio.
+            Abordagem, etapas e meios previstos para chegar ao resultado.
+          </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -211,19 +213,6 @@ export function ProjetoForm({
             </p>
           </div>
           <div>
-            <label className="label" htmlFor="theme">Tema</label>
-            <input id="theme" name="theme" className="field mt-1" list="temas"
-                   defaultValue={(valores.theme as string) ?? ''} />
-            <datalist id="temas">
-              <option value="Dados, BI e Relatórios" />
-              <option value="Eficiência Corporativa" />
-              <option value="Eficiência Operacional" />
-              <option value="Experiência do Cliente e Atendimento" />
-              <option value="Receita, Comercial e Marketing" />
-              <option value="Risco, Compliance e Regulação" />
-            </datalist>
-          </div>
-          <div>
             <label className="label" htmlFor="directorate">Diretoria</label>
             <input id="directorate" name="directorate" className="field mt-1"
                    defaultValue={(valores.directorate as string) ?? ''} />
@@ -237,6 +226,13 @@ export function ProjetoForm({
                    className="field mt-1" defaultValue={(valores.hours_saved_month as number) ?? ''} />
           </div>
           <div>
+            <label className="label" htmlFor="dev_hours">Estimativa de tempo do desenvolvimento</label>
+            <input id="dev_hours" name="dev_hours" type="number" min={0} step="0.5"
+                   className="field mt-1" defaultValue={(valores.dev_hours as number) ?? ''}
+                   aria-describedby="ajuda_dev_hours" />
+            <p id="ajuda_dev_hours" className="mt-1 text-xs text-g50">Horas previstas até a entrega.</p>
+          </div>
+          <div>
             <label className="label" htmlFor="target_date">Data alvo</label>
             <input id="target_date" name="target_date" type="date" className="field mt-1"
                    defaultValue={(valores.target_date as string) ?? ''} />
@@ -246,10 +242,20 @@ export function ProjetoForm({
         <fieldset className="flex flex-wrap gap-6">
           <legend className="label mb-2">Ferramentas</legend>
           <label className="flex items-center gap-2 text-sm text-g80">
-            <input type="checkbox" name="uses_ai" defaultChecked={!!valores.uses_ai} /> Usa IA
+            <input type="checkbox" name="uses_ai_tradicional" defaultChecked={usaIaTradicional} />
+            Usa IA Tradicional
           </label>
           <label className="flex items-center gap-2 text-sm text-g80">
-            <input type="checkbox" name="uses_n8n" defaultChecked={!!valores.uses_n8n} /> Usa n8n
+            <input type="checkbox" name="uses_ai_generativa" defaultChecked={vBool(valores, 'uses_ai_generativa')} />
+            Usa IA Generativa
+          </label>
+          <label className="flex items-center gap-2 text-sm text-g80">
+            <input type="checkbox" name="uses_n8n" defaultChecked={vBool(valores, 'uses_n8n')} />
+            Usa n8n
+          </label>
+          <label className="flex items-center gap-2 text-sm text-g80">
+            <input type="checkbox" name="uses_outros" defaultChecked={vBool(valores, 'uses_outros')} />
+            Usa Outros
           </label>
         </fieldset>
 
@@ -258,12 +264,6 @@ export function ProjetoForm({
           <input id="links" name="links" className="field mt-1"
                  defaultValue={(valores.links as string) ?? ''}
                  placeholder="Repositório, fluxo no n8n, painel…" />
-        </div>
-
-        <div>
-          <label className="label" htmlFor="notes">Observações</label>
-          <textarea id="notes" name="notes" rows={3} className="field mt-1"
-                    defaultValue={(valores.notes as string) ?? ''} />
         </div>
       </section>
 
@@ -312,54 +312,9 @@ export function ProjetoForm({
         )}
         {opta === 'sim' && (
           <p className="text-sm text-g60">
-            Nas próximas etapas você descreve o projeto, preenche os blocos técnicos do MCTI
-            e faz as 12 escolhas da triagem. Nada disso bloqueia o cadastro.
+            Na próxima etapa você faz as 12 escolhas da triagem. Nada disso bloqueia o cadastro.
           </p>
         )}
-      </section>
-
-      <section className={clsx('card space-y-4 p-6', etapa !== 'cadastro' && 'hidden')}>
-        <div>
-          <h2 className="text-base font-semibold">Cadastro do projeto</h2>
-          <p className="mt-1 text-sm leading-relaxed text-g60">
-            Nome, responsável e data já vêm da iniciativa — não pedimos de novo.
-            Estes campos alimentam a pré-análise da equipe de PD&amp;I.
-          </p>
-        </div>
-        {GRUPO1_CAMPOS.map((c) => (
-          <div key={c.name}>
-            <label className="label" htmlFor={c.name}>{c.label}</label>
-            <textarea
-              id={c.name} name={c.name} rows={c.rows} className="field mt-1"
-              value={ldb[c.name] ?? ''}
-              onChange={(e) => setCampo(c.name, e.target.value)}
-              aria-describedby={`ajuda_${c.name}`}
-            />
-            <p id={`ajuda_${c.name}`} className="mt-1 text-xs leading-snug text-g50">{c.ajuda}</p>
-          </div>
-        ))}
-      </section>
-
-      <section className={clsx('card space-y-4 p-6', etapa !== 'tecnica' && 'hidden')}>
-        <div>
-          <h2 className="text-base font-semibold">Avaliação técnica (MCTI)</h2>
-          <p className="mt-1 text-sm leading-relaxed text-g60">
-            Cinco blocos equivalentes aos critérios de PD&amp;I do Manual de Frascati:
-            inovadora, criativa, incerta, sistemática e transferível/reprodutível.
-          </p>
-        </div>
-        {GRUPO2_CAMPOS.map((c) => (
-          <div key={c.name}>
-            <label className="label" htmlFor={c.name}>{c.label}</label>
-            <textarea
-              id={c.name} name={c.name} rows={c.rows} className="field mt-1"
-              value={ldb[c.name] ?? ''}
-              onChange={(e) => setCampo(c.name, e.target.value)}
-              aria-describedby={`ajuda_${c.name}`}
-            />
-            <p id={`ajuda_${c.name}`} className="mt-1 text-xs leading-snug text-g50">{c.ajuda}</p>
-          </div>
-        ))}
       </section>
 
       <section className={clsx('card space-y-4 p-6', etapa !== 'triagem' && 'hidden')}>
@@ -451,17 +406,13 @@ export function ProjetoForm({
         {idx > 0 && (
           <Button type="button" variant="ghost" onClick={voltar}>Voltar</Button>
         )}
-        {!ehUltima ? (
-          <Button
-            type="button"
-            onClick={proximo}
-            disabled={etapa === 'optin' && !opta}
-          >
+        {!ehUltima && etapa !== 'optin' ? (
+          <Button type="button" onClick={proximo}>
             Continuar
           </Button>
-        ) : (
+        ) : ehUltima ? (
           <Salvar rotulo={rotulo} />
-        )}
+        ) : null}
         <Link
           href={cancelHref}
           className="inline-flex items-center rounded-s border border-g40 px-4 py-2 text-sm font-medium text-g80 hover:bg-g20"
