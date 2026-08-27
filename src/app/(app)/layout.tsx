@@ -1,4 +1,5 @@
 import { requireUser } from '@/lib/auth';
+import { hasRoleAtLeast } from '@/lib/types';
 import { Nav } from '@/components/Nav';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -6,6 +7,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <>
       <Nav
+        isGerencial={hasRoleAtLeast(perfil.role, 'gerencial')}
         isAdmin={perfil.role === 'administrador'}
         nome={perfil.full_name ?? 'Participante'}
         apelido={perfil.nickname}

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import type { Role } from '@/lib/types';
+import { hasRoleAtLeast, type Role } from '@/lib/types';
 
 export type SessionProfile = {
   id: string;
@@ -30,5 +30,12 @@ export async function requireUser(): Promise<SessionProfile> {
 export async function requireAdmin(): Promise<SessionProfile> {
   const profile = await requireUser();
   if (profile.role !== 'administrador') redirect('/dashboard?erro=sem-permissao');
+  return profile;
+}
+
+/** Aba Lei do Bem: só gerencial e administrador. */
+export async function requireGerencial(): Promise<SessionProfile> {
+  const profile = await requireUser();
+  if (!hasRoleAtLeast(profile.role, 'gerencial')) redirect('/dashboard?erro=sem-permissao');
   return profile;
 }
