@@ -317,9 +317,19 @@ create trigger lei_do_bem_guard
 alter table public.lei_do_bem_avaliacoes enable row level security;
 alter table public.lei_do_bem_status_log enable row level security;
 
+-- A aba lista o portfólio inteiro só para gerencial+. O dono da iniciativa
+-- ainda lê a própria linha para reabrir o cadastro (Grupos 1–3).
 drop policy if exists lei_do_bem_read on public.lei_do_bem_avaliacoes;
 create policy lei_do_bem_read on public.lei_do_bem_avaliacoes
-  for select to authenticated using (true);
+  for select to authenticated
+  using (
+    public.has_role_at_least('gerencial')
+    or exists (
+      select 1 from public.projects p
+      where p.id = project_id
+        and p.owner_id = auth.uid()
+    )
+  );
 
 -- Quem cadastra iniciativa (participante+) também grava a triagem, inclusive
 -- quando o owner_id é outra pessoa — o mesmo teto de projects_insert (0009).
@@ -359,7 +369,8 @@ create policy lei_do_bem_delete on public.lei_do_bem_avaliacoes
 
 drop policy if exists lei_do_bem_log_read on public.lei_do_bem_status_log;
 create policy lei_do_bem_log_read on public.lei_do_bem_status_log
-  for select to authenticated using (true);
+  for select to authenticated
+  using (public.has_role_at_least('gerencial'));
 
 
 -- =============================================================================
@@ -411,6 +422,10 @@ left join public.areas ar on ar.id = p.area_id
 left join public.profiles po on po.id = p.owner_id
 left join public.profiles ra on ra.id = a.responsavel_auditoria_id
 where p.archived_at is null;
+
+-- A view herda a RLS da tabela: só gerencial+ lista o portfólio; o dono
+-- ainda lê a própria linha pelo cadastro/edição da iniciativa.
+alter view public.v_lei_do_bem set (security_invoker = true);
 
 comment on view public.v_lei_do_bem is
   'Iniciativas que passaram pela pré-avaliação Lei do Bem. status = estágio '

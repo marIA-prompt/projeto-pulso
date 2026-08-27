@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { requireUser } from '@/lib/auth';
-import { hasRoleAtLeast } from '@/lib/types';
+import { requireGerencial } from '@/lib/auth';
 import { Empty } from '@/components/ui/Card';
 import { LeiDoBemQuadro, type LinhaLeiDoBem, type LogStatusLeiDoBem } from '@/components/lei-do-bem/LeiDoBemQuadro';
 import type { PessoaOpcao } from '@/lib/pessoas';
@@ -9,9 +8,8 @@ export const metadata = { title: 'Lei do Bem — Pulso' };
 export const dynamic = 'force-dynamic';
 
 export default async function LeiDoBemPage() {
-  const perfil = await requireUser();
+  await requireGerencial();
   const supabase = createClient();
-  const podeAuditar = hasRoleAtLeast(perfil.role, 'gerencial');
 
   const [{ data: linhas }, { data: pessoas }, { data: logs }] = await Promise.all([
     supabase.from('v_lei_do_bem').select('*').order('updated_at', { ascending: false }),
@@ -37,7 +35,7 @@ export default async function LeiDoBemPage() {
           linhas={(linhas ?? []) as LinhaLeiDoBem[]}
           pessoas={(pessoas ?? []) as PessoaOpcao[]}
           logs={(logs ?? []) as LogStatusLeiDoBem[]}
-          podeAuditar={podeAuditar}
+          podeAuditar
         />
       )}
     </div>
