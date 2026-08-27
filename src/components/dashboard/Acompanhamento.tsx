@@ -234,12 +234,12 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
   );
 
   const exportar = useCallback(() => {
-    const cab = ['Iniciativa','Estágio','Tema','Área','Proprietário','Diretoria','Criada em','Atualizada em','Dias sem atualização','Sinal','Horas/mês','Impacto financeiro estimado (R$/ano)','Score','Usa IA'];
+    const cab = ['Iniciativa','Estágio','Tema','Área','Proprietário','Diretoria','Criada em','Atualizada em','Dias sem atualização','Sinal','Horas/mês','Impacto financeiro estimado (R$/ano)','Usa IA'];
     const linhas = ordenadas.map((r) => [
       r.title, STAGE_LABEL[r.stage], r.theme ?? '', r.area_name ?? '', r.owner_name ?? '', r.directorate ?? '',
       dataCurta(r.created_at), dataCurta(r.last_activity_at),
       r.dias_sem_atualizacao, SINAL_LABEL[sinalDe(r, f.thOk, f.thCrit)],
-      r.hours_saved_month ?? '', impactoAnual(r) ?? '', r.score_final ?? '', r.uses_ai ? 'Sim' : 'Não',
+      r.hours_saved_month ?? '', impactoAnual(r) ?? '', r.uses_ai ? 'Sim' : 'Não',
     ]);
     const csv = [cab, ...linhas]
       .map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(';'))
@@ -614,7 +614,6 @@ function DetalheCard({ row, sinal, onFechar }: { row: DashboardRow; sinal: Signa
           <Info rotulo="Diretoria" valor={row.directorate ?? '—'} />
           <Info rotulo="Horas/mês" valor={row.hours_saved_month == null ? '—' : `${nf1.format(row.hours_saved_month)} h`} />
           <Info rotulo="Impacto financeiro est." valor={imp == null ? '—' : `${moeda(imp)}/ano`} />
-          <Info rotulo="Score" valor={row.score_final == null ? 'Não pontuada' : row.score_final.toFixed(2)} />
           <Info rotulo="Usa IA" valor={row.uses_ai ? 'Sim' : 'Não'} />
           <Info rotulo="Usa n8n" valor={row.uses_n8n ? 'Sim' : 'Não'} />
           <Info rotulo="Criada em" valor={dataCurta(row.created_at)} />

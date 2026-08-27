@@ -1,8 +1,7 @@
 /**
- * Matriz de Priorização de 4 Eixos (Metodologia Executiva §5).
- * O cálculo também existe como coluna GENERATED no Postgres; esta cópia
- * serve para o preview em tempo real no formulário. As duas precisam
- * concordar — mudou aqui, muda na migration.
+ * Fórmula histórica do score gerado no banco (coluna score_final).
+ * A Matriz de 4 eixos saiu do cadastro e da UI; este módulo só documenta
+ * os pesos caso o dado legado precise ser lido.
  */
 export const PESOS = {
   impacto: 0.35,
