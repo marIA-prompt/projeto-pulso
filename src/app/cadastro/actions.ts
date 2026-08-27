@@ -79,18 +79,33 @@ export async function cadastrar(
     return { erro: 'Não foi possível concluir o cadastro. Tente de novo ou fale com um administrador.' };
   }
 
+  const { data: convitePendente } = await admin
+    .from('invitations')
+    .select('id, role')
+    .eq('email', email)
+    .eq('status', 'pending')
+    .maybeSingle();
+
   const { error: erroPerfil } = await admin.from('profiles').upsert({
     id: criado.user.id,
     full_name: fullName,
     area_id: parsed.data.areaId,
-    role: 'participante',
+    role: convitePendente?.role ?? 'participante',
     interests: parsed.data.interests,
     active: true,
   });
 
   if (erroPerfil) {
+    console.error('cadastro: perfil não gravado', erroPerfil.message);
     // Conta Auth criada; perfil falhou — evita deixar usuário órfão sem feedback.
     return { erro: 'Conta criada, mas o perfil não foi concluído. Fale com um administrador.' };
+  }
+
+  if (convitePendente) {
+    await admin.from('invitations').update({
+      status: 'accepted',
+      accepted_at: new Date().toISOString(),
+    }).eq('id', convitePendente.id);
   }
 
   const supabase = createClient();
@@ -103,5 +118,8 @@ export async function cadastrar(
   }
 
   revalidatePath('/', 'layout');
+  revalidatePath('/admin');
+  revalidatePath('/comunidade');
+  revalidatePath('/projetos');
   redirect('/dashboard?bemvindo=1');
 }
