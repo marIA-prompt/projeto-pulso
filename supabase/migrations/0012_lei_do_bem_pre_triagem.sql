@@ -12,6 +12,7 @@
 -- pronto       → baixo_potencial        → nao_enquadrado
 -- incerto      → baixo_potencial        → backlog
 --
+-- Sem LIMIT: varre 100% das iniciativas ativas (legado + novas).
 -- Não sobrescreve avaliação já existente. Idempotente.
 -- =============================================================================
 
@@ -48,23 +49,34 @@ as $$
   select case
     when public.lei_do_bem_contem(p_txt, array[
       'classificador', 'classificacao', 'modelo preditiv', 'modelo de ',
-      'machine learning', 'aprendizado de maquina', 'visao computacional',
-      'processamento de linguagem', 'nlp', 'llm', 'fine-tun', 'fine tun',
-      'treinar modelo', 'treinamento do modelo', 'algoritmo', 'embedding',
-      'rede neural', 'rag', 'ocr', 'extrator', 'extracao inteligente',
-      'score de credito', 'motor de', 'reconhecimento de'
+      'modelo preditivo', 'machine learning', 'aprendizado de maquina',
+      'visao computacional', 'processamento de linguagem', 'nlp', 'llm',
+      'fine-tun', 'fine tun', 'treinar modelo', 'treinamento do modelo',
+      'algoritmo', 'embedding', 'embeddings', 'rede neural', 'rag', 'ocr',
+      'extrator', 'extracao inteligente', 'score de credito', 'scoring',
+      'motor de', 'reconhecimento de', 'predicao', 'preditivo', 'cluster',
+      'anomalia', 'matching', 'ranking', 'transformer', 'bert',
+      'inteligencia artificial', 'ia generativ', 'generativa',
+      'sumariz', 'transcri', 'speech', 'tts', 'stt',
+      'leitura automatica', 'roteamento inteligente', 'triagem automatic'
     ]) then 'experimental'
     when public.lei_do_bem_contem(p_txt, array[
       'copilot', 'chatgpt', 'implant', 'configur', 'parametr',
       'power bi', 'looker', 'planilha', 'excel', 'dashboard',
       'relatorio', 'treinamento de', 'workshop', 'migracao',
-      'licenca', 'suporte', 'manutencao', 'correcao rotin'
+      'licenca', 'suporte', 'manutencao', 'correcao rotin',
+      'rollout', 'capacitacao', 'habilitar o', 'ativar o',
+      'office 365', 'microsoft 365'
     ]) then 'pronto'
     when coalesce(p_uses_ai, false)
       or coalesce(p_uses_n8n, false)
       or public.lei_do_bem_contem(p_txt, array[
-        'n8n', 'rpa', 'automacao', 'automatizar', 'chatbot', 'assistente',
-        'whatsapp', 'workflow', 'fluxo de', 'robo ', 'robos'
+        'n8n', 'rpa', 'automacao', 'automatizar', 'automatica', 'automatico',
+        'chatbot', 'chat bot', 'assistente', 'whatsapp', 'workflow',
+        'fluxo de', 'robo ', 'robos', 'uipath', 'power automate',
+        'selenium', 'zapier', 'make.com', 'low code', 'nocode', 'no-code',
+        'python', 'script', 'crawler', 'scrap', 'orquestra',
+        'integra', 'webhook', 'de ia', 'com ia', 'usa ia', ' ia '
       ]) then 'parcial'
     else 'incerto'
   end;
@@ -174,7 +186,9 @@ from public.projects p
 left join public.areas a on a.id = p.area_id
 cross join lateral (
   select public.lei_do_bem_perfil_pre_triagem(
-    public.lei_do_bem_normalizar(concat_ws(' ', p.title, p.description, p.notes, p.theme, p.tools)),
+    public.lei_do_bem_normalizar(
+      ' ' || concat_ws(' ', p.title, p.description, p.notes, p.theme, p.tools) || ' '
+    ),
     p.uses_ai,
     p.uses_n8n
   ) as perfil

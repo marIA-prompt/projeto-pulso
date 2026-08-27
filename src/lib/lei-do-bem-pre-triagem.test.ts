@@ -94,6 +94,14 @@ caso('os quatro perfis batem com a fórmula B27–B30', () => {
   }
 });
 
+caso('vocabulário ampliado cobre IA, automática, integração e scoring', () => {
+  assert.equal(perfilPreTriagem({ title: 'IA para cobrança' }), 'parcial');
+  assert.equal(perfilPreTriagem({ title: 'Conciliação automática de boletos' }), 'parcial');
+  assert.equal(perfilPreTriagem({ title: 'Integração API do consignado' }), 'parcial');
+  assert.equal(perfilPreTriagem({ title: 'Scoring de crédito PJ' }), 'experimental');
+  assert.equal(perfilPreTriagem({ title: 'Leitura automática de contratos' }), 'experimental');
+});
+
 caso('experimental sem descrição relaxa só o item 2 e continua elegível', () => {
   const r = preTriar({ title: 'Modelo preditivo de churn PF', uses_ai: true });
   assert.equal(r.respostas.triagem_02, 'parcialmente');

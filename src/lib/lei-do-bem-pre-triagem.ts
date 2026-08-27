@@ -33,11 +33,16 @@ export type ProjetoPreTriagem = {
 
 const EXPERIMENTAL = [
   'classificador', 'classificacao', 'modelo preditiv', 'modelo de ',
-  'machine learning', 'aprendizado de maquina', 'visao computacional',
-  'processamento de linguagem', 'nlp', 'llm', 'fine-tun', 'fine tun',
-  'treinar modelo', 'treinamento do modelo', 'algoritmo', 'embedding',
-  'rede neural', 'rag', 'ocr', 'extrator', 'extracao inteligente',
-  'score de credito', 'motor de', 'reconhecimento de',
+  'modelo preditivo', 'machine learning', 'aprendizado de maquina',
+  'visao computacional', 'processamento de linguagem', 'nlp', 'llm',
+  'fine-tun', 'fine tun', 'treinar modelo', 'treinamento do modelo',
+  'algoritmo', 'embedding', 'embeddings', 'rede neural', 'rag', 'ocr',
+  'extrator', 'extracao inteligente', 'score de credito', 'scoring',
+  'motor de', 'reconhecimento de', 'predicao', 'preditivo', 'cluster',
+  'anomalia', 'matching', 'ranking', 'transformer', 'bert',
+  'inteligencia artificial', 'ia generativ', 'generativa',
+  'sumariz', 'transcri', 'speech', 'tts', 'stt',
+  'leitura automatica', 'roteamento inteligente', 'triagem automatic',
 ];
 
 const PRONTO = [
@@ -45,11 +50,17 @@ const PRONTO = [
   'power bi', 'looker', 'planilha', 'excel', 'dashboard',
   'relatorio', 'treinamento de', 'workshop', 'migracao',
   'licenca', 'suporte', 'manutencao', 'correcao rotin',
+  'rollout', 'capacitacao', 'habilitar o', 'ativar o',
+  'office 365', 'microsoft 365',
 ];
 
 const AUTOMACAO = [
-  'n8n', 'rpa', 'automacao', 'automatizar', 'chatbot', 'assistente',
-  'whatsapp', 'workflow', 'fluxo de', 'robo ', 'robos',
+  'n8n', 'rpa', 'automacao', 'automatizar', 'automatica', 'automatico',
+  'chatbot', 'chat bot', 'assistente', 'whatsapp', 'workflow',
+  'fluxo de', 'robo ', 'robos', 'uipath', 'power automate',
+  'selenium', 'zapier', 'make.com', 'low code', 'nocode', 'no-code',
+  'python', 'script', 'crawler', 'scrap', 'orquestra',
+  'integra', 'webhook', 'de ia', 'com ia', 'usa ia', ' ia ',
 ];
 
 export function normalizarPreTriagem(s: string | null | undefined): string {
@@ -64,9 +75,9 @@ function contem(txt: string, palavras: string[]): boolean {
 }
 
 export function perfilPreTriagem(p: ProjetoPreTriagem): PerfilPreTriagem {
-  const txt = normalizarPreTriagem(
+  const txt = ` ${normalizarPreTriagem(
     [p.title, p.description, p.notes, p.theme, p.tools].filter(Boolean).join(' '),
-  );
+  )} `;
   const experimental = contem(txt, EXPERIMENTAL);
   const pronto = contem(txt, PRONTO);
   const automacao = contem(txt, AUTOMACAO) || !!p.uses_n8n;
