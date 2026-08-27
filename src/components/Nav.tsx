@@ -9,6 +9,7 @@ import { MenuConta } from '@/components/MenuConta';
 const LINKS = [
   { href: '/dashboard', label: 'Acompanhamento' },
   { href: '/projetos', label: 'Iniciativas' },
+  { href: '/lei-do-bem', label: 'Lei do Bem' },
   { href: '/comunidade', label: 'Comunidade' },
   { href: '/frequencias', label: 'Frequências' },
   { href: '/manifesto', label: 'Manifesto' },
