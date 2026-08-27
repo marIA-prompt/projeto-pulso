@@ -17,6 +17,7 @@ import {
   LEI_DO_BEM_CLASSIFICACAO_LABEL,
   LEI_DO_BEM_CLASSIFICACAO_TOM,
   LEI_DO_BEM_CLASSIFICACOES,
+  LEI_DO_BEM_ORDEM_ROTULO,
   LEI_DO_BEM_PRIORIDADE_LABEL,
   LEI_DO_BEM_PRIORIDADES,
   LEI_DO_BEM_RESPOSTA_LABEL,
@@ -25,11 +26,16 @@ import {
   LEI_DO_BEM_STATUS_TOM,
   PROXIMA_ACAO,
   TRIAGEM_ITENS,
+  cicloOrdemLeiDoBem,
   classeBadgeTom,
+  ordenarLinhasLeiDoBem,
+  textoOrdemLeiDoBem,
   type LeiDoBemClassificacao,
+  type LeiDoBemColunaOrdem,
   type LeiDoBemPrioridade,
   type LeiDoBemResposta,
   type LeiDoBemStatus,
+  type SentidoOrdem,
 } from '@/lib/lei-do-bem';
 import {
   atualizarAuditoriaLeiDoBem,
@@ -356,13 +362,69 @@ function SelectFiltro({
   );
 }
 
+function CabecalhoOrdenavel({
+  coluna, ativo, sentido, alinhado = 'left', onClick,
+}: {
+  coluna: LeiDoBemColunaOrdem;
+  ativo: boolean;
+  sentido: SentidoOrdem;
+  alinhado?: 'left' | 'right';
+  onClick: () => void;
+}) {
+  const rotulo = LEI_DO_BEM_ORDEM_ROTULO[coluna];
+  const ariaSort = !ativo ? 'none' : sentido === 'asc' ? 'ascending' : 'descending';
+  const dica = !ativo
+    ? `Ordenar por ${rotulo}, maior primeiro`
+    : sentido === 'desc'
+      ? `Ordenar por ${rotulo}, menor primeiro`
+      : `Tirar ordenação de ${rotulo}`;
+  return (
+    <th
+      scope="col"
+      aria-sort={ariaSort}
+      className={`p-3 font-medium ${alinhado === 'right' ? 'text-right' : ''}`}
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        title={dica}
+        aria-label={dica}
+        className={`inline-flex w-full items-center gap-1 whitespace-nowrap uppercase tracking-wide hover:text-g90 ${
+          ativo ? 'font-semibold text-g90' : ''
+        } ${alinhado === 'right' ? 'justify-end' : ''}`}
+      >
+        <span>{rotulo}</span>
+        <span className="inline-flex flex-col leading-none" aria-hidden="true">
+          <span className={`text-[0.5rem] ${ativo && sentido === 'asc' ? 'text-[var(--blue)]' : 'text-g40'}`}>▲</span>
+          <span className={`-mt-px text-[0.5rem] ${ativo && sentido === 'desc' ? 'text-[var(--blue)]' : 'text-g40'}`}>▼</span>
+        </span>
+      </button>
+    </th>
+  );
+}
+
 function Lista({ linhas, onAbrir }: { linhas: LinhaLeiDoBem[]; onAbrir: (l: LinhaLeiDoBem) => void }) {
   const [pagina, setPagina] = useState(1);
+  const [ord, setOrd] = useState<'' | LeiDoBemColunaOrdem>('');
+  const [sentido, setSentido] = useState<SentidoOrdem>('desc');
   const porPagina = 10;
-  const total = Math.max(1, Math.ceil(linhas.length / porPagina));
-  useEffect(() => { setPagina(1); }, [linhas.length]);
+
+  const ordenadas = useMemo(
+    () => ordenarLinhasLeiDoBem(linhas, ord, sentido),
+    [linhas, ord, sentido],
+  );
+
+  const total = Math.max(1, Math.ceil(ordenadas.length / porPagina));
+  useEffect(() => { setPagina(1); }, [linhas, ord, sentido]);
   const atual = Math.min(pagina, total);
-  const visiveis = linhas.slice((atual - 1) * porPagina, atual * porPagina);
+  const visiveis = ordenadas.slice((atual - 1) * porPagina, atual * porPagina);
+  const dicaOrdem = textoOrdemLeiDoBem(ord, sentido);
+
+  const clicarOrdem = (coluna: LeiDoBemColunaOrdem) => {
+    const next = cicloOrdemLeiDoBem(ord, sentido, coluna);
+    setOrd(next.coluna);
+    setSentido(next.sentido);
+  };
 
   if (linhas.length === 0) {
     return <p className="card p-8 text-center text-sm text-g60">Nenhuma iniciativa neste recorte.</p>;
@@ -376,11 +438,32 @@ function Lista({ linhas, onAbrir }: { linhas: LinhaLeiDoBem[]; onAbrir: (l: Linh
             <tr className="border-b border-g30 bg-g10 text-left text-xs uppercase tracking-wide text-g50">
               <th className="p-3 font-medium">Iniciativa</th>
               <th className="p-3 font-medium">Área / Diretoria</th>
-              <th className="p-3 font-medium">Status</th>
-              <th className="p-3 font-medium">Triagem</th>
-              <th className="p-3 font-medium">Índice</th>
+              <CabecalhoOrdenavel
+                coluna="status"
+                ativo={ord === 'status'}
+                sentido={sentido}
+                onClick={() => clicarOrdem('status')}
+              />
+              <CabecalhoOrdenavel
+                coluna="triagem"
+                ativo={ord === 'triagem'}
+                sentido={sentido}
+                onClick={() => clicarOrdem('triagem')}
+              />
+              <CabecalhoOrdenavel
+                coluna="indice"
+                ativo={ord === 'indice'}
+                sentido={sentido}
+                alinhado="right"
+                onClick={() => clicarOrdem('indice')}
+              />
               <th className="p-3 font-medium">Responsável</th>
-              <th className="p-3 font-medium">Prioridade</th>
+              <CabecalhoOrdenavel
+                coluna="prioridade"
+                ativo={ord === 'prioridade'}
+                sentido={sentido}
+                onClick={() => clicarOrdem('prioridade')}
+              />
               <th className="p-3 font-medium">ClickUp</th>
               <th className="p-3 font-medium">Atualização</th>
             </tr>
@@ -413,13 +496,22 @@ function Lista({ linhas, onAbrir }: { linhas: LinhaLeiDoBem[]; onAbrir: (l: Linh
           </tbody>
         </table>
       </div>
-      {linhas.length > porPagina && (
-        <div className="flex items-center justify-end gap-1">
-          <button type="button" onClick={() => setPagina(Math.max(1, atual - 1))} disabled={atual === 1}
-                  className="rounded-s border border-g40 px-2 py-1 text-xs text-g70 hover:bg-g20 disabled:opacity-40">Anterior</button>
-          <span className="num px-2 text-xs text-g60">{atual}/{total}</span>
-          <button type="button" onClick={() => setPagina(Math.min(total, atual + 1))} disabled={atual === total}
-                  className="rounded-s border border-g40 px-2 py-1 text-xs text-g70 hover:bg-g20 disabled:opacity-40">Próxima</button>
+      {(dicaOrdem || linhas.length > porPagina) && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {dicaOrdem ? (
+            <p aria-live="polite" className="text-xs text-g50">{dicaOrdem}</p>
+          ) : (
+            <span />
+          )}
+          {linhas.length > porPagina && (
+            <div className="flex items-center justify-end gap-1">
+              <button type="button" onClick={() => setPagina(Math.max(1, atual - 1))} disabled={atual === 1}
+                      className="rounded-s border border-g40 px-2 py-1 text-xs text-g70 hover:bg-g20 disabled:opacity-40">Anterior</button>
+              <span className="num px-2 text-xs text-g60">{atual}/{total}</span>
+              <button type="button" onClick={() => setPagina(Math.min(total, atual + 1))} disabled={atual === total}
+                      className="rounded-s border border-g40 px-2 py-1 text-xs text-g70 hover:bg-g20 disabled:opacity-40">Próxima</button>
+            </div>
+          )}
         </div>
       )}
     </div>
