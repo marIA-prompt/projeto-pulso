@@ -50,9 +50,16 @@ function Avatar({ p, size = 56 }: { p: HubProfile; size?: number }) {
 function Tag({ children, tom = 'g' }: { children: React.ReactNode; tom?: 'g' | 'blue' | 'purple' }) {
   const cls =
     tom === 'blue' ? 'bg-[var(--sig-ok-bg)] text-[var(--sig-ok)]'
-    : tom === 'purple' ? 'bg-g20 text-[var(--navy)]'
+    : tom === 'purple' ? 'bg-g20 text-[var(--chip-fg)]'
     : 'bg-g20 text-g70';
-  return <span className={`rounded-s px-2 py-0.5 text-xs font-medium ${cls}`}>{children}</span>;
+  return (
+    <span
+      className={`rounded-s px-2 py-0.5 text-xs font-medium ${cls}`}
+      style={tom === 'purple' ? { color: 'var(--chip-fg)' } : undefined}
+    >
+      {children}
+    </span>
+  );
 }
 
 function unicos(pessoas: HubProfile[], campo: 'languages' | 'automations' | 'interests') {

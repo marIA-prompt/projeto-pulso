@@ -45,6 +45,8 @@
      Precisa continuar legível em cartão claro (dia) e escuro
      (noite). NÃO usar para fundos fixos.                           */
   --ink-strong: #0F2467;
+  /* Letra de chip sobre --g20: navy no claro, branco no escuro. */
+  --chip-fg:    #0F2467;
 
   /* ---- Camadas dependentes de tema ---------------------------- */
   --topbar-bg:   rgba(255,255,255,.88);
@@ -87,6 +89,7 @@ html[data-theme="dark"] {
   color-scheme: dark;
 
   --ink-strong:  #8FB4FF;
+  --chip-fg:     #FFFFFF;
   --topbar-bg:   rgba(9,12,26,.78);
   --now-tint-bg: rgba(240,194,29,.08);
 
