@@ -1,11 +1,11 @@
 'use server';
 
-import { randomBytes, createHash } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/auth';
+import { novoTokenConvite } from '@/lib/invite-token';
 import { notificar } from '@/lib/n8n';
 import { PAPEIS } from '@/lib/types';
 
@@ -23,8 +23,7 @@ export async function criarConvite(_prev: EstadoAdmin, form: FormData): Promise<
 
   // Token em claro só existe aqui e no e-mail. O banco guarda o hash —
   // vazamento da tabela não dá acesso a ninguém.
-  const token = randomBytes(32).toString('base64url');
-  const token_hash = createHash('sha256').update(token).digest('hex');
+  const { token, token_hash } = novoTokenConvite();
 
   const supabase = createClient();
   const { error } = await supabase.from('invitations').insert({
@@ -65,12 +64,15 @@ export async function alterarPapel(form: FormData) {
   revalidatePath('/admin');
 }
 
-export async function reenviarConvite(form: FormData): Promise<void> {
+export async function reenviarConvite(
+  _prev: EstadoAdmin,
+  form: FormData,
+): Promise<EstadoAdmin> {
   await requireAdmin();
   const id = String(form.get('id') ?? '');
+  if (!id) return { erro: 'Convite inválido.' };
 
-  const token = randomBytes(32).toString('base64url');
-  const token_hash = createHash('sha256').update(token).digest('hex');
+  const { token, token_hash } = novoTokenConvite();
 
   const supabase = createClient();
   const { data } = await supabase.from('invitations')
@@ -81,12 +83,17 @@ export async function reenviarConvite(form: FormData): Promise<void> {
     })
     .eq('id', id).select('email, role').single();
 
-  if (data) {
-    const link = `${process.env.NEXT_PUBLIC_SITE_URL}/convite/${token}`;
-    await notificar('W1_CONVITE', { email: data.email, role: data.role, link });
-  }
+  if (!data) return { erro: 'Não foi possível reenviar este convite.' };
+
+  const link = `${process.env.NEXT_PUBLIC_SITE_URL}/convite/${token}`;
+  const enviado = await notificar('W1_CONVITE', { email: data.email, role: data.role, link });
 
   revalidatePath('/admin');
+  // O token anterior deixa de valer. Sem o link na tela, a pessoa só tem
+  // o e-mail antigo — que agora aponta para "convite indisponível".
+  return enviado
+    ? { ok: `Novo link gerado para ${data.email}. O link anterior deixa de valer.`, link }
+    : { ok: `Novo link gerado para ${data.email}. Copie e envie — o anterior deixa de valer.`, link };
 }
 
 export async function cancelarConvite(form: FormData) {

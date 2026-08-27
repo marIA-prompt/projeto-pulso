@@ -3,10 +3,9 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createAdminClient, buscarAuthPorEmail } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-
-import { hashToken } from '@/lib/invite-token';
+import { hashesDoToken } from '@/lib/invite-token';
 
 const Aceite = z.object({
   token: z.string().min(20),
@@ -41,11 +40,12 @@ export async function aceitarConvite(
   const { data: convite } = await admin
     .from('invitations')
     .select('id, email, role, status, expires_at')
-    .eq('token_hash', hashToken(parsed.data.token))
+    .in('token_hash', hashesDoToken(parsed.data.token))
+    .limit(1)
     .maybeSingle();
 
   if (!convite || convite.status !== 'pending') {
-    return { erro: 'Este convite não está mais válido. Peça um novo a um administrador.' };
+    return { erro: 'Este convite não está mais válido. Peça o link mais recente a um administrador.' };
   }
   if (new Date(convite.expires_at) < new Date()) {
     await admin.from('invitations').update({ status: 'expired' }).eq('id', convite.id);
@@ -59,12 +59,30 @@ export async function aceitarConvite(
     user_metadata: { full_name: parsed.data.nome },
   });
 
-  if (erroCriacao || !criado.user) {
-    return { erro: 'Não foi possível concluir o cadastro. Fale com um administrador.' };
+  let userId = criado?.user?.id;
+  if (erroCriacao || !userId) {
+    const msg = (erroCriacao?.message ?? '').toLowerCase();
+    const jaExiste = msg.includes('already') || msg.includes('registered') || msg.includes('exists');
+    if (!jaExiste) {
+      return { erro: 'Não foi possível concluir o cadastro. Fale com um administrador.' };
+    }
+    const existente = await buscarAuthPorEmail(admin, convite.email);
+    if (!existente) {
+      return { erro: 'Não foi possível concluir o cadastro. Fale com um administrador.' };
+    }
+    const { error: erroAtualiza } = await admin.auth.admin.updateUserById(existente.id, {
+      password: parsed.data.senha,
+      email_confirm: true,
+      user_metadata: { full_name: parsed.data.nome },
+    });
+    if (erroAtualiza) {
+      return { erro: 'Já existe uma conta com este e-mail. Entre ou redefina a senha.' };
+    }
+    userId = existente.id;
   }
 
   const { error: erroPerfil } = await admin.from('profiles').upsert({
-    id: criado.user.id,
+    id: userId,
     full_name: parsed.data.nome,
     area_id: parsed.data.areaId || null,
     role: convite.role,

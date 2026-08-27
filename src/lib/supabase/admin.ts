@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Cliente com service-role. EXCLUSIVAMENTE server-side — contorna RLS.
@@ -11,4 +11,14 @@ export function createAdminClient() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
+}
+
+export async function buscarAuthPorEmail(
+  admin: SupabaseClient,
+  email: string,
+) {
+  const alvo = email.toLowerCase();
+  const { data, error } = await admin.auth.admin.listUsers({ perPage: 200 });
+  if (error) return null;
+  return (data.users ?? []).find((u) => (u.email ?? '').toLowerCase() === alvo) ?? null;
 }

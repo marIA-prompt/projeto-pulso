@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { criarConvite, criarEncontro, atualizarEncontro, type EstadoAdmin } from './actions';
 import { Button } from '@/components/ui/Button';
+import { CopiarLink } from '@/components/CopiarLink';
 import { ErroBox } from '@/components/ui/Card';
 import { PAPEIS, ROLE_LABEL } from '@/lib/types';
 import { dataLonga } from '@/lib/format';
@@ -11,30 +12,6 @@ import { dataLonga } from '@/lib/format';
 function Enviar({ rotulo }: { rotulo: string }) {
   const { pending } = useFormStatus();
   return <Button type="submit" disabled={pending}>{pending ? 'Enviando…' : rotulo}</Button>;
-}
-
-function CopiarLink({ link }: { link: string }) {
-  const [copiado, setCopiado] = useState(false);
-  return (
-    <div className="mt-2 flex flex-wrap items-center gap-2 rounded-s bg-g20 px-3 py-2">
-      <span className="num min-w-0 flex-1 break-all text-xs text-g80">{link}</span>
-      <button
-        type="button"
-        onClick={async () => {
-          try {
-            await navigator.clipboard.writeText(link);
-          } catch {
-            /* clipboard indisponível: o link continua visível para cópia manual */
-          }
-          setCopiado(true);
-          setTimeout(() => setCopiado(false), 2000);
-        }}
-        className="shrink-0 rounded-s border border-g40 bg-[var(--white)] px-2 py-1 text-xs font-medium text-g80 hover:bg-g20"
-      >
-        {copiado ? 'Copiado!' : 'Copiar link'}
-      </button>
-    </div>
-  );
 }
 
 function Retorno({ estado }: { estado: EstadoAdmin }) {
@@ -69,7 +46,7 @@ export function ConviteForm() {
         </div>
         <Enviar rotulo="Enviar convite" />
       </div>
-      <p className="text-xs text-g50">O convite vale por 7 dias e pode ser reenviado ou cancelado.</p>
+      <p className="text-xs text-g50">O convite vale por 7 dias. Gerar novo link invalida o anterior; copie o link que aparece na tela e envie à pessoa.</p>
     </form>
   );
 }
