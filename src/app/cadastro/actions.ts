@@ -89,6 +89,7 @@ export async function cadastrar(
   });
 
   if (erroPerfil) {
+    console.error('cadastro: perfil não gravado', erroPerfil.message);
     // Conta Auth criada; perfil falhou — evita deixar usuário órfão sem feedback.
     return { erro: 'Conta criada, mas o perfil não foi concluído. Fale com um administrador.' };
   }
@@ -103,5 +104,8 @@ export async function cadastrar(
   }
 
   revalidatePath('/', 'layout');
+  revalidatePath('/admin');
+  revalidatePath('/comunidade');
+  revalidatePath('/projetos');
   redirect('/dashboard?bemvindo=1');
 }
