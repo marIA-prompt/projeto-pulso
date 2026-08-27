@@ -6,27 +6,24 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
 import { STAGES, hasRoleAtLeast } from '@/lib/types';
-import {
-  GRUPO1_CAMPOS,
-  GRUPO2_CAMPOS,
-  LEI_DO_BEM_RESPOSTAS,
-  TRIAGEM_CAMPOS,
-} from '@/lib/lei-do-bem';
+import { LEI_DO_BEM_RESPOSTAS, TRIAGEM_CAMPOS } from '@/lib/lei-do-bem';
 
 const Projeto = z.object({
   title: z.string().min(3, 'O título precisa de pelo menos 3 caracteres.'),
+  objetivo_contexto: z.string().optional(),
   description: z.string().optional(),
   stage: z.enum(STAGES),
-  theme: z.string().optional(),
   area_id: z.string().uuid().nullable().catch(null),
   owner_id: z.string().uuid().nullable().catch(null),
   directorate: z.string().optional(),
-  uses_ai: z.coerce.boolean(),
+  uses_ai_tradicional: z.coerce.boolean(),
+  uses_ai_generativa: z.coerce.boolean(),
   uses_n8n: z.coerce.boolean(),
+  uses_outros: z.coerce.boolean(),
   hours_saved_month: z.coerce.number().min(0).nullable().catch(null),
+  dev_hours: z.coerce.number().min(0).nullable().catch(null),
   target_date: z.string().optional(),
   links: z.string().optional(),
-  notes: z.string().optional(),
 });
 
 const Resposta = z.enum(LEI_DO_BEM_RESPOSTAS).nullable().catch(null);
@@ -35,20 +32,24 @@ export type EstadoProjeto = { erro?: string };
 
 function ler(form: FormData) {
   const vazio = (v: FormDataEntryValue | null) => (v === '' || v == null ? null : v);
+  const tradicional = form.get('uses_ai_tradicional') === 'on';
+  const generativa = form.get('uses_ai_generativa') === 'on';
   return Projeto.safeParse({
     title: form.get('title'),
+    objetivo_contexto: form.get('objetivo_contexto') ?? '',
     description: form.get('description') ?? '',
     stage: form.get('stage'),
-    theme: form.get('theme') ?? '',
     area_id: vazio(form.get('area_id')),
     owner_id: vazio(form.get('owner_id')),
     directorate: form.get('directorate') ?? '',
-    uses_ai: form.get('uses_ai') === 'on',
+    uses_ai_tradicional: tradicional,
+    uses_ai_generativa: generativa,
     uses_n8n: form.get('uses_n8n') === 'on',
+    uses_outros: form.get('uses_outros') === 'on',
     hours_saved_month: vazio(form.get('hours_saved_month')),
+    dev_hours: vazio(form.get('dev_hours')),
     target_date: form.get('target_date') ?? '',
     links: form.get('links') ?? '',
-    notes: form.get('notes') ?? '',
   });
 }
 
@@ -59,11 +60,8 @@ function texto(form: FormData, name: string): string | null {
   return t === '' ? null : t;
 }
 
-function lerLeiDoBem(form: FormData) {
+function lerTriagem(form: FormData) {
   const campos: Record<string, string | null> = {};
-  for (const c of [...GRUPO1_CAMPOS, ...GRUPO2_CAMPOS]) {
-    campos[c.name] = texto(form, c.name);
-  }
   for (const name of TRIAGEM_CAMPOS) {
     const parsed = Resposta.safeParse(form.get(name) || null);
     campos[name] = parsed.success ? parsed.data : null;
@@ -87,8 +85,24 @@ async function gravarLeiDoBem(
     await supabase.from('lei_do_bem_avaliacoes').delete().eq('project_id', projectId);
     return null;
   }
+  const triagem = lerTriagem(form);
+  const { data: existente } = await supabase
+    .from('lei_do_bem_avaliacoes')
+    .select('id')
+    .eq('project_id', projectId)
+    .maybeSingle();
+
+  const payload: Record<string, unknown> = { project_id: projectId, ...triagem };
+  if (!existente) {
+    const objetivo = texto(form, 'objetivo_contexto');
+    const descricao = texto(form, 'description');
+    payload.objetivo_estrategico_okr = objetivo;
+    payload.contexto_problema = objetivo;
+    payload.o_que_sera_desenvolvido = descricao;
+  }
+
   const { error } = await supabase.from('lei_do_bem_avaliacoes').upsert(
-    { project_id: projectId, ...lerLeiDoBem(form) },
+    payload,
     { onConflict: 'project_id' },
   );
   if (error) {
@@ -108,6 +122,7 @@ export async function criarProjeto(_prev: EstadoProjeto, form: FormData): Promis
   const supabase = createClient();
   const { data, error } = await supabase.from('projects').insert({
     ...parsed.data,
+    uses_ai: parsed.data.uses_ai_tradicional || parsed.data.uses_ai_generativa,
     target_date: parsed.data.target_date || null,
     owner_id: parsed.data.owner_id ?? perfil.id,
     scoring_source: 'nao_pontuado',
@@ -137,6 +152,7 @@ export async function atualizarProjeto(
     .from('projects')
     .update({
       ...parsed.data,
+      uses_ai: parsed.data.uses_ai_tradicional || parsed.data.uses_ai_generativa,
       target_date: parsed.data.target_date || null,
     }, { count: 'exact' })
     .eq('id', id);
