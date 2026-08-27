@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createAdminClient, listarEmailsPorIds } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/auth';
 import { novoTokenConvite } from '@/lib/invite-token';
 import { notificar } from '@/lib/n8n';
@@ -145,24 +145,42 @@ export async function criarEncontro(_prev: EstadoAdmin, form: FormData): Promise
   if (error || !encontro) return { erro: 'Não foi possível criar o encontro.' };
 
   // Sem as linhas em 'pending', a taxa de confirmação não tem denominador.
+  // Base cadastrada = todo perfil com acesso ativo, qualquer papel
+  // (leitor, participante, editor, gerencial, administrador) — não só
+  // o papel "participante".
+  let convidados = 0;
   if (parsed.data.convidarTodos) {
     const service = createAdminClient();
-    const { data: pessoas } = await service.from('profiles').select('id').eq('active', true);
+    const { data: pessoas } = await service
+      .from('profiles')
+      .select('id')
+      .eq('active', true);
     if (pessoas?.length) {
       await service.from('attendance').upsert(
         pessoas.map((p) => ({ meeting_id: encontro.id, user_id: p.id, status: 'pending' as const })),
         { onConflict: 'meeting_id,user_id' },
       );
+      convidados = pessoas.length;
+      const emails = await listarEmailsPorIds(service, pessoas.map((p) => p.id));
+      await notificar('W2_LEMBRETE_PRESENCA', {
+        meetingId: encontro.id,
+        title: encontro.title,
+        scheduledAt: encontro.scheduled_at,
+        convidados,
+        emails,
+      });
     }
+  } else {
+    await notificar('W2_LEMBRETE_PRESENCA', {
+      meetingId: encontro.id, title: encontro.title, scheduledAt: encontro.scheduled_at,
+    });
   }
-
-  await notificar('W2_LEMBRETE_PRESENCA', {
-    meetingId: encontro.id, title: encontro.title, scheduledAt: encontro.scheduled_at,
-  });
 
   revalidatePath('/admin');
   revalidatePath('/frequencias');
-  return { ok: 'Encontro criado e participantes convidados.' };
+  return convidados
+    ? { ok: `Encontro criado. ${convidados} cadastrados ativos convidados (todos os papéis).` }
+    : { ok: 'Encontro criado.' };
 }
 
 const EncontroEdicao = z.object({

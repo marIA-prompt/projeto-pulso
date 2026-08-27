@@ -51,7 +51,7 @@ export function ConviteForm() {
   );
 }
 
-export function EncontroForm() {
+export function EncontroForm({ cadastradosAtivos }: { cadastradosAtivos: number }) {
   const [estado, action] = useFormState(criarEncontro, {} as EstadoAdmin);
   return (
     <form action={action} className="card space-y-4 p-4">
@@ -78,9 +78,16 @@ export function EncontroForm() {
           placeholder="Descreva a pauta do encontro…"
         />
       </div>
-      <label className="flex items-center gap-2 text-sm text-g80">
-        <input type="checkbox" name="convidarTodos" defaultChecked /> Convidar todos os participantes ativos
-      </label>
+      <div>
+        <label className="flex items-center gap-2 text-sm text-g80">
+          <input type="checkbox" name="convidarTodos" defaultChecked />
+          Convidar todos os cadastrados ativos
+        </label>
+        <p className="mt-1 text-xs text-g50">
+          {cadastradosAtivos} {cadastradosAtivos === 1 ? 'pessoa com acesso ativo' : 'pessoas com acesso ativo'}
+          {' '}(todos os papéis — não só Participante). Acessos revogados ficam de fora.
+        </p>
+      </div>
     </form>
   );
 }

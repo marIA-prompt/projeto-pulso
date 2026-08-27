@@ -72,7 +72,7 @@ export default async function AdminPage() {
 
       <section aria-labelledby="encontros-titulo" className="space-y-4">
         <h2 id="encontros-titulo" className="text-lg font-semibold">Encontros</h2>
-        <EncontroForm />
+        <EncontroForm cadastradosAtivos={(pessoas ?? []).filter((p) => p.active).length} />
         {!encontros?.length ? (
           <Empty titulo="Nenhum encontro criado ainda." />
         ) : (

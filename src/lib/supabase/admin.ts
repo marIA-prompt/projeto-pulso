@@ -22,3 +22,16 @@ export async function buscarAuthPorEmail(
   if (error) return null;
   return (data.users ?? []).find((u) => (u.email ?? '').toLowerCase() === alvo) ?? null;
 }
+
+export async function listarEmailsPorIds(
+  admin: SupabaseClient,
+  ids: string[],
+): Promise<string[]> {
+  if (!ids.length) return [];
+  const want = new Set(ids);
+  const { data, error } = await admin.auth.admin.listUsers({ perPage: 200 });
+  if (error) return [];
+  return (data.users ?? [])
+    .filter((u) => want.has(u.id) && u.email)
+    .map((u) => u.email as string);
+}
