@@ -5,20 +5,12 @@ import { usePathname } from 'next/navigation';
 import { clsx } from '@/lib/clsx';
 import { TemaToggle } from '@/components/TemaToggle';
 import { MenuConta } from '@/components/MenuConta';
-
-const LINKS = [
-  { href: '/dashboard', label: 'Acompanhamento' },
-  { href: '/projetos', label: 'Iniciativas' },
-  { href: '/lei-do-bem', label: 'Lei do Bem' },
-  { href: '/comunidade', label: 'Comunidade' },
-  { href: '/frequencias', label: 'Frequências' },
-  { href: '/manifesto', label: 'Manifesto' },
-  { href: '/metodologia/metodologia-grupo', label: 'Metodologia' },
-];
+import { linksDaNav } from '@/lib/nav';
 
 export function Nav({
-  isAdmin, nome, apelido, avatarUrl, userId,
+  isGerencial, isAdmin, nome, apelido, avatarUrl, userId,
 }: {
+  isGerencial: boolean;
   isAdmin: boolean;
   nome: string;
   apelido: string | null;
@@ -26,7 +18,7 @@ export function Nav({
   userId: string;
 }) {
   const path = usePathname();
-  const links = isAdmin ? [...LINKS, { href: '/admin', label: 'Admin' }] : LINKS;
+  const links = linksDaNav({ isGerencial, isAdmin });
 
   return (
     <header className="sticky top-0 z-20 border-b border-g30 bg-[var(--topbar-bg)] backdrop-blur">

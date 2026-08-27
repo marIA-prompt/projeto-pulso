@@ -11,7 +11,11 @@ import type { DashboardRow, PortfolioKpis, AttendanceKpi } from '@/lib/types';
 export const metadata = { title: 'Acompanhamento — Pulso' };
 export const dynamic = 'force-dynamic';
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { erro?: string };
+}) {
   await requireUser();
   const supabase = createClient();
 
@@ -62,6 +66,12 @@ export default async function DashboardPage() {
           da consulta — nenhuma data de referência fica congelada.
         </p>
       </header>
+
+      {searchParams.erro === 'sem-permissao' && (
+        <p role="alert" className="rounded-s border border-[var(--sig-warn)] bg-[var(--sig-warn-bg)] p-3 text-sm text-[var(--sig-warn)]">
+          Você não tem permissão para acessar essa área.
+        </p>
+      )}
 
       <noscript>
         <p className="rounded-s border border-[var(--sig-warn)] bg-[var(--sig-warn-bg)] p-3 text-sm text-[var(--sig-warn)]">

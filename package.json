@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:lei-do-bem": "npx tsx src/lib/lei-do-bem.test.ts"
+    "test:lei-do-bem": "npx tsx src/lib/lei-do-bem.test.ts",
+    "test:nav": "npx tsx src/lib/nav.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
