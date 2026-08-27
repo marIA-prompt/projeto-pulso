@@ -35,6 +35,10 @@ export default async function AdminPage() {
 
       <section aria-labelledby="convites-titulo" className="space-y-4">
         <h2 id="convites-titulo" className="text-lg font-semibold">Convites</h2>
+        <p className="text-sm text-g60">
+          Se a pessoa viu “convite indisponível”, use <strong className="font-medium text-g80">Gerar novo link</strong> na
+          tabela e envie o link que aparecer — o do e-mail antigo deixa de valer.
+        </p>
         <ConviteForm />
 
         {!convites?.length ? (

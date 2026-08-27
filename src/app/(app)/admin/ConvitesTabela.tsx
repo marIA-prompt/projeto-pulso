@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { cancelarConvite, reenviarConvite } from './actions';
+import { useFormState, useFormStatus } from 'react-dom';
+import { cancelarConvite, reenviarConvite, type EstadoAdmin } from './actions';
+import { CopiarLink } from '@/components/CopiarLink';
 import { dataCurta } from '@/lib/format';
 import { ROLE_LABEL } from '@/lib/types';
 
@@ -16,6 +18,41 @@ type Convite = {
   id: string; email: string; role: string; status: string;
   expires_at: string | null; created_at: string;
 };
+
+function ReenviarBotao() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      disabled={pending}
+      className="rounded-s border border-g40 px-2 py-1 text-xs text-g80 hover:bg-g20 disabled:opacity-40"
+    >
+      {pending ? 'Gerando…' : 'Gerar novo link'}
+    </button>
+  );
+}
+
+function AcoesPendentes({ id }: { id: string }) {
+  const [estado, action] = useFormState(reenviarConvite, {} as EstadoAdmin);
+  return (
+    <div className="flex flex-col items-end gap-2">
+      <div className="flex justify-end gap-2">
+        <form action={action}>
+          <input type="hidden" name="id" value={id} />
+          <ReenviarBotao />
+        </form>
+        <form action={cancelarConvite}>
+          <input type="hidden" name="id" value={id} />
+          <button className="rounded-s border border-[var(--sig-crit)] px-2 py-1 text-xs text-[var(--sig-crit)] hover:bg-[var(--sig-crit-bg)]">
+            Cancelar
+          </button>
+        </form>
+      </div>
+      {estado.erro && <p className="text-xs text-[var(--sig-crit)]">{estado.erro}</p>}
+      {estado.ok && <p className="max-w-xs text-right text-xs text-[var(--sig-ok)]">{estado.ok}</p>}
+      {estado.link && <div className="w-full min-w-[16rem]"><CopiarLink link={estado.link} /></div>}
+    </div>
+  );
+}
 
 export function ConvitesTabela({ convites }: { convites: Convite[] }) {
   const [pagina, setPagina] = useState(1);
@@ -45,24 +82,7 @@ export function ConvitesTabela({ convites }: { convites: Convite[] }) {
                 <td className="p-3 text-g60">{STATUS_LABEL[c.status] ?? c.status}</td>
                 <td className="num p-3 text-g60">{dataCurta(c.expires_at)}</td>
                 <td className="p-3">
-                  <div className="flex justify-end gap-2">
-                    {c.status === 'pending' && (
-                      <>
-                        <form action={reenviarConvite}>
-                          <input type="hidden" name="id" value={c.id} />
-                          <button className="rounded-s border border-g40 px-2 py-1 text-xs text-g80 hover:bg-g20">
-                            Reenviar
-                          </button>
-                        </form>
-                        <form action={cancelarConvite}>
-                          <input type="hidden" name="id" value={c.id} />
-                          <button className="rounded-s border border-[var(--sig-crit)] px-2 py-1 text-xs text-[var(--sig-crit)] hover:bg-[var(--sig-crit-bg)]">
-                            Cancelar
-                          </button>
-                        </form>
-                      </>
-                    )}
-                  </div>
+                  {c.status === 'pending' && <AcoesPendentes id={c.id} />}
                 </td>
               </tr>
             ))}
