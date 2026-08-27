@@ -26,6 +26,11 @@ export default async function LeiDoBemPage() {
           sinaliza potencial técnico — não substitui validação técnica, fiscal,
           contábil e documental, e nenhuma classificação bloqueia a iniciativa.
         </p>
+        <p className="mt-2 max-w-2xl text-xs leading-relaxed text-g50">
+          O portfólio já cadastrado passou por pré-triagem automática (título,
+          descrição, tema, IA/n8n). Itens em Enquadrado ainda precisam da revisão
+          humana da auditoria.
+        </p>
       </header>
 
       {(linhas ?? []).length === 0 ? (

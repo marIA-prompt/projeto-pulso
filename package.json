@@ -9,7 +9,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test:lei-do-bem": "npx tsx src/lib/lei-do-bem.test.ts",
-    "test:nav": "npx tsx src/lib/nav.test.ts"
+    "test:nav": "npx tsx src/lib/nav.test.ts",
+    "test:pre-triagem": "npx tsx src/lib/lei-do-bem-pre-triagem.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
