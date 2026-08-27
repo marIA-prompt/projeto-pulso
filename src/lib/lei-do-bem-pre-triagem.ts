@@ -32,7 +32,7 @@ export type ProjetoPreTriagem = {
 };
 
 const EXPERIMENTAL = [
-  'classificador', 'classificacao', 'modelo preditiv', 'modelo de ',
+  'classificador', 'classificacao automatic', 'classificacao de e-mail',
   'modelo preditivo', 'machine learning', 'aprendizado de maquina',
   'visao computacional', 'processamento de linguagem', 'nlp', 'llm',
   'fine-tun', 'fine tun', 'treinar modelo', 'treinamento do modelo',
@@ -56,11 +56,11 @@ const PRONTO = [
 
 const AUTOMACAO = [
   'n8n', 'rpa', 'automacao', 'automatizar', 'automatica', 'automatico',
-  'chatbot', 'chat bot', 'assistente', 'whatsapp', 'workflow',
+  'automatizad', 'chatbot', 'chat bot', 'assistente', 'whatsapp', 'workflow',
   'fluxo de', 'robo ', 'robos', 'uipath', 'power automate',
   'selenium', 'zapier', 'make.com', 'low code', 'nocode', 'no-code',
   'python', 'script', 'crawler', 'scrap', 'orquestra',
-  'integra', 'webhook', 'de ia', 'com ia', 'usa ia', ' ia ',
+  'integra', 'webhook', 'de ia', 'com ia', 'usa ia', ' ia ', 'bot',
 ];
 
 export function normalizarPreTriagem(s: string | null | undefined): string {
@@ -70,17 +70,27 @@ export function normalizarPreTriagem(s: string | null | undefined): string {
     .toLowerCase();
 }
 
+/** Tokens curtos exigem fronteira de palavra — senão "aberto" casa "bert". */
 function contem(txt: string, palavras: string[]): boolean {
-  return palavras.some((p) => txt.includes(p));
+  return palavras.some((p) => {
+    if (p.length <= 4 && !p.includes(' ')) {
+      return new RegExp(`(^|[^a-z0-9])${p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z0-9]|$)`).test(txt);
+    }
+    return txt.includes(p);
+  });
+}
+
+function campo(...partes: Array<string | null | undefined>): string {
+  return ` ${normalizarPreTriagem(partes.filter(Boolean).join(' '))} `;
 }
 
 export function perfilPreTriagem(p: ProjetoPreTriagem): PerfilPreTriagem {
-  const txt = ` ${normalizarPreTriagem(
-    [p.title, p.description, p.notes, p.theme, p.tools].filter(Boolean).join(' '),
-  )} `;
-  const experimental = contem(txt, EXPERIMENTAL);
-  const pronto = contem(txt, PRONTO);
-  const automacao = contem(txt, AUTOMACAO) || !!p.uses_n8n;
+  // tools fica de fora do experimental: "IA / LLM" no n8n é tag de nó, não P&D.
+  const txtPdi = campo(p.title, p.description, p.notes);
+  const txtGeral = campo(p.title, p.description, p.notes, p.theme, p.tools);
+  const experimental = contem(txtPdi, EXPERIMENTAL);
+  const pronto = contem(txtGeral, PRONTO);
+  const automacao = contem(txtGeral, AUTOMACAO) || !!p.uses_n8n;
 
   if (experimental) return 'experimental';
   if (pronto && !experimental) return 'pronto';

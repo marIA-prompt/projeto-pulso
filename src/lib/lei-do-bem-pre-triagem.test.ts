@@ -102,6 +102,17 @@ caso('vocabulário ampliado cobre IA, automática, integração e scoring', () =
   assert.equal(perfilPreTriagem({ title: 'Leitura automática de contratos' }), 'experimental');
 });
 
+caso('tag IA/LLM em tools não vira enquadrado; bert não casa dentro de aberto', () => {
+  assert.equal(
+    perfilPreTriagem({ title: 'Principal - Email - Clientes PB', tools: 'Email / SMTP; IA / LLM', uses_ai: true }),
+    'parcial',
+  );
+  assert.equal(
+    perfilPreTriagem({ title: 'Cobranças De Chamados Em Aberto Do Jira' }),
+    'incerto',
+  );
+});
+
 caso('experimental sem descrição relaxa só o item 2 e continua elegível', () => {
   const r = preTriar({ title: 'Modelo preditivo de churn PF', uses_ai: true });
   assert.equal(r.respostas.triagem_02, 'parcialmente');

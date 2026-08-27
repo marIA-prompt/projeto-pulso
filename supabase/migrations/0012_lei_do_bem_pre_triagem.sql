@@ -34,12 +34,20 @@ language sql
 immutable
 as $$
   select exists (
-    select 1 from unnest(p_palavras) w where position(w in p_txt) > 0
+    select 1 from unnest(p_palavras) w
+    where case
+      when char_length(w) <= 4 and position(' ' in w) = 0
+        then p_txt ~ ('(^|[^a-z0-9])' || w || '([^a-z0-9]|$)')
+      else position(w in p_txt) > 0
+    end
   );
 $$;
 
+drop function if exists public.lei_do_bem_perfil_pre_triagem(text, boolean, boolean);
+
 create or replace function public.lei_do_bem_perfil_pre_triagem(
-  p_txt text,
+  p_txt_pdi text,
+  p_txt_geral text,
   p_uses_ai boolean,
   p_uses_n8n boolean
 ) returns text
@@ -47,8 +55,8 @@ language sql
 immutable
 as $$
   select case
-    when public.lei_do_bem_contem(p_txt, array[
-      'classificador', 'classificacao', 'modelo preditiv', 'modelo de ',
+    when public.lei_do_bem_contem(p_txt_pdi, array[
+      'classificador', 'classificacao automatic', 'classificacao de e-mail',
       'modelo preditivo', 'machine learning', 'aprendizado de maquina',
       'visao computacional', 'processamento de linguagem', 'nlp', 'llm',
       'fine-tun', 'fine tun', 'treinar modelo', 'treinamento do modelo',
@@ -60,7 +68,7 @@ as $$
       'sumariz', 'transcri', 'speech', 'tts', 'stt',
       'leitura automatica', 'roteamento inteligente', 'triagem automatic'
     ]) then 'experimental'
-    when public.lei_do_bem_contem(p_txt, array[
+    when public.lei_do_bem_contem(p_txt_geral, array[
       'copilot', 'chatgpt', 'implant', 'configur', 'parametr',
       'power bi', 'looker', 'planilha', 'excel', 'dashboard',
       'relatorio', 'treinamento de', 'workshop', 'migracao',
@@ -70,13 +78,13 @@ as $$
     ]) then 'pronto'
     when coalesce(p_uses_ai, false)
       or coalesce(p_uses_n8n, false)
-      or public.lei_do_bem_contem(p_txt, array[
+      or public.lei_do_bem_contem(p_txt_geral, array[
         'n8n', 'rpa', 'automacao', 'automatizar', 'automatica', 'automatico',
-        'chatbot', 'chat bot', 'assistente', 'whatsapp', 'workflow',
+        'automatizad', 'chatbot', 'chat bot', 'assistente', 'whatsapp', 'workflow',
         'fluxo de', 'robo ', 'robos', 'uipath', 'power automate',
         'selenium', 'zapier', 'make.com', 'low code', 'nocode', 'no-code',
         'python', 'script', 'crawler', 'scrap', 'orquestra',
-        'integra', 'webhook', 'de ia', 'com ia', 'usa ia', ' ia '
+        'integra', 'webhook', 'de ia', 'com ia', 'usa ia', ' ia ', 'bot'
       ]) then 'parcial'
     else 'incerto'
   end;
@@ -186,6 +194,9 @@ from public.projects p
 left join public.areas a on a.id = p.area_id
 cross join lateral (
   select public.lei_do_bem_perfil_pre_triagem(
+    public.lei_do_bem_normalizar(
+      ' ' || concat_ws(' ', p.title, p.description, p.notes) || ' '
+    ),
     public.lei_do_bem_normalizar(
       ' ' || concat_ws(' ', p.title, p.description, p.notes, p.theme, p.tools) || ' '
     ),
