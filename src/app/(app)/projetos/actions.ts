@@ -7,6 +7,11 @@ import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
 import { STAGES, hasRoleAtLeast } from '@/lib/types';
 import { LEI_DO_BEM_RESPOSTAS, TRIAGEM_CAMPOS } from '@/lib/lei-do-bem';
+import {
+  mensagemErroCriarProjeto,
+  mensagemErroMoverEstagio,
+  mensagemErroSalvarProjeto,
+} from '@/lib/projeto-erro';
 
 const Projeto = z.object({
   title: z.string().min(3, 'O título precisa de pelo menos 3 caracteres.'),
@@ -129,7 +134,7 @@ export async function criarProjeto(_prev: EstadoProjeto, form: FormData): Promis
   }).select('id').single();
 
   if (error || !data) {
-    return { erro: 'Não foi possível salvar a iniciativa. Revise os campos e tente de novo.' };
+    return { erro: mensagemErroCriarProjeto(error) };
   }
 
   const aviso = await gravarLeiDoBem(supabase, data.id, form);
@@ -146,8 +151,8 @@ export async function atualizarProjeto(
   if (!parsed.success) return { erro: parsed.error.issues[0].message };
 
   const supabase = createClient();
-  // Não mexe nos 4 eixos: a Matriz saiu do cadastro, mas o score legado
-  // das 161 iniciativas (e o gate de estágio no banco) continua válido.
+  // Não mexe nos 4 eixos: a Matriz saiu do cadastro. O gate de estágio
+  // Backlog → Em Desenvolvimento foi desligado na migration 0013.
   const { error, count } = await supabase
     .from('projects')
     .update({
@@ -157,7 +162,7 @@ export async function atualizarProjeto(
     }, { count: 'exact' })
     .eq('id', id);
 
-  if (error) return { erro: 'Não foi possível salvar as alterações.' };
+  if (error) return { erro: mensagemErroSalvarProjeto(error) };
   if (!count) return { erro: 'Você só pode editar iniciativas das quais é dono.' };
 
   const aviso = await gravarLeiDoBem(supabase, id, form);
@@ -169,8 +174,7 @@ export async function atualizarProjeto(
 export type EstadoMover = { ok?: boolean; erro?: string };
 
 /** Move uma iniciativa de raia no Kanban. A RLS decide se a pessoa pode
- * escrever nesta linha (dono, ou gerencial+ para qualquer uma); o gate de
- * §9.1 continua sendo validado pelo trigger do banco. */
+ * escrever nesta linha (dono, ou gerencial+ para qualquer uma). */
 export async function moverEstagio(id: string, novoEstagio: string): Promise<EstadoMover> {
   const perfil = await requireUser();
   if (!hasRoleAtLeast(perfil.role, 'participante')) {
@@ -188,7 +192,7 @@ export async function moverEstagio(id: string, novoEstagio: string): Promise<Est
     .is('archived_at', null);
 
   if (error) {
-    return { erro: 'Não foi possível mover: verifique se a iniciativa está pontuada para entrar em desenvolvimento.' };
+    return { erro: mensagemErroMoverEstagio(error) };
   }
   if (!count) {
     return { erro: 'Você só pode mover iniciativas das quais é dono (ou ter papel gerencial+).' };

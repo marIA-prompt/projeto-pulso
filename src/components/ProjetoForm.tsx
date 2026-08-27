@@ -190,6 +190,9 @@ export function ProjetoForm({
                     defaultValue={(valores.stage as string) ?? 'ideia'}>
               {STAGES.map((s) => <option key={s} value={s}>{STAGE_LABEL[s]}</option>)}
             </select>
+            <p className="mt-1 text-xs text-g50">
+              Qualquer estágio pode ser gravado, inclusive Em Desenvolvimento.
+            </p>
           </div>
           <div>
             <label className="label" htmlFor="area_id">Área</label>
