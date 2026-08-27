@@ -17,8 +17,8 @@ export default async function AdminPage() {
       .select('id, email, role, status, expires_at, created_at')
       .order('created_at', { ascending: false }).limit(300),
     supabase.from('profiles')
-      .select('id, full_name, role, active, created_at')
-      .order('full_name'),
+      .select('id, full_name, role, active, created_at, areas(name)')
+      .order('created_at', { ascending: false }),
     supabase.from('meetings')
       .select('id, title, scheduled_at, description').order('scheduled_at', { ascending: false }).limit(10),
   ]);
@@ -51,12 +51,17 @@ export default async function AdminPage() {
         ) : (
           <ParticipantesTabela
             meuId={admin.id}
-            pessoas={(pessoas ?? []).map((p) => ({
-              id: p.id,
-              full_name: p.full_name,
-              role: p.role,
-              active: p.active,
-            }))}
+            pessoas={(pessoas ?? []).map((p) => {
+              const area = p.areas as unknown as { name: string } | { name: string }[] | null;
+              const a = Array.isArray(area) ? area[0] : area;
+              return {
+                id: p.id,
+                full_name: p.full_name,
+                role: p.role,
+                active: p.active,
+                area_name: a?.name ?? null,
+              };
+            })}
           />
         )}
       </section>

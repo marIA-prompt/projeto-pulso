@@ -11,6 +11,7 @@ export type PessoaAdmin = {
   full_name: string | null;
   role: string;
   active: boolean;
+  area_name: string | null;
 };
 
 export function ParticipantesTabela({
@@ -47,13 +48,13 @@ export function ParticipantesTabela({
                     {p.full_name ?? '—'}
                     {euMesmo && <span className="ml-2 text-xs text-g50">você</span>}
                   </td>
+                  <td className="p-3 text-g60">{p.area_name ?? '—'}</td>
                   <td className="p-3 text-g60">{ROLE_LABEL[p.role as keyof typeof ROLE_LABEL] ?? p.role}</td>
                   <td className="p-3">
                     <span className={p.active ? 'text-[var(--sig-ok)]' : 'text-g50'}>
                       {p.active ? 'Ativo' : 'Revogado'}
                     </span>
                   </td>
-                  <td className="p-3" />
                   <td className="p-3">
                     <div className="flex justify-end gap-2">
                       {!euMesmo && (

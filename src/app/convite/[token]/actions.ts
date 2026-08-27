@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
@@ -62,12 +63,17 @@ export async function aceitarConvite(
     return { erro: 'Não foi possível concluir o cadastro. Fale com um administrador.' };
   }
 
-  await admin.from('profiles').upsert({
+  const { error: erroPerfil } = await admin.from('profiles').upsert({
     id: criado.user.id,
     full_name: parsed.data.nome,
     area_id: parsed.data.areaId || null,
     role: convite.role,
+    active: true,
   });
+  if (erroPerfil) {
+    console.error('convite: perfil não gravado', erroPerfil.message);
+    return { erro: 'Conta criada, mas o perfil não foi concluído. Fale com um administrador.' };
+  }
 
   await admin.from('invitations')
     .update({ status: 'accepted', accepted_at: new Date().toISOString() })
@@ -79,5 +85,9 @@ export async function aceitarConvite(
     password: parsed.data.senha,
   });
 
+  revalidatePath('/', 'layout');
+  revalidatePath('/admin');
+  revalidatePath('/comunidade');
+  revalidatePath('/projetos');
   redirect('/dashboard?bemvindo=1');
 }
