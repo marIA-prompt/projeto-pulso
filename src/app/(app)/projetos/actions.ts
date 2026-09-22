@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
 import { STAGES, hasRoleAtLeast } from '@/lib/types';
-import { LEI_DO_BEM_RESPOSTAS, TRIAGEM_CAMPOS } from '@/lib/lei-do-bem';
+import { LEI_DO_BEM_RESPOSTAS, MSG_CAMPOS_CADASTRO_LEI_DO_BEM, TRIAGEM_CAMPOS, faltamCamposCadastroLeiDoBem } from '@/lib/lei-do-bem';
 import {
   mensagemErroCriarProjeto,
   mensagemErroMoverEstagio,
@@ -80,6 +80,16 @@ function revalidar() {
   revalidatePath('/lei-do-bem');
 }
 
+function lerEscopoLeiDoBem(form: FormData) {
+  return {
+    o_que_sera_desenvolvido: texto(form, 'o_que_sera_desenvolvido'),
+    resultados_esperados: texto(form, 'resultados_esperados'),
+    como_sera_desenvolvido: texto(form, 'como_sera_desenvolvido'),
+    fora_do_escopo: texto(form, 'fora_do_escopo'),
+    desafios_riscos: texto(form, 'desafios_riscos'),
+  };
+}
+
 async function gravarLeiDoBem(
   supabase: ReturnType<typeof createClient>,
   projectId: string,
@@ -90,21 +100,18 @@ async function gravarLeiDoBem(
     await supabase.from('lei_do_bem_avaliacoes').delete().eq('project_id', projectId);
     return null;
   }
-  const triagem = lerTriagem(form);
-  const { data: existente } = await supabase
-    .from('lei_do_bem_avaliacoes')
-    .select('id')
-    .eq('project_id', projectId)
-    .maybeSingle();
+  const escopo = lerEscopoLeiDoBem(form);
+  if (faltamCamposCadastroLeiDoBem(escopo).length) return MSG_CAMPOS_CADASTRO_LEI_DO_BEM;
 
-  const payload: Record<string, unknown> = { project_id: projectId, ...triagem };
-  if (!existente) {
-    const objetivo = texto(form, 'objetivo_contexto');
-    const descricao = texto(form, 'description');
-    payload.objetivo_estrategico_okr = objetivo;
-    payload.contexto_problema = objetivo;
-    payload.o_que_sera_desenvolvido = descricao;
-  }
+  const triagem = lerTriagem(form);
+  const objetivo = texto(form, 'objetivo_contexto');
+  const payload: Record<string, unknown> = {
+    project_id: projectId,
+    ...triagem,
+    ...escopo,
+    objetivo_estrategico_okr: objetivo,
+    contexto_problema: objetivo,
+  };
 
   const { error } = await supabase.from('lei_do_bem_avaliacoes').upsert(
     payload,
@@ -123,6 +130,9 @@ export async function criarProjeto(_prev: EstadoProjeto, form: FormData): Promis
   }
   const parsed = ler(form);
   if (!parsed.success) return { erro: parsed.error.issues[0].message };
+  if (form.get('opta_lei_do_bem') === 'sim' && faltamCamposCadastroLeiDoBem(lerEscopoLeiDoBem(form)).length) {
+    return { erro: MSG_CAMPOS_CADASTRO_LEI_DO_BEM };
+  }
 
   const supabase = createClient();
   const { data, error } = await supabase.from('projects').insert({
@@ -148,6 +158,9 @@ export async function atualizarProjeto(
   await requireUser();
   const parsed = ler(form);
   if (!parsed.success) return { erro: parsed.error.issues[0].message };
+  if (form.get('opta_lei_do_bem') === 'sim' && faltamCamposCadastroLeiDoBem(lerEscopoLeiDoBem(form)).length) {
+    return { erro: MSG_CAMPOS_CADASTRO_LEI_DO_BEM };
+  }
 
   const supabase = createClient();
   const { error, count } = await supabase

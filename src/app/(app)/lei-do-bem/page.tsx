@@ -23,8 +23,9 @@ export default async function LeiDoBemPage() {
         <h1 className="text-2xl font-bold tracking-tight">Lei do Bem</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-g60">
           Pré-análise de enquadramento na Lei 11.196/2005. A triagem preliminar
-          sinaliza potencial técnico — não substitui validação técnica, fiscal,
-          contábil e documental, e nenhuma classificação bloqueia a iniciativa.
+          sinaliza potencial técnico. A avaliação MCTI segue o Guia Prático
+          (seção 6) e os critérios de Frascati — não substitui validação técnica,
+          fiscal, contábil e documental, e nenhuma classificação bloqueia a iniciativa.
         </p>
       </header>
 

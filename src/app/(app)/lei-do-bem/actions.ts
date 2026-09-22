@@ -18,6 +18,11 @@ const Auditoria = z.object({
   parecer: z.string().nullable(),
   prioridade: z.enum(LEI_DO_BEM_PRIORIDADES).nullable(),
   enviar_clickup: z.boolean(),
+  descricao_projeto: z.string().nullable(),
+  elemento_tecnologico_novo: z.string().nullable(),
+  barreira_desafio_tecnologico: z.string().nullable(),
+  metodologia_metodos: z.string().nullable(),
+  descritivo_complementar: z.string().nullable(),
 });
 
 export async function atualizarAuditoriaLeiDoBem(
@@ -31,19 +36,42 @@ export async function atualizarAuditoriaLeiDoBem(
   }
 
   const vazio = (v: FormDataEntryValue | null) => (v === '' || v == null ? null : v);
+  const opcional = (name: string) => (form.has(name) ? vazio(form.get(name)) : undefined);
   const parsed = Auditoria.safeParse({
     status: form.get('status'),
     responsavel_auditoria_id: vazio(form.get('responsavel_auditoria_id')),
     parecer: vazio(form.get('parecer')),
     prioridade: vazio(form.get('prioridade')),
     enviar_clickup: form.get('enviar_clickup') === 'on' || form.get('enviar_clickup') === 'true',
+    descricao_projeto: opcional('descricao_projeto') ?? null,
+    elemento_tecnologico_novo: opcional('elemento_tecnologico_novo') ?? null,
+    barreira_desafio_tecnologico: opcional('barreira_desafio_tecnologico') ?? null,
+    metodologia_metodos: opcional('metodologia_metodos') ?? null,
+    descritivo_complementar: opcional('descritivo_complementar') ?? null,
   });
   if (!parsed.success) return { erro: parsed.error.issues[0].message };
+
+  const dados: Record<string, unknown> = {
+    status: parsed.data.status,
+    responsavel_auditoria_id: parsed.data.responsavel_auditoria_id,
+    parecer: parsed.data.parecer,
+    prioridade: parsed.data.prioridade,
+    enviar_clickup: parsed.data.enviar_clickup,
+  };
+  for (const name of [
+    'descricao_projeto',
+    'elemento_tecnologico_novo',
+    'barreira_desafio_tecnologico',
+    'metodologia_metodos',
+    'descritivo_complementar',
+  ] as const) {
+    if (form.has(name)) dados[name] = parsed.data[name];
+  }
 
   const supabase = createClient();
   const { error, count } = await supabase
     .from('lei_do_bem_avaliacoes')
-    .update(parsed.data, { count: 'exact' })
+    .update(dados, { count: 'exact' })
     .eq('id', id);
 
   if (error) return { erro: 'Não foi possível salvar o parecer da auditoria.' };
