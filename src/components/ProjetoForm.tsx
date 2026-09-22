@@ -19,14 +19,17 @@ import {
 import {
   AVISO_TRIAGEM,
   COMO_INTERPRETAR,
+  GRUPO1_CAMPOS_ESCOPO,
   LEI_DO_BEM_CLASSIFICACAO_LABEL,
   LEI_DO_BEM_CLASSIFICACAO_TOM,
   LEI_DO_BEM_RESPOSTA_LABEL,
   LEI_DO_BEM_RESPOSTAS,
+  MSG_CAMPOS_CADASTRO_LEI_DO_BEM,
   REFERENCIAS_METODOLOGICAS,
   TRIAGEM_ITENS,
   classeBadgeTom,
   classificarTriagem,
+  faltamCamposCadastroLeiDoBem,
   type LeiDoBemResposta,
   type TriagemCampo,
 } from '@/lib/lei-do-bem';
@@ -70,9 +73,13 @@ export function ProjetoForm({
   const [opta, setOpta] = useState<OptaLeiDoBem>(jaOptou ? 'sim' : '');
   const [etapa, setEtapa] = useState<EtapaCadastro>('dados');
   const [ajudaAberta, setAjudaAberta] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
 
   const [ldb, setLdb] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
+    for (const c of GRUPO1_CAMPOS_ESCOPO) {
+      init[c.name] = vStr(leiDoBem ?? {}, c.name);
+    }
     for (const item of TRIAGEM_ITENS) {
       init[item.campo] = vStr(leiDoBem ?? {}, item.campo);
     }
@@ -108,6 +115,14 @@ export function ProjetoForm({
 
   function proximo() {
     if (etapa === 'optin' && !opta) return;
+    if (etapa === 'cadastro') {
+      const falta = faltamCamposCadastroLeiDoBem(ldb);
+      if (falta.length) {
+        setAviso(MSG_CAMPOS_CADASTRO_LEI_DO_BEM);
+        return;
+      }
+    }
+    setAviso(null);
     setEtapa(proximaEtapaCadastro(etapa, opta));
   }
 
@@ -122,10 +137,24 @@ export function ProjetoForm({
   return (
     <form
       action={formAction}
-      onSubmit={(e) => { if (!ehUltima) e.preventDefault(); }}
+      onSubmit={(e) => {
+        if (!ehUltima) {
+          e.preventDefault();
+          return;
+        }
+        if (opta === 'sim') {
+          const falta = faltamCamposCadastroLeiDoBem(ldb);
+          if (falta.length) {
+            e.preventDefault();
+            setAviso(MSG_CAMPOS_CADASTRO_LEI_DO_BEM);
+            setEtapa('cadastro');
+          }
+        }
+      }}
       className="space-y-6"
     >
       {estado.erro && <ErroBox mensagem={estado.erro} />}
+      {aviso && <ErroBox mensagem={aviso} />}
 
       <ol className="flex flex-wrap gap-2" aria-label="Etapas do cadastro">
         {etapas.map((e, i) => {
@@ -315,9 +344,41 @@ export function ProjetoForm({
         )}
         {opta === 'sim' && (
           <p className="text-sm text-g60">
-            Na próxima etapa você faz as 12 escolhas da triagem. Nada disso bloqueia o cadastro.
+            Na próxima etapa você descreve o escopo da iniciativa — o que muda, o que se espera,
+            como será feito, o que fica de fora e os riscos. Depois vêm as 12 escolhas da triagem.
+            Nada disso bloqueia o cadastro no portfólio, mas os cinco campos de escopo são
+            obrigatórios para a validação humana da Lei do Bem.
           </p>
         )}
+      </section>
+
+      <section className={clsx('card space-y-4 p-6', etapa !== 'cadastro' && 'hidden')}>
+        <div>
+          <h2 className="text-base font-semibold">Cadastro do projeto</h2>
+          <p className="mt-1 text-sm leading-relaxed text-g60">
+            Informações mínimas para a equipe de PD&amp;I compreender escopo, objetivos e aspectos
+            técnicos. Os cinco campos são obrigatórios — cadastros vazios não seguem para a
+            validação humana.
+          </p>
+        </div>
+        {GRUPO1_CAMPOS_ESCOPO.map((c) => (
+          <div key={c.name}>
+            <label className="label" htmlFor={c.name}>
+              {c.label} <span className="font-normal text-[var(--sig-crit)]">*</span>
+            </label>
+            <textarea
+              id={c.name}
+              name={c.name}
+              rows={c.rows}
+              className="field mt-1"
+              value={ldb[c.name] ?? ''}
+              onChange={(e) => setCampo(c.name, e.target.value)}
+              aria-describedby={`ajuda_${c.name}`}
+              aria-required="true"
+            />
+            <p id={`ajuda_${c.name}`} className="mt-1 text-xs leading-snug text-g50">{c.ajuda}</p>
+          </div>
+        ))}
       </section>
 
       <section className={clsx('card space-y-4 p-6', etapa !== 'triagem' && 'hidden')}>
@@ -394,7 +455,7 @@ export function ProjetoForm({
         <p className="text-sm leading-relaxed text-g60">
           Confira o recorte abaixo. Você pode voltar a qualquer etapa antes de salvar.
           {opta === 'sim'
-            ? ' A classificação da triagem não impede o cadastro — a iniciativa entra na aba Lei do Bem para revisão humana.'
+            ? ' A classificação da triagem não impede o cadastro — a iniciativa entra na aba Lei do Bem para revisão humana, com o escopo obrigatório já capturado.'
             : ' Sem triagem Lei do Bem: a iniciativa vai só para o portfólio geral.'}
         </p>
         {opta === 'sim' && <ResultadoTriagemBox resultado={triagem} />}

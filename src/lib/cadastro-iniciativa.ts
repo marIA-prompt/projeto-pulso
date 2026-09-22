@@ -6,19 +6,25 @@
  * Dados + Lei do Bem e o próximo passo é a própria Lei do Bem de novo.
  */
 
-export type EtapaCadastro = 'dados' | 'optin' | 'triagem' | 'revisao';
+export type EtapaCadastro = 'dados' | 'optin' | 'cadastro' | 'triagem' | 'revisao';
 export type OptaLeiDoBem = 'sim' | 'nao' | '';
 
+/**
+ * Cadastro do projeto (os 5 campos de escopo) fica na etapa da Lei do Bem,
+ * não nos dados gerais da iniciativa: só quem opta precisa deles para a
+ * validação humana, e aí são obrigatórios.
+ */
 export const ETAPAS_CADASTRO: { id: EtapaCadastro; rotulo: string }[] = [
   { id: 'dados', rotulo: 'Dados da iniciativa' },
   { id: 'optin', rotulo: 'Lei do Bem' },
+  { id: 'cadastro', rotulo: 'Cadastro do projeto' },
   { id: 'triagem', rotulo: 'Triagem preliminar' },
   { id: 'revisao', rotulo: 'Revisão e salvar' },
 ];
 
 export function etapasCadastroIniciativa(opta: OptaLeiDoBem): { id: EtapaCadastro; rotulo: string }[] {
   return ETAPAS_CADASTRO.filter((e) => {
-    if (e.id === 'triagem') return opta === 'sim';
+    if (e.id === 'cadastro' || e.id === 'triagem') return opta === 'sim';
     if (e.id === 'revisao') return opta === 'sim' || opta === 'nao';
     return true;
   });

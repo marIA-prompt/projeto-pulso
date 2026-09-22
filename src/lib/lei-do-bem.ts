@@ -449,74 +449,95 @@ export const GRUPO1_CAMPOS = [
     label: 'Objetivo estratégico / OKR',
     ajuda: 'A que objetivo, necessidade ou oportunidade identificada esta iniciativa se liga.',
     rows: 3,
+    obrigatorio: false,
   },
   {
     name: 'contexto_problema',
     label: 'Contexto e problema',
     ajuda: 'Qual é a situação atual e quem é afetado — o problema que a iniciativa enfrenta.',
     rows: 4,
+    obrigatorio: false,
   },
   {
     name: 'o_que_sera_desenvolvido',
-    label: 'O que será desenvolvido ou alterado',
+    label: 'O que será desenvolvido ou alterado?',
     ajuda: 'Produto, processo, sistema, serviço ou funcionalidade criado ou modificado de forma relevante.',
     rows: 4,
+    obrigatorio: true,
   },
   {
     name: 'resultados_esperados',
-    label: 'Quais resultados são esperados',
+    label: 'Quais são os resultados esperados?',
     ajuda: 'O que se espera obter ao final, em termos técnicos e de negócio.',
     rows: 3,
+    obrigatorio: true,
   },
   {
     name: 'como_sera_desenvolvido',
-    label: 'Como será desenvolvido',
+    label: 'Como será desenvolvido?',
     ajuda: 'Abordagem, etapas e meios previstos para chegar ao resultado.',
     rows: 4,
+    obrigatorio: true,
   },
   {
     name: 'fora_do_escopo',
-    label: 'O que está fora do escopo',
-    ajuda: 'O que esta iniciativa deliberadamente não cobre.',
+    label: 'O que está fora do escopo?',
+    ajuda: 'O que esta iniciativa deliberadamente não cobre — implantação, parametrização, manutenção e o que mais não entra.',
     rows: 3,
+    obrigatorio: true,
   },
   {
     name: 'desafios_riscos',
-    label: 'Principais desafios e riscos',
+    label: 'Quais são os principais desafios ou riscos?',
     ajuda: 'Incertezas, restrições e riscos — de preferência técnicos ou tecnológicos, não só prazo e custo.',
     rows: 3,
+    obrigatorio: true,
   },
 ] as const;
 
+/** Os 5 campos de escopo exigidos na validação humana da Lei do Bem. */
+export const GRUPO1_CAMPOS_ESCOPO = GRUPO1_CAMPOS.filter((c) => c.obrigatorio);
+
+/** Avaliação técnica MCTI — Guia Prático da Lei do Bem, seção 6 (FormP&D). */
 export const GRUPO2_CAMPOS = [
   {
     name: 'descricao_projeto',
+    secao: '6.1',
     label: 'Descrição do projeto',
-    ajuda: 'Qual problema tecnológico a iniciativa enfrenta e que progresso já foi ou será alcançado.',
+    ajuda:
+      'Detalhe técnico da concepção: qual problema tecnológico é resolvido, que progresso científico ou tecnológico já foi ou será alcançado, e se a abordagem exigiu investigação ou usou só o repertório já dominado pela equipe.',
     rows: 4,
   },
   {
     name: 'elemento_tecnologico_novo',
-    label: 'Elemento tecnologicamente novo ou inovador',
-    ajuda: 'O que é novo ou inovador na tecnologia, no método ou na aplicação — não a mera adoção de ferramenta pronta.',
+    secao: '6.2',
+    label: 'Elemento tecnologicamente novo ou inovador da atividade',
+    ajuda:
+      'Tecnologia a desenvolver, novas funcionalidades e aplicação. O que existia antes, como era feito e quais eram as limitações. A novidade não pode ser óbvia para quem já conhece as técnicas do setor.',
     rows: 4,
   },
   {
     name: 'barreira_desafio_tecnologico',
+    secao: '6.3',
     label: 'Barreira ou desafio tecnológico superável',
-    ajuda: 'Qual incerteza ou desafio tecnológico precisa ser superado. A solução e o caminho não podem ser óbvios no início.',
+    ajuda:
+      'Qual problema tecnológico impacta o projeto, com que abordagem será resolvido (estudos, análises, testes, prototipação) e se a barreira já foi superada ou quais hipóteses ainda estão em teste.',
     rows: 4,
   },
   {
     name: 'metodologia_metodos',
+    secao: '6.4',
     label: 'Metodologia e métodos utilizados',
-    ajuda: 'Como o trabalho será conduzido de forma sistemática: hipóteses, testes, protótipos, experimentos, validações.',
+    ajuda:
+      'Métodos de pesquisa ou desenvolvimento experimental usados para superar a barreira — não uma metodologia genérica de gestão (scrum, kanban) sem o recorte científico.',
     rows: 4,
   },
   {
     name: 'descritivo_complementar',
+    secao: '6.5',
     label: 'Descritivo complementar',
-    ajuda: 'Parcerias, patentes, trabalhos acadêmicos, outras fontes de financiamento ou contexto extra relevante.',
+    ajuda:
+      'Contexto extra, parcerias, patentes, trabalhos acadêmicos, outras fontes de financiamento, equipes dedicadas, número de protótipos e ensaios, ganhos de qualidade ou produtividade.',
     rows: 3,
   },
 ] as const;
@@ -524,3 +545,176 @@ export const GRUPO2_CAMPOS = [
 export type LeiDoBemAvaliacaoCampos = {
   [K in (typeof GRUPO1_CAMPOS)[number]['name'] | (typeof GRUPO2_CAMPOS)[number]['name']]?: string | null;
 } & RespostasTriagem;
+
+export function campoPreenchido(v: string | null | undefined): boolean {
+  return typeof v === 'string' && v.trim().length > 0;
+}
+
+/** Rótulos dos 5 campos de escopo ainda vazios — bloqueiam o cadastro na Lei do Bem. */
+export function faltamCamposCadastroLeiDoBem(
+  valores: Partial<Record<string, string | null | undefined>>,
+): string[] {
+  return GRUPO1_CAMPOS_ESCOPO
+    .filter((c) => !campoPreenchido(valores[c.name]))
+    .map((c) => c.label);
+}
+
+export const MSG_CAMPOS_CADASTRO_LEI_DO_BEM =
+  'Para a validação humana da Lei do Bem, preencha o que será desenvolvido, os resultados esperados, como será desenvolvido, o que está fora do escopo e os principais desafios ou riscos.';
+
+export type AvaliacaoCriterio = 'atende' | 'parcial' | 'nao_atende' | 'insuficiente';
+
+export const AVALIACAO_CRITERIO_LABEL: Record<AvaliacaoCriterio, string> = {
+  atende: 'Atende',
+  parcial: 'Parcial',
+  nao_atende: 'Não atende',
+  insuficiente: 'Informações insuficientes',
+};
+
+export const AVALIACAO_CRITERIO_TOM: Record<AvaliacaoCriterio, 'ok' | 'warn' | 'crit' | 'g'> = {
+  atende: 'ok',
+  parcial: 'warn',
+  nao_atende: 'crit',
+  insuficiente: 'g',
+};
+
+/**
+ * Cinco critérios de Frascati (Guia Prático MCTI §6), amarrados às perguntas
+ * da triagem e ao bloco correspondente do FormP&D. Substitui o modelo genérico
+ * de pré-análise (agente de IA do ClickUp) pela estrutura que o MCTI avalia.
+ */
+export const FRASCATI_CRITERIOS = [
+  {
+    id: 'inovador',
+    label: 'Inovador',
+    secao: '6.2',
+    descricao: 'Há elemento de novidade não óbvio e progresso científico ou tecnológico.',
+    itens: [3, 4, 11],
+    campoMcti: 'elemento_tecnologico_novo',
+  },
+  {
+    id: 'criativo',
+    label: 'Criativo',
+    secao: '6.4',
+    descricao: 'O caminho envolve hipóteses, testes, protótipos ou experimentos — não só o repertório já dominado.',
+    itens: [6],
+    campoMcti: 'metodologia_metodos',
+  },
+  {
+    id: 'incerto',
+    label: 'Incerto',
+    secao: '6.3',
+    descricao: 'Existe incerteza técnica: a solução e o caminho não são totalmente conhecidos no início.',
+    itens: [5, 10],
+    campoMcti: 'barreira_desafio_tecnologico',
+  },
+  {
+    id: 'sistematico',
+    label: 'Sistemático',
+    secao: '6.4',
+    descricao: 'O trabalho é planejado, acompanhado e documentado por etapas, com registros de atividades e testes.',
+    itens: [7, 12],
+    campoMcti: 'metodologia_metodos',
+  },
+  {
+    id: 'transferivel',
+    label: 'Transferível / reproduzível',
+    secao: '6.1',
+    descricao: 'O conhecimento ou resultado gerado pode ser reproduzido, transferido ou reaproveitado.',
+    itens: [8],
+    campoMcti: 'descricao_projeto',
+  },
+] as const;
+
+export type FrascatiId = (typeof FRASCATI_CRITERIOS)[number]['id'];
+
+function respostaDoItem(respostas: RespostasTriagem, n: number): LeiDoBemResposta | null {
+  const campo = `triagem_${String(n).padStart(2, '0')}` as TriagemCampo;
+  const v = respostas[campo];
+  return ehResposta(v) ? v : null;
+}
+
+export function avaliarItensTriagem(respostas: RespostasTriagem, itens: readonly number[]): AvaliacaoCriterio {
+  const vals = itens.map((n) => respostaDoItem(respostas, n));
+  if (vals.some((v) => v == null || v === 'nao_sei')) return 'insuficiente';
+  if (vals.every((v) => v === 'sim')) return 'atende';
+  if (vals.some((v) => v === 'nao')) return 'nao_atende';
+  return 'parcial';
+}
+
+export type BlocoPreAnaliseMcti = {
+  secao: string;
+  name: (typeof GRUPO2_CAMPOS)[number]['name'];
+  label: string;
+  preenchido: boolean;
+};
+
+export type CriterioPreAnaliseMcti = {
+  id: FrascatiId;
+  label: string;
+  secao: string;
+  descricao: string;
+  avaliacao: AvaliacaoCriterio;
+  blocoPreenchido: boolean;
+};
+
+export type PreAnaliseTecnicaMcti = {
+  blocos: BlocoPreAnaliseMcti[];
+  frascati: CriterioPreAnaliseMcti[];
+  lacunas: string[];
+  sintese: string;
+};
+
+/**
+ * Pré-análise técnica no recorte MCTI/Lei do Bem (Guia Prático §6 + Frascati).
+ * Lê os blocos do FormP&D e as 12 escolhas da triagem; não substitui o parecer
+ * humano nem a validação fiscal/documental.
+ */
+export function preAnaliseTecnicaMcti(valores: LeiDoBemAvaliacaoCampos): PreAnaliseTecnicaMcti {
+  const blocos: BlocoPreAnaliseMcti[] = GRUPO2_CAMPOS.map((c) => ({
+    secao: c.secao,
+    name: c.name,
+    label: c.label,
+    preenchido: campoPreenchido(valores[c.name]),
+  }));
+
+  const frascati: CriterioPreAnaliseMcti[] = FRASCATI_CRITERIOS.map((c) => ({
+    id: c.id,
+    label: c.label,
+    secao: c.secao,
+    descricao: c.descricao,
+    avaliacao: avaliarItensTriagem(valores, c.itens),
+    blocoPreenchido: campoPreenchido(valores[c.campoMcti]),
+  }));
+
+  const lacunas: string[] = [];
+  for (const b of blocos) {
+    if (!b.preenchido) lacunas.push(`§${b.secao} ${b.label}`);
+  }
+  for (const c of frascati) {
+    if (c.avaliacao === 'insuficiente') lacunas.push(`Frascati · ${c.label}: triagem incompleta`);
+    else if (c.avaliacao === 'nao_atende') lacunas.push(`Frascati · ${c.label}: não evidenciado`);
+  }
+
+  const atende = frascati.filter((c) => c.avaliacao === 'atende').length;
+  const blocosOk = blocos.filter((b) => b.preenchido).length;
+  let sintese: string;
+  if (frascati.every((c) => c.avaliacao === 'insuficiente') && blocosOk === 0) {
+    sintese =
+      'Pré-análise MCTI pendente: preencha a triagem e os cinco blocos do Guia Prático (§6.1–6.5) para estruturar a avaliação técnica.';
+  } else if (frascati.some((c) => c.avaliacao === 'nao_atende')) {
+    const nomes = frascati.filter((c) => c.avaliacao === 'nao_atende').map((c) => c.label.toLowerCase());
+    sintese =
+      `Pré-análise MCTI: ${atende}/5 critérios de Frascati atendidos; ${blocosOk}/5 blocos do FormP&D preenchidos. `
+      + `Não evidenciado: ${nomes.join(', ')}. A auditoria deve revisar o escopo antes de reportar ao MCTI.`;
+  } else if (frascati.every((c) => c.avaliacao === 'atende') && blocosOk === 5) {
+    sintese =
+      'Pré-análise MCTI: os cinco critérios de Frascati e os cinco blocos do Guia Prático (§6) estão preenchidos. Segue para validação humana, fiscal e documental.';
+  } else {
+    sintese =
+      `Pré-análise MCTI: ${atende}/5 critérios de Frascati atendidos; ${blocosOk}/5 blocos do FormP&D preenchidos. `
+      + 'Complemente os blocos técnicos e a triagem para fechar a avaliação.';
+  }
+
+  return { blocos, frascati, lacunas, sintese };
+}

@@ -18,6 +18,11 @@ const Auditoria = z.object({
   parecer: z.string().nullable(),
   prioridade: z.enum(LEI_DO_BEM_PRIORIDADES).nullable(),
   enviar_clickup: z.boolean(),
+  descricao_projeto: z.string().nullable(),
+  elemento_tecnologico_novo: z.string().nullable(),
+  barreira_desafio_tecnologico: z.string().nullable(),
+  metodologia_metodos: z.string().nullable(),
+  descritivo_complementar: z.string().nullable(),
 });
 
 export async function atualizarAuditoriaLeiDoBem(
@@ -37,6 +42,11 @@ export async function atualizarAuditoriaLeiDoBem(
     parecer: vazio(form.get('parecer')),
     prioridade: vazio(form.get('prioridade')),
     enviar_clickup: form.get('enviar_clickup') === 'on' || form.get('enviar_clickup') === 'true',
+    descricao_projeto: vazio(form.get('descricao_projeto')),
+    elemento_tecnologico_novo: vazio(form.get('elemento_tecnologico_novo')),
+    barreira_desafio_tecnologico: vazio(form.get('barreira_desafio_tecnologico')),
+    metodologia_metodos: vazio(form.get('metodologia_metodos')),
+    descritivo_complementar: vazio(form.get('descritivo_complementar')),
   });
   if (!parsed.success) return { erro: parsed.error.issues[0].message };
 

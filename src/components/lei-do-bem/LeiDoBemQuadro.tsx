@@ -12,6 +12,8 @@ import { dataCurta, nf } from '@/lib/format';
 import { rotuloPessoa, type PessoaOpcao } from '@/lib/pessoas';
 import {
   AVISO_TRIAGEM,
+  AVALIACAO_CRITERIO_LABEL,
+  AVALIACAO_CRITERIO_TOM,
   GRUPO1_CAMPOS,
   GRUPO2_CAMPOS,
   LEI_DO_BEM_CLASSIFICACAO_LABEL,
@@ -29,6 +31,7 @@ import {
   cicloOrdemLeiDoBem,
   classeBadgeTom,
   ordenarLinhasLeiDoBem,
+  preAnaliseTecnicaMcti,
   textoOrdemLeiDoBem,
   type LeiDoBemClassificacao,
   type LeiDoBemColunaOrdem,
@@ -674,12 +677,17 @@ function Detalhe({
   onFechar: () => void;
 }) {
   const router = useRouter();
-  const acao = atualizarAuditoriaLeiDoBem.bind(null, linha.id);
+  const acao = useMemo(() => atualizarAuditoriaLeiDoBem.bind(null, linha.id), [linha.id]);
   const [estado, formAction] = useFormState(acao, {} as EstadoAuditoria);
+  const [salvo, setSalvo] = useState(false);
   const classe = linha.triagem_classificacao ?? 'pendente';
+  const preAnalise = useMemo(() => preAnaliseTecnicaMcti(linha), [linha]);
 
   useEffect(() => {
-    if (estado.ok) router.refresh();
+    if (estado.ok) {
+      setSalvo(true);
+      router.refresh();
+    }
   }, [estado.ok, router]);
 
   return (
@@ -712,6 +720,11 @@ function Detalhe({
           </span>
           <BadgeClassificacao c={linha.triagem_classificacao} />
           <BadgePrioridade p={linha.prioridade} />
+          {salvo && (
+            <span className={clsx('rounded-s px-2 py-0.5 text-xs font-semibold', classeBadgeTom('ok'))}>
+              Salvo
+            </span>
+          )}
         </div>
 
         <Bloco titulo="Cadastro do projeto">
@@ -721,13 +734,61 @@ function Detalhe({
         </Bloco>
 
         <Bloco titulo="Avaliação técnica (MCTI)">
+          <p className="text-xs leading-relaxed text-g50">
+            Pré-análise no recorte do Guia Prático da Lei do Bem (MCTI, seção 6) e dos cinco
+            critérios de Frascati — no lugar do modelo genérico do agente de IA do ClickUp.
+            Não substitui o parecer humano nem a validação fiscal e documental.
+          </p>
+          <div className="rounded-s bg-g10 p-3">
+            <p className="text-sm leading-relaxed text-g80">{preAnalise.sintese}</p>
+            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+              {preAnalise.frascati.map((c) => (
+                <li key={c.id} className="flex items-start gap-2 text-sm">
+                  <span className={clsx('mt-0.5 shrink-0 rounded-s px-2 py-0.5 text-xs font-semibold', classeBadgeTom(AVALIACAO_CRITERIO_TOM[c.avaliacao]))}>
+                    {AVALIACAO_CRITERIO_LABEL[c.avaliacao]}
+                  </span>
+                  <span>
+                    <span className="font-medium text-g90">{c.label}</span>
+                    <span className="num block text-xs text-g50">§{c.secao}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs text-g50">
+              Blocos FormP&amp;D:{' '}
+              {preAnalise.blocos.map((b) => `${b.secao}${b.preenchido ? '' : ' (vazio)'}`).join(' · ')}
+            </p>
+          </div>
           {GRUPO2_CAMPOS.map((c) => (
-            <CampoLeitura key={c.name} rotulo={c.label} valor={(linha as unknown as Record<string, string | null>)[c.name]} />
+            podeAuditar ? (
+              <div key={c.name}>
+                <label className="label" htmlFor={`mcti-${c.name}`}>
+                  <span className="num text-g50">§{c.secao}</span> {c.label}
+                </label>
+                <textarea
+                  id={`mcti-${c.name}`}
+                  name={c.name}
+                  rows={c.rows}
+                  form="form-auditoria"
+                  className="field mt-1"
+                  defaultValue={(linha as unknown as Record<string, string | null>)[c.name] ?? ''}
+                  aria-describedby={`ajuda-mcti-${c.name}`}
+                  onChange={() => setSalvo(false)}
+                />
+                <p id={`ajuda-mcti-${c.name}`} className="mt-1 text-xs leading-snug text-g50">{c.ajuda}</p>
+              </div>
+            ) : (
+              <CampoLeitura
+                key={c.name}
+                rotulo={`§${c.secao} ${c.label}`}
+                valor={(linha as unknown as Record<string, string | null>)[c.name]}
+              />
+            )
           ))}
         </Bloco>
 
         <Bloco titulo="Triagem preliminar">
-          <p className="text-xs text-g50">Somente leitura — para reeditar, abra o cadastro da iniciativa.</p>
+          <p className="text-xs text-g50">Somente leitura — as 12 escolhas vêm do cadastro original da iniciativa.</p>
           <div className="rounded-s bg-g10 p-3">
             <div className="flex flex-wrap items-center gap-2">
               <BadgeClassificacao c={linha.triagem_classificacao} />
@@ -787,12 +848,17 @@ function Detalhe({
           </Bloco>
         )}
 
-        <form action={formAction} key={`${linha.id}-${linha.updated_at}`} className="mt-6 space-y-4 border-t border-g30 pt-4">
+        <form
+          id="form-auditoria"
+          action={formAction}
+          onChange={() => setSalvo(false)}
+          className="mt-6 space-y-4 border-t border-g30 pt-4"
+        >
           <h4 className="text-sm font-semibold text-g90">Auditoria</h4>
           {estado.erro && <ErroBox mensagem={estado.erro} />}
-          {estado.ok && (
+          {salvo && (
             <p role="status" className="rounded-s bg-[var(--sig-ok-bg)] px-3 py-2 text-sm text-[var(--sig-ok)]">
-              Parecer salvo.
+              Auditoria salva.
             </p>
           )}
           <div className="grid gap-4 sm:grid-cols-2">
@@ -847,12 +913,13 @@ function Detalhe({
           </div>
           <div className="flex flex-wrap justify-end gap-2">
             <Link
-              href={`/projetos/${linha.project_id}`}
+              href={`/projetos/${linha.project_id}?visualizar=1&origem=lei-do-bem`}
+              title="Abre o cadastro original somente para visualização"
               className="rounded-s border border-g40 px-3 py-1.5 text-sm font-medium text-g80 hover:bg-g20"
             >
               Abrir cadastro
             </Link>
-            {podeAuditar ? <SalvarAuditoria /> : (
+            {podeAuditar ? <SalvarAuditoria salvo={salvo} /> : (
               <p className="self-center text-xs text-g50">Somente gerencial ou administrador edita a auditoria.</p>
             )}
             <button type="button" onClick={onFechar}
@@ -866,9 +933,15 @@ function Detalhe({
   );
 }
 
-function SalvarAuditoria() {
+function SalvarAuditoria({ salvo }: { salvo: boolean }) {
   const { pending } = useFormStatus();
-  return <Button type="submit" disabled={pending}>{pending ? 'Salvando…' : 'Salvar auditoria'}</Button>;
+  if (pending) {
+    return <Button type="submit" disabled>Salvando…</Button>;
+  }
+  if (salvo) {
+    return <Button type="submit" variant="success">Salvo</Button>;
+  }
+  return <Button type="submit">Salvar auditoria</Button>;
 }
 
 function Bloco({ titulo, children }: { titulo: string; children: React.ReactNode }) {

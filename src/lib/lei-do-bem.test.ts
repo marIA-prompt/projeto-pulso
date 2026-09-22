@@ -4,6 +4,12 @@ import {
   cicloOrdemLeiDoBem,
   ordenarLinhasLeiDoBem,
   textoOrdemLeiDoBem,
+  avaliarItensTriagem,
+  faltamCamposCadastroLeiDoBem,
+  preAnaliseTecnicaMcti,
+  GRUPO1_CAMPOS_ESCOPO,
+  GRUPO2_CAMPOS,
+  MSG_CAMPOS_CADASTRO_LEI_DO_BEM,
   TRIAGEM_CAMPOS,
   TRIAGEM_ITENS,
   SINTESSE_PENDENTE,
@@ -246,6 +252,94 @@ caso('texto da ordem descreve o sentido ativo', () => {
   assert.equal(textoOrdemLeiDoBem('', 'desc'), null);
   assert.equal(textoOrdemLeiDoBem('indice', 'desc'), 'ordenadas por Índice · maior primeiro');
   assert.equal(textoOrdemLeiDoBem('prioridade', 'asc'), 'ordenadas por Prioridade · baixa primeiro');
+});
+
+caso('os 5 campos obrigatórios do cadastro Lei do Bem são os de escopo', () => {
+  assert.deepEqual(
+    GRUPO1_CAMPOS_ESCOPO.map((c) => c.name),
+    [
+      'o_que_sera_desenvolvido',
+      'resultados_esperados',
+      'como_sera_desenvolvido',
+      'fora_do_escopo',
+      'desafios_riscos',
+    ],
+  );
+});
+
+caso('faltamCamposCadastroLeiDoBem lista só os vazios, na ordem', () => {
+  assert.deepEqual(faltamCamposCadastroLeiDoBem({}), [
+    'O que será desenvolvido ou alterado?',
+    'Quais são os resultados esperados?',
+    'Como será desenvolvido?',
+    'O que está fora do escopo?',
+    'Quais são os principais desafios ou riscos?',
+  ]);
+  assert.deepEqual(
+    faltamCamposCadastroLeiDoBem({
+      o_que_sera_desenvolvido: 'API nova',
+      resultados_esperados: '  ',
+      como_sera_desenvolvido: 'protótipos',
+      fora_do_escopo: 'manutenção',
+      desafios_riscos: 'incerteza do modelo',
+    }),
+    ['Quais são os resultados esperados?'],
+  );
+  assert.deepEqual(
+    faltamCamposCadastroLeiDoBem({
+      o_que_sera_desenvolvido: 'API nova',
+      resultados_esperados: 'latência menor',
+      como_sera_desenvolvido: 'protótipos',
+      fora_do_escopo: 'manutenção',
+      desafios_riscos: 'incerteza do modelo',
+    }),
+    [],
+  );
+  assert.ok(MSG_CAMPOS_CADASTRO_LEI_DO_BEM.includes('fora do escopo'));
+});
+
+caso('avaliarItensTriagem: sim/parcial/não/não sei', () => {
+  assert.equal(avaliarItensTriagem(preencher('sim'), [3, 4, 11]), 'atende');
+  assert.equal(avaliarItensTriagem(preencher('parcialmente'), [5, 10]), 'parcial');
+  assert.equal(avaliarItensTriagem(preencher({ triagem_05: 'nao' }), [5, 10]), 'nao_atende');
+  assert.equal(avaliarItensTriagem(preencher({ triagem_08: 'nao_sei' }), [8]), 'insuficiente');
+  assert.equal(avaliarItensTriagem({}, [3, 4]), 'insuficiente');
+});
+
+caso('pré-análise MCTI estrutura os 5 blocos do Guia Prático e os 5 Frascati', () => {
+  const r = preAnaliseTecnicaMcti({});
+  assert.deepEqual(r.blocos.map((b) => b.secao), ['6.1', '6.2', '6.3', '6.4', '6.5']);
+  assert.equal(GRUPO2_CAMPOS.length, 5);
+  assert.deepEqual(r.frascati.map((c) => c.id), ['inovador', 'criativo', 'incerto', 'sistematico', 'transferivel']);
+  assert.ok(r.frascati.every((c) => c.avaliacao === 'insuficiente'));
+  assert.ok(r.blocos.every((b) => !b.preenchido));
+  assert.ok(r.sintese.includes('Pré-análise MCTI pendente'));
+});
+
+caso('pré-análise MCTI: triagem toda Sim e blocos preenchidos → segue para validação', () => {
+  const r = preAnaliseTecnicaMcti({
+    ...preencher('sim'),
+    descricao_projeto: 'problema tecnológico X',
+    elemento_tecnologico_novo: 'modelo próprio',
+    barreira_desafio_tecnologico: 'incerteza da extração',
+    metodologia_metodos: 'hipóteses e protótipos',
+    descritivo_complementar: 'parceria com ICT',
+  });
+  assert.ok(r.frascati.every((c) => c.avaliacao === 'atende'));
+  assert.ok(r.blocos.every((b) => b.preenchido));
+  assert.equal(r.lacunas.length, 0);
+  assert.ok(r.sintese.includes('cinco critérios de Frascati'));
+});
+
+caso('pré-análise MCTI aponta critério Frascati não evidenciado', () => {
+  const r = preAnaliseTecnicaMcti({
+    ...preencher({ triagem_05: 'nao', triagem_10: 'nao' }),
+    descricao_projeto: 'relatório',
+  });
+  const incerto = r.frascati.find((c) => c.id === 'incerto');
+  assert.equal(incerto?.avaliacao, 'nao_atende');
+  assert.ok(r.lacunas.some((l) => l.includes('Incerto')));
+  assert.ok(r.sintese.includes('Não evidenciado'));
 });
 
 if (falhas) {

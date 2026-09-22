@@ -1,7 +1,7 @@
 import { clsx } from '@/lib/clsx';
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'ghost' | 'danger';
+  variant?: 'primary' | 'ghost' | 'danger' | 'success';
 };
 
 export function Button({ variant = 'primary', className, ...rest }: Props) {
@@ -14,6 +14,7 @@ export function Button({ variant = 'primary', className, ...rest }: Props) {
         variant === 'primary' && 'bg-[var(--blue)] text-white hover:bg-[var(--blue-2)]',
         variant === 'ghost' && 'border border-g40 bg-[var(--white)] text-g80 hover:bg-g20',
         variant === 'danger' && 'border border-[var(--sig-crit)] text-[var(--sig-crit)] hover:bg-[var(--sig-crit-bg)]',
+        variant === 'success' && 'bg-[var(--sig-ok)] text-white hover:bg-[var(--sig-ok)]',
         className,
       )}
     />
