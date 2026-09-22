@@ -7,6 +7,7 @@ import { ProjetoLeitura } from '@/components/ProjetoLeitura';
 import { atualizarProjeto } from '../actions';
 import { dataLonga } from '@/lib/format';
 import { hasRoleAtLeast } from '@/lib/types';
+import { ehVisualizacaoCadastro, hrefVoltarCadastro } from '@/lib/lei-do-bem';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,9 +30,9 @@ export default async function EditarProjetoPage({
 
   if (!projeto) notFound();
 
-  const visualizar = searchParams.visualizar === '1';
+  const visualizar = ehVisualizacaoCadastro(searchParams.visualizar);
   const origemLeiDoBem = searchParams.origem === 'lei-do-bem';
-  const voltarHref = origemLeiDoBem ? '/lei-do-bem' : '/projetos';
+  const voltarHref = hrefVoltarCadastro(searchParams.origem);
   const podeEditar = !visualizar && (projeto.owner_id === perfil.id || hasRoleAtLeast(perfil.role, 'gerencial'));
   const acao = atualizarProjeto.bind(null, params.id);
   const areaNome = areas?.find((a) => a.id === projeto.area_id)?.name ?? null;

@@ -443,6 +443,24 @@ export function textoOrdemLeiDoBem(coluna: '' | LeiDoBemColunaOrdem, sentido: Se
   return `ordenadas por ${LEI_DO_BEM_ORDEM_ROTULO[coluna]} · ${sentido === 'desc' ? maior : menor}`;
 }
 
+export function hrefAbrirCadastroLeiDoBem(projectId: string): string {
+  return `/projetos/${projectId}?visualizar=1&origem=lei-do-bem`;
+}
+
+export function ehVisualizacaoCadastro(visualizar?: string): boolean {
+  return visualizar === '1';
+}
+
+export function hrefVoltarCadastro(origem?: string): string {
+  return origem === 'lei-do-bem' ? '/lei-do-bem' : '/projetos';
+}
+
+export function rotuloBotaoSalvarAuditoria(pending: boolean, salvo: boolean): string {
+  if (pending) return 'Salvando…';
+  if (salvo) return 'Salvo';
+  return 'Salvar auditoria';
+}
+
 export const GRUPO1_CAMPOS = [
   {
     name: 'objetivo_estrategico_okr',

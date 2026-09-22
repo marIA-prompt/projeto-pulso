@@ -7,6 +7,10 @@ import {
   avaliarItensTriagem,
   faltamCamposCadastroLeiDoBem,
   preAnaliseTecnicaMcti,
+  hrefAbrirCadastroLeiDoBem,
+  ehVisualizacaoCadastro,
+  hrefVoltarCadastro,
+  rotuloBotaoSalvarAuditoria,
   GRUPO1_CAMPOS_ESCOPO,
   GRUPO2_CAMPOS,
   MSG_CAMPOS_CADASTRO_LEI_DO_BEM,
@@ -329,6 +333,26 @@ caso('pré-análise MCTI: triagem toda Sim e blocos preenchidos → segue para v
   assert.ok(r.blocos.every((b) => b.preenchido));
   assert.equal(r.lacunas.length, 0);
   assert.ok(r.sintese.includes('cinco critérios de Frascati'));
+});
+
+caso('Abrir cadastro vai para a iniciativa em somente visualização', () => {
+  assert.equal(
+    hrefAbrirCadastroLeiDoBem('proj-1'),
+    '/projetos/proj-1?visualizar=1&origem=lei-do-bem',
+  );
+  assert.equal(ehVisualizacaoCadastro('1'), true);
+  assert.equal(ehVisualizacaoCadastro(undefined), false);
+  assert.equal(ehVisualizacaoCadastro('0'), false);
+  assert.equal(hrefVoltarCadastro('lei-do-bem'), '/lei-do-bem');
+  assert.equal(hrefVoltarCadastro(undefined), '/projetos');
+  assert.equal(hrefVoltarCadastro('projetos'), '/projetos');
+});
+
+caso('rótulo do botão de auditoria: pendente, salvo e padrão', () => {
+  assert.equal(rotuloBotaoSalvarAuditoria(true, false), 'Salvando…');
+  assert.equal(rotuloBotaoSalvarAuditoria(true, true), 'Salvando…');
+  assert.equal(rotuloBotaoSalvarAuditoria(false, true), 'Salvo');
+  assert.equal(rotuloBotaoSalvarAuditoria(false, false), 'Salvar auditoria');
 });
 
 caso('pré-análise MCTI aponta critério Frascati não evidenciado', () => {

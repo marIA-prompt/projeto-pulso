@@ -30,8 +30,10 @@ import {
   TRIAGEM_ITENS,
   cicloOrdemLeiDoBem,
   classeBadgeTom,
+  hrefAbrirCadastroLeiDoBem,
   ordenarLinhasLeiDoBem,
   preAnaliseTecnicaMcti,
+  rotuloBotaoSalvarAuditoria,
   textoOrdemLeiDoBem,
   type LeiDoBemClassificacao,
   type LeiDoBemColunaOrdem,
@@ -911,7 +913,7 @@ function Detalhe({
           </div>
           <div className="flex flex-wrap justify-end gap-2">
             <Link
-              href={`/projetos/${linha.project_id}?visualizar=1&origem=lei-do-bem`}
+              href={hrefAbrirCadastroLeiDoBem(linha.project_id)}
               title="Abre o cadastro original somente para visualização"
               className="rounded-s border border-g40 px-3 py-1.5 text-sm font-medium text-g80 hover:bg-g20"
             >
@@ -934,13 +936,11 @@ function Detalhe({
 
 function SalvarAuditoria({ salvo }: { salvo: boolean }) {
   const { pending } = useFormStatus();
-  if (pending) {
-    return <Button type="submit" disabled>Salvando…</Button>;
-  }
-  if (salvo) {
-    return <Button type="submit" variant="success">Salvo</Button>;
-  }
-  return <Button type="submit">Salvar auditoria</Button>;
+  return (
+    <Button type="submit" disabled={pending} variant={salvo && !pending ? 'success' : 'primary'}>
+      {rotuloBotaoSalvarAuditoria(pending, salvo)}
+    </Button>
+  );
 }
 
 function Bloco({ titulo, children }: { titulo: string; children: React.ReactNode }) {
