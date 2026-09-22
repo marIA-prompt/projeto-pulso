@@ -733,6 +733,11 @@ function Detalhe({
           ))}
         </Bloco>
 
+        <form
+          id="form-auditoria"
+          action={formAction}
+          onChange={() => setSalvo(false)}
+        >
         <Bloco titulo="Avaliação técnica (MCTI)">
           <p className="text-xs leading-relaxed text-g50">
             Pré-análise no recorte do Guia Prático da Lei do Bem (MCTI, seção 6) e dos cinco
@@ -769,11 +774,9 @@ function Detalhe({
                   id={`mcti-${c.name}`}
                   name={c.name}
                   rows={c.rows}
-                  form="form-auditoria"
                   className="field mt-1"
                   defaultValue={(linha as unknown as Record<string, string | null>)[c.name] ?? ''}
                   aria-describedby={`ajuda-mcti-${c.name}`}
-                  onChange={() => setSalvo(false)}
                 />
                 <p id={`ajuda-mcti-${c.name}`} className="mt-1 text-xs leading-snug text-g50">{c.ajuda}</p>
               </div>
@@ -848,12 +851,7 @@ function Detalhe({
           </Bloco>
         )}
 
-        <form
-          id="form-auditoria"
-          action={formAction}
-          onChange={() => setSalvo(false)}
-          className="mt-6 space-y-4 border-t border-g30 pt-4"
-        >
+        <div className="mt-6 space-y-4 border-t border-g30 pt-4">
           <h4 className="text-sm font-semibold text-g90">Auditoria</h4>
           {estado.erro && <ErroBox mensagem={estado.erro} />}
           {salvo && (
@@ -927,6 +925,7 @@ function Detalhe({
               Fechar
             </button>
           </div>
+        </div>
         </form>
       </div>
     </div>
