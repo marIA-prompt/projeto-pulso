@@ -43,3 +43,19 @@ export function etapaAnteriorCadastro(etapa: EtapaCadastro, opta: OptaLeiDoBem):
   if (i <= 0) return lista[0]?.id ?? 'dados';
   return lista[i - 1].id;
 }
+
+/**
+ * Impede pular Cadastro do projeto (os 5 campos obrigatórios) pela barra de etapas.
+ */
+export function destinoEtapaCadastro(
+  destino: EtapaCadastro,
+  opta: OptaLeiDoBem,
+  escopoCompleto: boolean,
+): EtapaCadastro {
+  const visiveis = etapasCadastroIniciativa(opta);
+  if (!visiveis.some((e) => e.id === destino)) return visiveis[0]?.id ?? 'dados';
+  if (opta === 'sim' && !escopoCompleto && (destino === 'triagem' || destino === 'revisao')) {
+    return 'cadastro';
+  }
+  return destino;
+}

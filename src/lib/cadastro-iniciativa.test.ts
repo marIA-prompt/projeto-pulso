@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   ETAPAS_CADASTRO,
+  destinoEtapaCadastro,
   etapaAnteriorCadastro,
   etapasCadastroIniciativa,
   proximaEtapaCadastro,
@@ -53,6 +54,21 @@ caso('Continuar em Dados vai para Lei do Bem', () => {
 
 caso('Continuar em cadastro do projeto vai para a triagem', () => {
   assert.equal(proximaEtapaCadastro('cadastro', 'sim'), 'triagem');
+});
+
+caso('pular Cadastro do projeto pela barra volta para o cadastro se o escopo está incompleto', () => {
+  assert.equal(destinoEtapaCadastro('triagem', 'sim', false), 'cadastro');
+  assert.equal(destinoEtapaCadastro('revisao', 'sim', false), 'cadastro');
+  assert.equal(destinoEtapaCadastro('triagem', 'sim', true), 'triagem');
+  assert.equal(destinoEtapaCadastro('revisao', 'sim', true), 'revisao');
+  assert.equal(destinoEtapaCadastro('cadastro', 'sim', false), 'cadastro');
+  assert.equal(destinoEtapaCadastro('optin', 'sim', false), 'optin');
+});
+
+caso('destino inexistente ou sem opt-in não inventa etapa', () => {
+  assert.equal(destinoEtapaCadastro('triagem', '', false), 'dados');
+  assert.equal(destinoEtapaCadastro('cadastro', 'nao', true), 'dados');
+  assert.equal(destinoEtapaCadastro('revisao', 'nao', false), 'revisao');
 });
 
 caso('voltar a partir da triagem retorna ao cadastro do projeto', () => {

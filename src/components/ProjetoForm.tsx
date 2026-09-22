@@ -12,6 +12,7 @@ import type { EstadoProjeto } from '@/app/(app)/projetos/actions';
 import {
   etapaAnteriorCadastro,
   etapasCadastroIniciativa,
+  destinoEtapaCadastro,
   proximaEtapaCadastro,
   type EtapaCadastro,
   type OptaLeiDoBem,
@@ -105,7 +106,14 @@ export function ProjetoForm({
   );
 
   function irPara(id: EtapaCadastro) {
-    if (etapas.some((e) => e.id === id)) setEtapa(id);
+    const destino = destinoEtapaCadastro(
+      id,
+      opta,
+      faltamCamposCadastroLeiDoBem(ldb).length === 0,
+    );
+    if (destino !== id) setAviso(MSG_CAMPOS_CADASTRO_LEI_DO_BEM);
+    else setAviso(null);
+    if (etapas.some((e) => e.id === destino)) setEtapa(destino);
   }
 
   function escolherOpta(v: 'sim' | 'nao') {
