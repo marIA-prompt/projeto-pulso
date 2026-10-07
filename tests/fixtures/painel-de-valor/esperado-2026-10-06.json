@@ -1,0 +1,42 @@
+{
+  "total": 241,
+  "por_estagio": {
+    "concluido": 171,
+    "em_desenvolvimento": 57,
+    "em_teste": 11,
+    "ideia": 1,
+    "cancelado": 1
+  },
+  "ativas": 69,
+  "horas_devolvidas_mes": 2420.2,
+  "horas_portfolio_mes": 3049.2,
+  "horas_a_capturar_mes": 629.0,
+  "pct_horas_capturadas": 79,
+  "horas_devolvidas_ano": 29042.4,
+  "pessoas_equivalentes": 14.4,
+  "concluidas_com_horas": 64,
+  "concluidas_sem_horas": 107,
+  "com_horas_informadas": 96,
+  "top5_horas": 1396.0,
+  "pct_top5": 58,
+  "usa_ia": 141,
+  "usa_n8n": 89,
+  "novas_desde_lancamento": 25,
+  "novas_concluidas": 11,
+  "horas_novas_concluidas": 425.5,
+  "horas_por_tema_concluidas": {
+    "Receita, Comercial e Marketing": 1343.7,
+    "Experiência do Cliente e Atendimento": 424.3,
+    "Sem tema": 261.0,
+    "Risco, Compliance e Regulação": 185.7,
+    "Eficiência Operacional": 168.5,
+    "Eficiência Corporativa": 30.0,
+    "Dados, BI e Relatórios": 7.0,
+    "Automação e Eficiência Operacional": 0.0
+  },
+  "simulador_custo_hora_50": {
+    "mes": 121010,
+    "ano": 1452120,
+    "a_capturar_ano": 377400
+  }
+}

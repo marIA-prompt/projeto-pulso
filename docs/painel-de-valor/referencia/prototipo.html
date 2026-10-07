@@ -1,0 +1,823 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}</style></head><body>
+<title>Painel de Valor da IA Senff</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: faixa navy com a leitura executiva, depois seções empilhadas; a régua de 5 etapas se repete em tudo. */
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --ink:#14222E; --muted:#566473; --line:#D5DCE3;
+  --band:#12304A; --on-band:#EAF2F8; --on-band-muted:#B4C6D6;
+  --acqua:#0B7F7B; --acqua-soft:#D6EFEC; --acqua-band:#5FD3CA;
+  --ok:#2C7A3F; --ok-soft:#DFF0E2; --warn:#8A5F00; --warn-soft:#F6E9C6;
+  --alert:#B3261E; --alert-soft:#FADFDB; --idle:#5F6C79; --idle-soft:#E3E8ED; --seg:#DCE3E9;
+  --f-head:"Readex Pro","Segoe UI",system-ui,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F161C; --surface:#17212A; --ink:#E4EAF0; --muted:#96A3B0; --line:#2A3641;
+    --band:#0A1F31; --on-band:#DCE8F2; --on-band-muted:#93A8BA;
+    --acqua:#4FC9C0; --acqua-soft:#123A3A; --acqua-band:#5FD3CA;
+    --ok:#6CC27A; --ok-soft:#183222; --warn:#E2B44A; --warn-soft:#3A3018;
+    --alert:#F2826F; --alert-soft:#3D1F1B; --idle:#8C99A6; --idle-soft:#232E38; --seg:#2A3641;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F161C; --surface:#17212A; --ink:#E4EAF0; --muted:#96A3B0; --line:#2A3641;
+  --band:#0A1F31; --on-band:#DCE8F2; --on-band-muted:#93A8BA;
+  --acqua:#4FC9C0; --acqua-soft:#123A3A; --acqua-band:#5FD3CA;
+  --ok:#6CC27A; --ok-soft:#183222; --warn:#E2B44A; --warn-soft:#3A3018;
+  --alert:#F2826F; --alert-soft:#3D1F1B; --idle:#8C99A6; --idle-soft:#232E38; --seg:#2A3641;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 60px);scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15.5px/1.55 var(--f-body);font-variant-numeric:tabular-nums}
+.wrap{max-width:1160px;margin:0 auto;padding-inline:20px}
+h1,h2,h3{font-family:var(--f-head);text-wrap:balance;margin:0}
+p{margin:0}
+a{color:var(--acqua)}
+:focus-visible{outline:2px solid var(--acqua);outline-offset:2px;border-radius:4px}
+
+/* faixa */
+.band{background:var(--band);color:var(--on-band);padding-block:34px 30px}
+.eyebrow{font:600 12.5px/1.3 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--acqua-band);margin-bottom:10px}
+h1{font-size:clamp(26px,4vw,38px);line-height:1.15;font-weight:700;max-width:24ch}
+.lead{margin-top:12px;font-size:17px;max-width:70ch;color:var(--on-band)}
+.meta{margin-top:10px;font-size:13.5px;color:var(--on-band-muted)}
+.heads{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.16);border-radius:10px;overflow:hidden;margin-top:26px}
+.head{background:var(--band);padding:16px 18px;min-width:0}
+.head .n{font:700 30px/1.1 var(--f-head)}
+.head .n small{font:500 15px/1 var(--f-body);color:var(--on-band-muted)}
+.head .l{font-weight:600;margin-top:4px}
+.head .c{font-size:13.5px;color:var(--on-band-muted);margin-top:2px}
+@media (max-width:760px){.heads{grid-template-columns:1fr}}
+
+/* navegação */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;gap:6px;overflow-x:auto;padding-block:8px}
+.nav a{flex:none;text-decoration:none;color:var(--muted);font-weight:600;font-size:13.5px;padding:6px 12px;border-radius:99px;border:1px solid transparent}
+.nav a:hover{color:var(--ink);border-color:var(--line)}
+
+main{padding-block:8px 56px}
+section{padding-top:38px}
+h2{font-size:22px;font-weight:700}
+.sub{color:var(--muted);max-width:78ch;margin-top:6px}
+.block{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-top:16px}
+
+/* pílulas */
+.pill{display:inline-block;font:600 12px/1 var(--f-body);padding:5px 9px;border-radius:99px;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.prog{background:var(--acqua-soft);color:var(--acqua)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.idle{background:var(--idle-soft);color:var(--idle)}
+.pill.alert{background:var(--alert-soft);color:var(--alert)}
+.tag{display:inline-block;font:600 11.5px/1 var(--f-body);padding:3px 6px;border-radius:4px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+
+/* régua */
+.track{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;width:150px;flex:none}
+.track i{height:9px;border-radius:2px;background:var(--seg)}
+.track i.on{background:var(--acqua)}
+.track i.goal{background:transparent;border:1.5px dashed var(--muted)}
+.track i.goal.on{background:var(--ok);border-color:var(--ok);border-style:solid}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted);margin-top:12px}
+.legend b{color:var(--ink);font-weight:600}
+
+/* diagnóstico */
+.diag{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+.diag>div{padding:18px 20px;min-width:0;border-left:1px solid var(--line)}
+.diag>div:first-child{border-left:0}
+.diag h3{font-size:16px;margin-bottom:6px}
+.diag p{color:var(--muted)}
+@media (max-width:820px){.diag{grid-template-columns:1fr}.diag>div{border-left:0;border-top:1px solid var(--line)}.diag>div:first-child{border-top:0}}
+
+/* prioridades */
+.prio{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr);gap:8px 24px;padding:18px 20px;border-top:1px solid var(--line)}
+.prio:first-child{border-top:0}
+.prio .hd{display:flex;flex-direction:column;gap:8px;min-width:0}
+.prio .hd h3{font-size:16.5px;line-height:1.3}
+.prio .hd .row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.prio .num{font:700 13px/1 var(--f-head);color:var(--acqua)}
+.col{min-width:0}
+.col .k{font:600 11.5px/1.3 var(--f-body);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.col ul{margin:0;padding-left:17px}
+.col li{margin-bottom:3px}
+.next{grid-column:1/-1;font-size:14.5px;padding-top:8px;border-top:1px dashed var(--line);margin-top:4px}
+.next b{color:var(--acqua)}
+@media (max-width:860px){.prio{grid-template-columns:1fr}}
+
+/* resultados esperados */
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:1px;background:var(--line);border-radius:10px;overflow:hidden}
+.res>div{background:var(--surface);padding:14px 18px;display:flex;gap:12px;align-items:flex-start;min-width:0}
+.res .pill{margin-top:2px;flex:none;min-width:74px;text-align:center}
+.res p{font-weight:600}
+.res span.d{display:block;font-weight:400;color:var(--muted);font-size:14px;margin-top:2px}
+
+/* frentes */
+.fronts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px;margin-top:16px}
+.front{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.front .tech{font:600 11.5px/1.3 var(--f-body);letter-spacing:.07em;text-transform:uppercase;color:var(--acqua)}
+.front h3{font-size:18px;line-height:1.25}
+.front .who{font-size:13.5px;color:var(--muted)}
+.front .gain{font-size:15.5px}
+.front dl{margin:0;display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.front dt{font:600 11.5px/1.3 var(--f-body);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.front dd{margin:2px 0 0;font-size:14.5px}
+
+/* régua de produção */
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.filters button{font:600 13px/1 var(--f-body);padding:8px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--band);border-color:var(--band);color:var(--on-band)}
+.stages{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border-radius:10px;overflow:hidden;margin-top:16px}
+.stages>div{background:var(--surface);padding:12px 14px;min-width:0}
+.stages .n{font:700 26px/1 var(--f-head)}
+.stages .l{font-size:13px;color:var(--muted);margin-top:4px}
+.stages .goal .n{color:var(--alert)}
+@media (max-width:620px){.stages{grid-template-columns:repeat(2,minmax(0,1fr))}.stages .goal{grid-column:1/-1}}
+.rrow{display:flex;gap:10px 18px;align-items:center;flex-wrap:wrap;padding:12px 20px;border-top:1px solid var(--line)}
+.rrow:first-child{border-top:0}
+.rrow .nm{flex:1 1 300px;min-width:0}
+.rrow .nm b{font-weight:600}
+.rrow .nm span{display:block;color:var(--muted);font-size:13.5px}
+.rrow .st{flex:0 0 118px;font-weight:600;font-size:13.5px}
+.rrow .tags{flex:0 0 auto;display:flex;gap:4px}
+
+/* ganhos */
+.gains{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:16px}
+@media (max-width:900px){.gains{grid-template-columns:1fr}}
+.gcol{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;min-width:0}
+.gcol h3{font-size:16.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gcol>p{color:var(--muted);font-size:14px;margin-top:4px}
+.gitem{padding-top:12px;margin-top:12px;border-top:1px solid var(--line)}
+.gitem .v{font:700 20px/1.2 var(--f-head)}
+.gitem .t{margin-top:2px}
+.gitem .s{font-size:13px;color:var(--muted);margin-top:2px}
+.bars{display:flex;align-items:flex-end;gap:6px;height:74px;margin-top:10px}
+.bars div{flex:1;background:var(--acqua);border-radius:2px 2px 0 0;position:relative;min-width:0}
+.bars div span{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted)}
+.barcap{font-size:12.5px;color:var(--muted);margin-top:24px}
+
+/* fechamento */
+.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;margin-top:16px}
+@media (max-width:900px){.two{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;min-width:0}
+.card h3{font-size:16.5px;margin-bottom:8px}
+.card ol,.card ul{margin:0;padding-left:20px}
+.card li{margin-bottom:9px}
+.card li b{font-weight:600}
+.card li .tag{margin-left:4px}
+.risk li::marker{color:var(--alert)}
+
+/* alternador de visão */
+.switch{display:inline-grid;grid-template-columns:1fr 1fr;gap:0;border:1.5px solid rgba(255,255,255,.4);border-radius:12px;padding:3px;margin-bottom:22px;max-width:100%}
+.switch button{font:600 14.5px/1.2 var(--f-head);color:var(--on-band);background:transparent;border:0;border-radius:9px;padding:10px 18px;cursor:pointer;text-align:left}
+.switch button small{display:block;font:400 12.5px/1.3 var(--f-body);color:var(--on-band-muted);margin-top:2px}
+.switch button[aria-pressed="true"]{background:var(--on-band);color:var(--band)}
+.switch button[aria-pressed="true"] small{color:var(--band);opacity:.75}
+@media (max-width:520px){.switch{display:grid;grid-template-columns:1fr}}
+.heads.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:860px){.heads.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:460px){.heads.four{grid-template-columns:1fr}}
+.jump{display:flex;flex-wrap:wrap;gap:6px;padding-top:18px}
+.jump a{text-decoration:none;color:var(--muted);font-weight:600;font-size:13.5px;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface)}
+.jump a:hover{color:var(--ink)}
+/* vitrine */
+.sol{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.sol .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.sol h3{font-size:19px;line-height:1.25}
+.sol .ask{font:500 16.5px/1.4 var(--f-head);color:var(--acqua)}
+.sol .does{font-size:15.5px}
+.sol dl{margin:0;display:grid;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.sol dt{font:600 11.5px/1.3 var(--f-body);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.sol dd{margin:2px 0 0;font-size:14.5px}
+.how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.how>div{padding:18px 20px;border-left:1px solid var(--line);min-width:0}
+.how>div:first-child{border-left:0}
+.how h3{font-size:16px;margin-bottom:6px}
+.how p{color:var(--muted)}
+@media (max-width:820px){.how{grid-template-columns:1fr}.how>div{border-left:0;border-top:1px solid var(--line)}.how>div:first-child{border-top:0}}
+.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:14px}
+.kp>div{background:var(--surface);box-shadow:0 0 0 1px var(--line);padding:14px 16px;min-width:0;display:flex;flex-direction:column;gap:3px}
+.kp .p{font:700 27px/1.1 var(--f-head)}
+.kp .l{font-weight:600;font-size:14.5px}
+.kp .c{font-size:13px;color:var(--muted);margin-bottom:8px}
+.kp .bar{height:6px;border-radius:3px;background:var(--seg);margin-top:auto;overflow:hidden}
+.kp .bar i{display:block;height:100%;background:var(--acqua);border-radius:3px}
+.kp .bar.ok i{background:var(--ok)} .kp .bar.warn i{background:var(--warn)} .kp .bar.alert i{background:var(--alert)}
+.kgroup{margin-top:22px}
+.kgroup h3{font-size:16px}
+.kgroup>p{font-size:13.5px;color:var(--muted);margin-top:2px}
+.stages .n small{font:500 14px/1 var(--f-body);color:var(--muted)}
+.imp{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:0;margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.imp>div{padding:22px 24px;min-width:0}
+.imp .side{border-left:1px solid var(--line)}
+@media (max-width:860px){.imp{grid-template-columns:1fr}.imp .side{border-left:0;border-top:1px solid var(--line)}}
+.imp .big{font:700 clamp(34px,6vw,54px)/1.05 var(--f-head);color:var(--acqua)}
+.imp .bigl{font:600 17px/1.35 var(--f-head);margin-top:6px;max-width:34ch}
+.imp .eq{display:flex;flex-wrap:wrap;gap:8px 28px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.imp .eq div{min-width:0}
+.imp .eq b{display:block;font:700 22px/1.2 var(--f-head)}
+.imp .eq span{font-size:13.5px;color:var(--muted)}
+.calc{margin-top:16px;padding:14px 16px;border-radius:8px;background:var(--acqua-soft)}
+.calc label{display:block;font-weight:600;font-size:14px}
+.calc input[type=range]{width:100%;margin:8px 0 2px;accent-color:var(--acqua)}
+.calc .out{display:flex;flex-wrap:wrap;gap:6px 24px;margin-top:6px}
+.calc .out b{font:700 22px/1.2 var(--f-head)}
+.calc .out span{display:block;font-size:13px;color:var(--muted)}
+.calc .note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.side h3{font-size:15px;margin-bottom:2px}
+.side .line{padding:12px 0;border-top:1px solid var(--line)}
+.side .line:first-of-type{border-top:0;padding-top:6px}
+.side .line b{font:700 20px/1.2 var(--f-head);display:block}
+.side .line span{font-size:14px}
+.side .line small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.role{margin-top:16px;padding:18px 22px}
+.role h3{font-size:16px;margin-bottom:6px}
+.role p{max-width:92ch}
+.role ul{margin:8px 0 0;padding-left:20px;columns:2;column-gap:36px}
+.role li{margin-bottom:6px;break-inside:avoid}
+@media (max-width:760px){.role ul{columns:1}}
+.switch.three{grid-template-columns:repeat(3,auto)}
+@media (max-width:760px){.switch.three{display:grid;grid-template-columns:1fr}}
+.hb{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:16px}
+@media (max-width:860px){.hb{grid-template-columns:1fr}}
+.hrow{display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:4px 12px;align-items:center;padding:7px 0}
+.hrow .nm{font-size:14px;min-width:0}
+.hrow .nm small{color:var(--muted)}
+.hrow .v{text-align:right;font-weight:600;font-size:14px}
+.hrow .b{grid-column:1/-1;height:7px;border-radius:3px;background:var(--seg);overflow:hidden}
+.hrow .b i{display:block;height:100%;background:var(--acqua);border-radius:3px}
+.tools{display:grid;grid-template-columns:minmax(0,2fr) repeat(3,minmax(0,1fr));gap:10px;padding:16px 20px;border-bottom:1px solid var(--line)}
+@media (max-width:860px){.tools{grid-template-columns:1fr 1fr}.tools .q{grid-column:1/-1}}
+.tools label{display:block;font:600 11.5px/1.3 var(--f-body);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.tools input,.tools select{width:100%;font:inherit;font-size:14px;padding:8px 10px;border-radius:7px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.chk{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;padding:10px 20px;border-bottom:1px solid var(--line);font-size:14px}
+.chk label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.chk .cnt{margin-left:auto;color:var(--muted)}
+.tw{overflow-x:auto;max-height:640px;overflow-y:auto}
+table.pt{border-collapse:collapse;width:100%;font-size:14px}
+.pt th,.pt td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.pt th{position:sticky;top:0;background:var(--surface);font:600 11.5px/1.3 var(--f-body);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.pt td.t{min-width:260px}
+.pt td.n,.pt th.n{text-align:right;white-space:nowrap}
+.pt td.s{white-space:nowrap}
+.pt .mut{color:var(--muted)}
+footer{margin-top:36px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);max-width:92ch}
+footer p+p{margin-top:8px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+
+<header class="band">
+  <div class="wrap">
+    <p class="eyebrow">Gerência de Inteligência Artificial · Painel de Valor · outubro de 2026</p>
+    <div class="switch three" role="group" aria-label="Escolha a visão">
+      <button type="button" id="sw-uso" data-v="uso" aria-pressed="true">O que a IA já faz<small>para diretores e áreas</small></button>
+      <button type="button" id="sw-pulso" data-v="pulso" aria-pressed="false">Portfólio do Pulso<small>as 241 iniciativas em detalhe</small></button>
+      <button type="button" id="sw-gestao" data-v="gestao" aria-pressed="false">Direcionamento<small>para a gestão da área</small></button>
+    </div>
+    <div id="hero-uso">
+      <h1>O que a IA já faz pela Senff no dia a dia</h1>
+      <p class="lead">IA e automação já devolvem às áreas o trabalho de cerca de 14 pessoas, todo mês. Abaixo, a conta em horas e em reais, e as nove soluções que as áreas usam, testam ou têm em desenvolvimento.</p>
+      <p class="meta">Data-base 06/10/2026. Rascunho para revisão antes de circular. Uso interno.</p>
+      <div class="heads four">
+        <div class="head"><div class="n">29 mil h</div><div class="l">devolvidas às áreas por ano</div><div class="c">2.420 h por mês, no ritmo atual</div></div>
+        <div class="head"><div class="n">≈ 14</div><div class="l">pessoas em tempo integral</div><div class="c">equivalente das horas devolvidas</div></div>
+        <div class="head"><div class="n">71%</div><div class="l">das iniciativas concluídas</div><div class="c">171 de 241, em 32 áreas</div></div>
+        <div class="head"><div class="n">92%</div><div class="l">das contas de IA em uso</div><div class="c">11 de 12; mensagens +114% no trimestre</div></div>
+      </div>
+    </div>
+    <div id="hero-pulso" hidden>
+      <h1>Portfólio do Pulso em detalhe</h1>
+      <p class="lead">As 241 iniciativas de IA e automação cadastradas pelas áreas: onde estão as horas devolvidas, quem concentra o valor e a lista completa para consulta.</p>
+      <p class="meta">Exportação do Pulso de 06/10/2026. Horas são as declaradas pelo dono de cada iniciativa. Uso interno.</p>
+      <div class="heads four">
+        <div class="head"><div class="n">241</div><div class="l">iniciativas de 32 áreas</div><div class="c">71% concluídas, 28% em andamento</div></div>
+        <div class="head"><div class="n">2.420 h</div><div class="l">devolvidas por mês</div><div class="c">por 64 iniciativas concluídas com horas</div></div>
+        <div class="head"><div class="n">59%</div><div class="l">usam IA</div><div class="c">141 iniciativas; 37% usam n8n</div></div>
+        <div class="head"><div class="n">25</div><div class="l">cadastradas desde o lançamento</div><div class="c">10% do portfólio; 11 já concluídas</div></div>
+      </div>
+    </div>
+    <div id="hero-gestao" hidden>
+      <h1>Direcionamento Executivo: onde estamos e o que falta</h1>
+      <p class="lead">Há trabalho em 5 das 7 prioridades. O que ainda não aconteceu é a última etapa: nenhuma frente chegou a resultado medido, que é o critério pelo qual o Direcionamento diz que a área será avaliada.</p>
+      <p class="meta">Ciclos de agosto e setembro de 2026. Data-base 06/10/2026. Rascunho para revisão. Uso interno.</p>
+      <div class="heads" id="heads"></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<div id="v-uso">
+<section id="impacto">
+  <h2>O impacto em uma conta</h2>
+  <p class="sub">Soma do que os donos das 171 iniciativas concluídas de IA e automação informaram no Pulso. Posição de 06/10/2026.</p>
+  <div class="imp">
+    <div>
+      <div class="big">29.042 horas por ano</div>
+      <p class="bigl">de trabalho manual que as áreas deixaram de fazer e podem dedicar a análise, atendimento e melhoria.</p>
+      <div class="eq">
+        <div><b>2.420 h</b><span>por mês</span></div>
+        <div><b>≈ 14 pessoas</b><span>em tempo integral (168 h por mês)</span></div>
+        <div><b>+ 629 h</b><span>por mês ainda a capturar nas 69 iniciativas ativas</span></div>
+      </div>
+      <div class="calc">
+        <label for="custo-hora">Em reais, com a hora a <span id="ch-v">R$ 50</span></label>
+        <input type="range" id="custo-hora" min="20" max="200" step="5" value="50">
+        <div class="out">
+          <div><b id="ch-ano">R$ 1,45 mi</b><span>por ano, já devolvidos</span></div>
+          <div><b id="ch-mes">R$ 121 mil</b><span>por mês</span></div>
+          <div><b id="ch-pot">R$ 377 mil</b><span>por ano ainda a capturar</span></div>
+        </div>
+        <p class="note">O custo da hora é uma premissa para simulação, não um dado da Senff. Ajuste para o custo médio real com encargos. Horas devolvidas são capacidade liberada: só viram economia financeira se a área realocar ou reduzir.</p>
+      </div>
+    </div>
+    <div class="side">
+      <h3>Outras contas que pesam</h3>
+      <div class="line"><b>107 concluídas sem horas informadas</b><span>Só 64 das 171 iniciativas concluídas têm horas no cadastro. O valor real devolvido é maior que o mostrado ao lado.</span><small>Cadastro do Pulso em 06/10/2026.</small></div>
+      <div class="line"><b>220 horas por mês</b><span>devolvidas por uma única entrega de setembro: a automação das análises de contestação do Consignado.</span><small>Declarado no Pulso pelo dono da iniciativa. 2.640 h por ano.</small></div>
+      <div class="line"><b>US$ 175 no trimestre</b><span>é o custo de uso de IA de 11 áreas, cerca de 1 centavo de dólar por interação.</span><small>Estimativa de uso, sem licenças.</small></div>
+      <div class="line"><b>US$ 10 mil por mês</b><span>é o preço de uma ferramenta comercial de mascaramento de dados que a área de Dados deixou de comprar, porque construiu a própria com apoio de IA.</span><small>Estimativa da área de Dados. Não desconta o esforço interno de construção e manutenção.</small></div>
+    </div>
+  </div>
+  <div class="block role">
+    <h3>De onde vem esse valor e qual o papel da Gerência de IA</h3>
+    <p>As iniciativas são das áreas, e a maior parte já existia antes de agosto. A Gerência de IA não gerou essas horas. Em dois meses, o que ela fez foi criar as condições para esse valor aparecer, crescer e ser mantido com segurança:</p>
+    <ul>
+      <li><b>Tornou o valor visível.</b> Antes do Pulso não havia um número de horas devolvidas nem a lista das 241 iniciativas.</li>
+      <li><b>Deu regra ao uso de IA.</b> Teto de gasto, auditoria dos projetos e riscos de dados tratados antes de virar incidente.</li>
+      <li><b>Está padronizando o que já funciona.</b> Os Agentes de Monitoramento existiam; o trabalho é dar um padrão único e treinar as áreas para criarem os seus.</li>
+      <li><b>Construiu em casa.</b> Avaliou parceiros externos e resolveu internamente o que um deles oferecia para o Comercial PF.</li>
+      <li><b>Abriu as primeiras soluções próprias.</b> Conta PJ, Comercial PF e Qualidade estão em teste com as áreas.</li>
+    </ul>
+  </div>
+</section>
+<section id="disponivel">
+  <h2>Disponível hoje</h2>
+  <p class="sub">Em uso pelas áreas. Se a necessidade da sua área parece com a frase em destaque, é só pedir.</p>
+  <div class="fronts" id="sol-on"></div>
+</section>
+<section id="teste">
+  <h2>Em teste e em desenvolvimento</h2>
+  <p class="sub">As três em teste já funcionam com casos reais de uma área. O motor antifraude ainda está sendo construído.</p>
+  <div class="fronts" id="sol-test"></div>
+</section>
+<section id="numeros">
+  <h2>Em números</h2>
+  <p class="sub">Posição do Pulso em 06/10/2026 às 11h21 e do painel de uso de ChatGPT e Codex no 3º trimestre.</p>
+  <div class="kp" id="kp-uso"></div>
+</section>
+<section id="como">
+  <h2>Como pedir</h2>
+  <div class="block how">
+    <div><h3>Tem uma necessidade parecida</h3><p>Fale com a Gerência de IA dizendo o que precisa resolver. Não é preciso saber qual ferramenta usar.</p></div>
+    <div><h3>Tem uma ideia nova</h3><p>Cadastre no Pulso. A iniciativa entra no portfólio e você vê se outra área já resolveu algo parecido.</p></div>
+    <div><h3>Quer ver funcionando</h3><p>Os encontros do Grupo de IA e Automação acontecem às 14h, com projetos apresentados pelas próprias áreas e espaço para dúvidas.</p></div>
+  </div>
+</section>
+</div>
+
+<div id="v-pulso" hidden>
+<section id="pulso-leitura">
+  <h2>O que os dados mostram</h2>
+  <div class="block diag">
+    <div><h3>O valor está concentrado</h3><p id="pl-conc"></p></div>
+    <div><h3>O número está subestimado</h3><p id="pl-sub"></p></div>
+    <div><h3>O que entrou depois do lançamento</h3><p id="pl-new"></p></div>
+  </div>
+  <div class="kp" id="kp-port"></div>
+</section>
+<section id="pulso-horas">
+  <h2>Onde estão as horas devolvidas</h2>
+  <p class="sub">Horas por mês das iniciativas concluídas. Entre parênteses, quantas iniciativas concluídas de cada grupo informaram horas.</p>
+  <div class="hb">
+    <div class="card"><h3>Por tema</h3><div id="hb-tema"></div></div>
+    <div class="card"><h3>Por diretoria</h3><div id="hb-dir"></div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><h3>As 10 iniciativas concluídas que mais devolvem horas</h3><div id="hb-top"></div></div>
+</section>
+<section id="pulso-lista">
+  <h2>Todas as iniciativas</h2>
+  <p class="sub">Busque pelo nome ou filtre. A lista abre ordenada pelas horas devolvidas por mês.</p>
+  <div class="block">
+    <div class="tools">
+      <div class="q"><label for="pf-q">Buscar</label><input id="pf-q" type="search" placeholder="Nome da iniciativa"></div>
+      <div><label for="pf-st">Estágio</label><select id="pf-st"></select></div>
+      <div><label for="pf-th">Tema</label><select id="pf-th"></select></div>
+      <div><label for="pf-di">Diretoria</label><select id="pf-di"></select></div>
+    </div>
+    <div class="chk">
+      <label><input type="checkbox" id="pf-h"> Só com horas informadas</label>
+      <label><input type="checkbox" id="pf-n"> Só cadastradas desde o lançamento</label>
+      <label><input type="checkbox" id="pf-ia"> Só as que usam IA</label>
+      <span class="cnt" id="pf-cnt"></span>
+    </div>
+    <div class="tw"><table class="pt"><thead><tr><th>Iniciativa</th><th>Estágio</th><th>Tema</th><th>Diretoria</th><th>Usa</th><th class="n">Horas/mês</th></tr></thead><tbody id="pf-rows"></tbody></table></div>
+  </div>
+</section>
+</div>
+
+<div id="v-gestao" hidden>
+<nav class="jump" aria-label="Seções">
+  <a href="#leitura">Leitura</a><a href="#indicadores">Indicadores em %</a><a href="#prioridades">7 prioridades</a><a href="#resultados">Resultados esperados</a><a href="#regua">Régua de produção</a><a href="#ganhos">Ganhos</a><a href="#fechar">Para fechar o trimestre</a>
+</nav>
+<section id="leitura">
+  <h2>Por que parece que nada do Direcionamento anda</h2>
+  <p class="sub">A sensação tem três causas, e só uma delas é falta de entrega. A visão ao lado mostra o que já existe; esta mostra só a distância até o que o Direcionamento pede.</p>
+  <div class="block diag">
+    <div><h3>O trabalho foi contado por vertical, não por prioridade</h3><p>Os relatórios mensais organizam as entregas em IA Generativa, Governança, Machine Learning e Pulso. Quem lê o Direcionamento procura as 7 prioridades e encontra uma tabela de status. Várias entregas listadas como proativas servem a essas prioridades e não foram contadas nelas.</p></div>
+    <div><h3>Quase tudo parou uma etapa antes da linha de chegada</h3><p>O Direcionamento pede soluções em produção e produção em resultado. Há entregas construídas e em teste em todas as frentes, mas as que estão em produção são de plataforma e governança, e nenhuma tem ainda o antes e depois medido.</p></div>
+    <div><h3>Duas prioridades simples continuam zeradas</h3><p>Horas de capacitação e SenffLabs seguem sem registro há dois ciclos. São as de menor esforço técnico, e por isso pesam na percepção mais do que o tamanho delas justifica.</p></div>
+  </div>
+</section>
+
+<section id="indicadores">
+  <h2>Indicadores em %</h2>
+  <p class="sub">Os mesmos números do painel, como proporção. A barra mostra a parcela do total.</p>
+  <div class="kgroup"><h3>Direcionamento Executivo</h3><div class="kp" id="kp-dir"></div></div>
+  <div class="kgroup"><h3>Pulso: portfólio e comunidade</h3><p>Posição da plataforma em 06/10/2026 às 11h21.</p><div class="kp" id="kp-pulso"></div></div>
+  <div class="kgroup"><h3>Pulso: Lei do Bem</h3><p>227 iniciativas na aba Lei do Bem. Percentuais sobre esse total.</p><div class="kp" id="kp-lei"></div></div>
+  <div class="kgroup"><h3>Uso de IA no 3º trimestre</h3><div class="kp" id="kp-ia"></div></div>
+</section>
+
+<section id="prioridades">
+  <h2>As 7 prioridades do Direcionamento</h2>
+  <p class="sub">Para cada uma: o que já existe, o que falta para contar como entregue segundo o próprio documento, e o próximo passo. A régua mostra a etapa atual.</p>
+  <div class="legend" id="legend"></div>
+  <div class="block" id="prios"></div>
+</section>
+
+<section id="resultados">
+  <h2>Os 9 resultados esperados</h2>
+  <p class="sub">Lista da seção 3 do Direcionamento, com a situação de hoje.</p>
+  <div class="res block" id="res" style="border:0"></div>
+</section>
+
+<section id="regua">
+  <h2>Régua de produção</h2>
+  <p class="sub">Todas as entregas dos dois meses na mesma escala de 5 etapas. As etiquetas dizem a frente e a prioridade a que cada uma serve.</p>
+  <div class="stages" id="stages"></div>
+  <div class="filters" id="filters" role="group" aria-label="Filtrar por frente"></div>
+  <div class="block" id="rows"></div>
+</section>
+
+<section id="ganhos">
+  <h2>Ganhos para a Senff</h2>
+  <p class="sub">Separados pelo grau de evidência. Só a primeira coluna pode ser apresentada como resultado.</p>
+  <div class="gains">
+    <div class="gcol">
+      <h3><span class="pill ok">Comprovado</span> Já aconteceu</h3>
+      <p>Fatos com registro nos relatórios e nas ferramentas.</p>
+      <div class="gitem"><div class="v">11 áreas</div><div class="t">usando IA na rotina (92% das contas), com 16,4 mil mensagens ao ChatGPT no 3º trimestre, 114% acima do trimestre anterior.</div>
+        <div class="bars" id="bars" role="img" aria-label="Mensagens ao ChatGPT por mês, de março a setembro de 2026"></div>
+        <p class="barcap">Mensagens por mês: de 952 em março para 7.119 em setembro.</p></div>
+      <div class="gitem"><div class="v">US$ 175</div><div class="t">de custo estimado de uso entre 05/07 e 02/10, sem licenças. Os 22 projetos de API foram auditados e os 4 acima do teto, reclassificados.</div></div>
+      <div class="gitem"><div class="v">241 iniciativas</div><div class="t">de IA e automação de 32 áreas visíveis em um só lugar, 71% delas concluídas. Antes ficavam dispersas por área.</div></div>
+      <div class="gitem"><div class="v">R$ 250 mil/mês</div><div class="t">de proposta externa não contratada (Distrito). A da NeoLabs, de R$ 267 mil a R$ 353 mil em 6 meses, também não segue nesse valor.</div><div class="s">Não é economia líquida: a capacidade será buscada com 2 profissionais ou parceiros mais acessíveis.</div></div>
+      <div class="gitem"><div class="v">4 riscos</div><div class="t">encontrados antes de virar incidente: credenciais em texto claro no fluxo MASP, projetos de API sem responsável vinculado, dado pessoal na base de um GPT e um GPT que inventava evidência de auditoria.</div></div>
+      <div class="gitem"><div class="v">4 formulários</div><div class="t">oficiais de Conta PJ preenchidos pelo assistente a partir dos documentos do cliente, validados em 3 casos reais.</div></div>
+    </div>
+    <div class="gcol">
+      <h3><span class="pill warn">Estimado</span> Falta validar</h3>
+      <p>Números das áreas ou de propostas. Servem como hipótese de valor.</p>
+      <div class="gitem"><div class="v">2.420 h/mês</div><div class="t">devolvidas às áreas pelas 171 iniciativas concluídas do portfólio. São 79% das 3.049 h que o portfólio inteiro pode devolver.</div><div class="s">Calculado pelo Pulso a partir do que cada dono informou no cadastro. As iniciativas são das áreas e a maior parte é anterior à Gerência. Passa a comprovado com a validação de uma amostra.</div></div>
+      <div class="gitem"><div class="v">220 h/mês</div><div class="t">devolvidas pela automação das análises de contestação do Consignado, concluída em setembro.</div><div class="s">Declarado no Pulso. O volume apresentado no encontro era de 440 ações no mês, cerca de 20 min cada.</div></div>
+      <div class="gitem"><div class="v">35 min → 1,5 min</div><div class="t">em uma etapa de processamento dos scripts de cobrança, e cerca de US$ 10 mil/mês de custo evitado com uma solução interna de mascaramento.</div><div class="s">Estimativas da área de Dados com Claude Code. Viram indicadores do piloto de 90 dias.</div></div>
+      <div class="gitem"><div class="v">10 a 15%</div><div class="t">de ganho sobre uma base de controle é a meta dos primeiros modelos preditivos.</div><div class="s">Meta do mapa de competências, ainda sem base de controle definida.</div></div>
+    </div>
+    <div class="gcol">
+      <h3><span class="pill idle">Sem medição</span> Falta a linha de base</h3>
+      <p>Entregas com valor provável e nenhum antes e depois registrado.</p>
+      <div class="gitem"><div class="t"><b>Conta PJ.</b> Quanto tempo a analista leva para preencher os 4 formulários à mão e quanto leva com o assistente.</div></div>
+      <div class="gitem"><div class="t"><b>Antifraude.</b> Taxa de challenge, fricção e perdas de hoje, para comparar com a segunda linha quando ela rodar em tráfego real.</div></div>
+      <div class="gitem"><div class="t"><b>Lei do Bem.</b> Valor do incentivo fiscal das 4 iniciativas enquadradas e das 110 em avaliação interna.</div></div>
+      <div class="gitem"><div class="t"><b>Assistentes das áreas.</b> Uso por GPT depois de publicado, e o tempo poupado na tarefa que cada um cobre.</div></div>
+      <div class="gitem"><div class="t"><b>Painel de Qualidade.</b> Horas de consolidação mensal que o painel substitui e o índice real, que depende da carteira oficial.</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="fechar">
+  <h2>Para fechar o trimestre com resultado</h2>
+  <p class="sub">Sugestão de sequência para outubro, priorizando o que move uma prioridade de etapa com menos esforço.</p>
+  <div class="two">
+    <div class="card">
+      <h3>Sete movimentos</h3>
+      <ol>
+        <li><b>Montar o GPT executivo do MASP e rodar os 17 testes.</b> É o caminho mais curto para a primeira solução de negócio em produção com dono definido. <span class="tag">P1</span></li>
+        <li><b>Cronometrar a Conta PJ nos próximos casos,</b> com e sem o assistente. Vira o primeiro ganho medido da área. <span class="tag">Resultado 9</span></li>
+        <li><b>Publicar os GPTs sem bloqueio no Workspace</b> e acompanhar o uso por área no painel que já existe. <span class="tag">Resultado 1</span></li>
+        <li><b>Abrir o registro de horas de capacitação.</b> Os dois treinamentos de agosto e os de outubro já entram na primeira edição. <span class="tag">P5</span></li>
+        <li><b>Estender o mapa de competências</b> dos 2 perfis de IA Preditiva para as pessoas que já atuam com automação e IA. <span class="tag">P4</span></li>
+        <li><b>Ligar a telemetria do antifraude no tráfego real</b> e fechar a linha de base com Fraudes antes de qualquer mudança. <span class="tag">P3</span></li>
+        <li><b>Formalizar o fluxo de versionamento</b> em um documento único, usando o fluxo dos Agentes de Monitoramento por merge request como primeiro caso aplicado. <span class="tag">P7</span></li>
+      </ol>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Dependem de decisão da Diretoria</h3>
+        <ul>
+          <li>Como repor a capacidade de IA Preditiva: 2 profissionais (Cientista de Dados e Engenheiro de ML) ou um parceiro de valor mais acessível. As propostas atuais não seguem pelo valor.</li>
+          <li>O Pulso é o veículo do SenffLabs ou são coisas distintas? Ele já cobre portfólio, participação das áreas e visibilidade, que o Direcionamento pede ao SenffLabs.</li>
+          <li>Acesso do Presidente e do sucessor no Power BI para o MASP.</li>
+          <li>Carga da carteira oficial, que hoje bloqueia o índice do Painel de Qualidade.</li>
+          <li>Aprovação e publicação do ajuste da Lei do Bem e do Guia de Boas Práticas.</li>
+          <li>As 7 definições pendentes antes de abrir as 2 vagas, entre elas senioridade, faixa de remuneração e a base de controle da meta de 10 a 15%.</li>
+          <li>Quais decisões o Agente de Monitoramento passa a tomar sozinho. Hoje ele avisa e uma pessoa age; a direção é que ele decida, e o escopo ainda não está definido.</li>
+        </ul>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h3>Riscos abertos</h3>
+        <ul class="risk">
+          <li><b>Credenciais do fluxo MASP em texto claro.</b> Apontado em agosto, sem confirmação de rotação.</li>
+          <li><b>12 de 12 contas do ChatGPT são de área,</b> nenhuma nominal. Não há como saber quem fez cada uso.</li>
+          <li><b>Base legal e DPA para envio real ao JEV</b> ainda não confirmados. Até lá, só simulação.</li>
+          <li><b>88% das iniciativas ativas do Pulso estão em atenção,</b> sem atualização do dono há mais de 30 dias. Nenhuma em estado crítico.</li>
+          <li><b>Retenção e residência de dados</b> dos projetos OpenAI pendentes de validação com LGPD.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <p><b>Fontes.</b> Direcionamento Executivo para a Gerência de IA; Relatórios de Entregas de 08.2026 e 09.2026; Relatório de Setembro.26 (consolidado por frente); Plano de Governança e Contratação do Claude Team; Dashboard do 3º trimestre de uso de ChatGPT e Codex; telas Acompanhamento e Lei do Bem e exportação de iniciativas do Pulso (06/10/2026); Mapa de Competências de IA Preditiva; documento dos Agentes de Monitoramento (05/10/2026).</p>
+  <p><b>Como ler.</b> Os status seguem os relatórios mensais. A etapa na régua e a classificação dos resultados esperados são leitura desta consolidação e devem ser conferidas pela Gerência. O ClickUp não entrou como fonte porque a integração está sem permissão de leitura de projetos.</p>
+</footer>
+</main>
+
+<script>
+(function(){
+var STAGES=['Desenhado','Construído','Em teste','Em produção','Resultado medido'];
+function track(s){var h='<span class="track" role="img" aria-label="Etapa '+s+' de 5">';for(var i=1;i<=5;i++){h+='<i class="'+(i===5?'goal ':'')+(i<=s?'on':'')+'"></i>';}return h+'</span>';}
+function stageName(s){return s===0?'Não iniciado':STAGES[s-1];}
+
+var PRIOS=[
+ {n:'P1',t:'Colocar em produção o projeto da entrevista (MASP)',st:'Em teste',c:'prog',s:3,
+  has:['GPT executivo do Comercial PF desenhado em 3 fases, com o Power BI como única fonte de cálculo','Orquestrador JEV MASP com a primeira análise em 30/09','Piloto com a Nekt concluído e substituído por solução interna'],
+  miss:['Os 17 testes de validação ainda não rodaram','Acesso do Presidente e do sucessor no Power BI','Indicadores de sucesso e cronograma formalizados'],
+  nx:'Montar o GPT, rodar os 17 testes e validar categorias e limiares com o Comercial PF.'},
+ {n:'P2',t:'Estruturar e conduzir as reuniões de Automação e IA',st:'Em operação',c:'ok',s:4,
+  has:['Metodologia Pulso v1.0 com ritmo semanal e report mensal','4 encontros em setembro, 133% do previsto, com 8 projetos apresentados pelas áreas','Plataforma Pulso em produção, com 241 iniciativas de 32 áreas (71% concluídas)'],
+  miss:['Registro de decisões e priorização formal a cada encontro','Report executivo automatizado','Cerca de 40 participantes ativos, 33% da meta de 120','Só 12% das iniciativas ativas foram atualizadas nos últimos 30 dias'],
+  nx:'Publicar a ata de decisões de cada encontro e levar os projetos apresentados para o cadastro no Pulso.'},
+ {n:'P3',t:'Primeiro modelo de IA tradicional com resultado comprovado',st:'Em desenvolvimento',c:'prog',s:2,
+  has:['Pipeline de treino testado em 316.561 transações sintéticas: precisão de 96,8% e recall de 59,4%','4 decisões de arquitetura registradas','Segunda linha do challenge (JEV) rodando em simulação'],
+  miss:['Telemetria no tráfego real','Linha de base e validação com o time de Fraudes','Implantação, monitoramento e comparação antes e depois','Capacidade: a área busca 2 profissionais de IA Preditiva ou um parceiro mais acessível'],
+  nx:'Executar a Fase 0 (telemetria e shadow) e calibrar limiares com Fraudes e Compliance.'},
+ {n:'P4',t:'Visão consolidada das competências da equipe',st:'Iniciado',c:'warn',s:1,
+  has:['Mapa de competências dos 2 perfis de IA Preditiva (Cientista de Dados e Engenheiro de ML), que orienta a busca pelos 2 profissionais','Mapeamento de perfil enviado à BRQ'],
+  miss:['Visão por colaborador da equipe atual: ferramentas, certificações, proficiência e lacunas','Riscos de concentração de conhecimento'],
+  nx:'Aplicar o mesmo modelo de competências às pessoas que já atuam com automação e IA.'},
+ {n:'P5',t:'Acompanhamento das horas de capacitação',st:'Não iniciado',c:'idle',s:0,
+  has:['2 treinamentos de IA Generativa publicados em agosto','Treinamento de ChatGPT e guia do Claude previstos para outubro'],
+  miss:['Relatório periódico por colaborador, com carga horária, competência e aplicação no trabalho'],
+  nx:'Abrir o registro com os treinamentos já realizados e publicar a primeira edição mensal.'},
+ {n:'P6',t:'Ampliar a utilização do SenffLabs',st:'Sem registro',c:'idle',s:0,
+  has:['Nenhuma entrega registrada nos dois ciclos','O Pulso já cobre parte do pedido: portfólio, participação das áreas e visibilidade'],
+  miss:['Governança de entrada, priorização e encerramento de experimentos','Medida de uso do ambiente'],
+  nx:'Definir com a Diretoria se o Pulso é o veículo do SenffLabs e, a partir daí, medir o uso.'},
+ {n:'P7',t:'Revisar os fluxos de versionamento',st:'Em andamento',c:'prog',s:2,
+  has:['Modelo de 3 camadas definido (código, prompts e conteúdo, modelos)','Padrão aplicado nos projetos novos: simulação por padrão, revisão antes de publicar e testes automatizados','Novo fluxo de criação de Agentes de Monitoramento por merge request, desenhado para os 13 agentes e 369 alertas'],
+  miss:['Documento formal aprovado','Aplicação aos projetos existentes','As 7 propostas do fluxo dos Agentes de Monitoramento aguardam aprovação'],
+  nx:'Consolidar em um documento único e pilotar em um Agente de Monitoramento com poucos alertas.'}
+];
+
+var RES=[
+ ['Pelo menos uma solução de IA em produção','Parcial','warn','A plataforma Pulso está em produção desde agosto. Falta uma solução de negócio com indicador.'],
+ ['Pelo menos um modelo tradicional com resultado medido','Não','idle','O antifraude está em desenvolvimento, sem tráfego real.'],
+ ['Reuniões de governança estruturadas e recorrentes','Atendido','ok','4 encontros em setembro, com pauta e projetos das áreas.'],
+ ['Portfólio priorizado e acompanhado','Parcial','warn','241 iniciativas mapeadas, 71% concluídas. Priorização formal não evidenciada.'],
+ ['Mapa de competências disponível','Parcial','warn','Existe para 2 perfis a contratar. Falta a equipe atual.'],
+ ['Acompanhamento formal das capacitações','Não','idle','Sem registro de horas.'],
+ ['Aumento da utilização do SenffLabs','Não','idle','Sem medição de uso.'],
+ ['Fluxo de versionamento definido, documentado e aplicado','Parcial','warn','Definido e aplicado em projetos novos. Falta documento formal.'],
+ ['Indicadores de produtividade, adoção, eficiência e retorno','Parcial','warn','Adoção medida no painel de ChatGPT e Codex e horas devolvidas calculadas no Pulso. Falta validar o retorno.']
+];
+
+var FNAME={gen:'Assistentes',gov:'Governança',ml:'Fraude e previsão',pulso:'Pulso',masp:'MASP',qual:'Qualidade'};
+
+var ROWS=[
+ ['Plataforma Pulso','241 iniciativas de 32 áreas; 71% concluídas','pulso',4,'P2'],
+ ['Encontros do Grupo de Trabalho','4 em setembro, com 8 projetos das áreas','pulso',4,'P2'],
+ ['Triagem da Lei do Bem','227 triadas (94% do portfólio); 4 enquadradas e 110 em avaliação','pulso',4,'Proativa'],
+ ['Controle de gastos da API OpenAI','22 projetos auditados; 4 acima do teto reclassificados','gov',4,'Proativa'],
+ ['Painel de uso de ChatGPT e Codex','3º trimestre publicado, com 12 contas e uso por área','gov',4,'Resultado 9'],
+ ['Piloto do Claude Team','5 licenças contratadas; 90 dias com go/no-go','gov',3,'Proativa'],
+ ['Assistente de formulários de Conta PJ','4 formulários oficiais; validado em 3 casos reais','gen',3,'Proativa'],
+ ['Painel de Qualidade de correspondentes','52 testes passando; revisão aberta; aguarda carteira','qual',3,'Proativa'],
+ ['Orquestrador JEV MASP','Primeira análise em 30/09; limiares aguardam o Comercial PF','masp',3,'P1'],
+ ['JEV Antifraude, segunda linha do challenge','Em simulação; sem tráfego real','ml',3,'P3'],
+ ['11 GPTs reescritos','Validados em 03/09; publicação não evidenciada','gen',2,'Proativa'],
+ ['Motor antifraude supervisionado','Pipeline testado em dados sintéticos; modelo em treino','ml',2,'P3'],
+ ['GPT executivo do MASP','Desenhado em 3 fases; 17 testes por rodar','masp',1,'P1'],
+ ['9 GPTs novos','Especificados; prontos para o Sandbox','gen',1,'Proativa'],
+ ['Agentes de Monitoramento: criação pelas áreas','Novo fluxo em rascunho (05/10); 7 propostas a aprovar','gov',1,'P7'],
+ ['Mapa de competências de IA Preditiva','2 perfis, 10 competências obrigatórias cada','ml',1,'P4']
+];
+
+function $(id){return document.getElementById(id);}
+function pc(a,b){return Math.round(a/b*100);}
+function tiles(id,arr){$(id).innerHTML=arr.map(function(t){return '<div><div class="p">'+t[0]+'</div><div class="l">'+t[1]+'</div><div class="c">'+t[2]+'</div><div class="bar '+(t[4]||'')+'"><i style="width:'+Math.max(0,Math.min(100,t[3]))+'%"></i></div></div>';}).join('');}
+
+// cabeçalho
+var moving=PRIOS.filter(function(p){return p.s>0;}).length;
+var met=RES.filter(function(r){return r[2]==='ok';}).length, part=RES.filter(function(r){return r[2]==='warn';}).length;
+var prod=ROWS.filter(function(r){return r[3]>=4;}).length, meas=ROWS.filter(function(r){return r[3]===5;}).length;
+$('heads').innerHTML=
+ '<div class="head"><div class="n">'+moving+' <small>de '+PRIOS.length+'</small></div><div class="l">prioridades com entrega em curso</div><div class="c">'+pc(moving,PRIOS.length)+'% em curso, 0% concluídas.</div></div>'+
+ '<div class="head"><div class="n">'+met+' <small>de '+RES.length+'</small></div><div class="l">resultado esperado atendido</div><div class="c">'+pc(met,RES.length)+'% atendido, '+pc(part,RES.length)+'% parcial.</div></div>'+
+ '<div class="head"><div class="n">'+prod+' <small>de '+ROWS.length+'</small></div><div class="l">entregas em produção</div><div class="c">'+pc(prod,ROWS.length)+'% em produção, '+pc(meas,ROWS.length)+'% com resultado medido.</div></div>';
+
+$('legend').innerHTML=STAGES.map(function(s,i){return '<span><b>'+(i+1)+'</b> '+s+'</span>';}).join('');
+
+$('prios').innerHTML=PRIOS.map(function(p){
+ return '<div class="prio"><div class="hd"><div class="row"><span class="num">'+p.n+'</span><span class="pill '+p.c+'">'+p.st+'</span></div><h3>'+p.t+'</h3><div class="row">'+track(p.s)+'<span class="tag">'+stageName(p.s)+'</span></div></div>'+
+ '<div class="col"><div class="k">Já existe</div><ul>'+p.has.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul></div>'+
+ '<div class="col"><div class="k">Falta para contar como entregue</div><ul>'+p.miss.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul></div>'+
+ '<p class="next"><b>Próximo passo.</b> '+p.nx+'</p></div>';
+}).join('');
+
+$('res').innerHTML=RES.map(function(r,i){return '<div><span class="pill '+r[2]+'">'+r[1]+'</span><p>'+(i+1)+'. '+r[0]+'<span class="d">'+r[3]+'</span></p></div>';}).join('');
+
+
+var SOL=[
+ {g:'on',st:'Em uso',c:'ok',t:'Agente de Monitoramento',ask:'Precisamos saber na hora quando um número da operação sair do normal.',
+  does:'Confere os indicadores sozinho, a cada minuto, hora ou dia, compara com o limite combinado com a área e avisa o grupo certo no Bitrix24. A pessoa que recebe o aviso analisa e age.',
+  who:'Já funcionam há tempo: 13 agentes e 369 alertas em Atendimento, Operações, Fraude, Conta Corrente e Pix, Crédito, Cobrança e outras áreas. A Gerência de IA está padronizando o modelo e preparando o treinamento para cada área criar os seus.',
+  ex:'Chamadas abandonadas acima do normal na última hora; fila parada; volume de Pix fora do padrão.'},
+ {g:'on',st:'Em uso',c:'ok',t:'Assistentes das áreas',ask:'Precisamos de resposta rápida e no padrão sobre uma norma, política ou procedimento nosso.',
+  does:'Cada assistente conhece o material de uma área e responde em linguagem simples, sem inventar o que não está na fonte e pedindo validação humana onde é necessário.',
+  who:'11 assistentes: BACEN, Nuvem, Webdox, GMUD, TI Responde, Solicitações Administrativas, Frota, Copywriting, Entregas de Valor, Navigate V2 e OKRs.',
+  ex:'Como abro esta solicitação? O que a norma diz sobre este caso? Monte o comunicado no padrão.'},
+ {g:'on',st:'Em uso',c:'ok',t:'ChatGPT e Codex corporativos',ask:'Precisamos escrever, resumir, analisar uma planilha ou programar mais rápido.',
+  does:'O ChatGPT apoia texto, documentos e planilhas. O Codex escreve e corrige código a pedido da equipe, sempre com revisão humana antes de ir para produção.',
+  who:'12 contas em 11 áreas. No 3º trimestre foram 16,4 mil mensagens e 5 áreas geraram código, entre elas Fraudes, Compliance e Controladoria.',
+  ex:'Resuma este contrato. Revise este relatório. Crie o script desta conciliação.'},
+ {g:'on',st:'Em uso',c:'ok',t:'Pulso',ask:'Temos uma ideia de automação e queremos saber se alguém já fez algo parecido.',
+  does:'Reúne em um só lugar o que cada área está automatizando, mostra o estágio de cada iniciativa e aponta as que podem se enquadrar no incentivo fiscal da Lei do Bem.',
+  who:'241 iniciativas de 32 áreas, 71% já concluídas. Nos encontros de setembro, 8 projetos foram apresentados pelas áreas, como a Integração B3 na Tesouraria e o Simulador de Exposição Flex Frota.',
+  ex:'Cadastrar uma iniciativa, apresentar no encontro, pedir ajuda de quem já resolveu.'},
+ {g:'on',st:'Em piloto',c:'prog',t:'Claude para Dados, IA e Comercial PJ',ask:'Precisamos entregar automações e análises em horas, não em semanas.',
+  does:'Assistente que participa do ciclo de desenvolvimento: escreve, testa e documenta junto com o time, só com dados mascarados e com revisão humana antes de publicar.',
+  who:'5 licenças em piloto de 90 dias, com decisão de continuar ou não ao final. Cobrança já pediu para entrar.',
+  ex:'Automatizar uma homologação; reescrever um script de cobrança.'},
+ {g:'test',st:'Em teste',c:'warn',t:'Assistente de formulários de Conta PJ',ask:'Precisamos abrir conta PJ sem redigitar os dados do cliente em quatro formulários.',
+  does:'Lê os documentos do cliente (contrato social, QSA, cartão CNPJ, balanço) e devolve preenchidos o Cartão de Assinatura, a Ficha Cadastral e os Questionários API e ESG, no PDF oficial do banco.',
+  who:'Back-office do Comercial PJ, validado em 3 casos reais com 1 sócio, vários sócios e administração em conjunto.',
+  ex:'Abertura de conta e atualização cadastral de empresas com até 5 sócios.'},
+ {g:'test',st:'Em teste',c:'warn',t:'Analista executivo do Comercial PF',ask:'Precisamos consultar os números do Comercial PF sem esperar uma extração.',
+  does:'Responde em linguagem natural sobre vendas, mix, concentração e cartões, sempre com o número oficial do Power BI, e sinaliza os recortes que merecem atenção.',
+  who:'Presidente e sucessor, com o Comercial PF validando as regras.',
+  ex:'Como foi o mês por região? Onde a venda está concentrada demais?'},
+ {g:'test',st:'Em teste',c:'warn',t:'Painel de Qualidade de correspondentes',ask:'Precisamos classificar correspondentes e agentes de crédito no padrão da auditoria, sem planilha paralela.',
+  does:'Reúne reclamações e ações judiciais por correspondente e por agente, aplica as regras de pontuação e suspensão da norma e guarda o registro de auditoria no formato da EY.',
+  who:'Operações do Consignado e Compliance, sobre a base Navigate de março a setembro (187 agentes).',
+  ex:'Quais agentes ficaram fora do limite neste mês? Qual a nota da última auditoria?'},
+ {g:'test',st:'Em desenvolvimento',c:'idle',t:'Motor antifraude de cartões',ask:'Precisamos barrar a fraude sem travar o cliente bom.',
+  does:'Está sendo construído para avaliar cada transação no momento da compra e responder aprovar, pedir confirmação ou negar, com registro auditável dos sinais que pesaram e revisão humana em toda negação.',
+  who:'Em desenvolvimento com a Prevenção a Fraudes. O treino já foi testado com dados sintéticos; ainda não roda em transações reais.',
+  ex:'Compra fora do padrão do cliente; estabelecimento com histórico de fraude.'}
+
+];
+function solCard(x){return '<article class="sol"><div class="top"><h3>'+x.t+'</h3><span class="pill '+x.c+'">'+x.st+'</span></div><p class="ask">“'+x.ask+'”</p><p class="does">'+x.does+'</p><dl><div><dt>Quem já usa</dt><dd>'+x.who+'</dd></div><div><dt>Exemplos</dt><dd>'+x.ex+'</dd></div></dl></article>';}
+$('sol-on').innerHTML=SOL.filter(function(x){return x.g==='on';}).map(solCard).join('');
+$('sol-test').innerHTML=SOL.filter(function(x){return x.g==='test';}).map(solCard).join('');
+
+(function(){var H=2420.2,P=629,inp=$('custo-hora');
+ function f(v){return v>=1e6?'R$ '+(v/1e6).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' mi':'R$ '+Math.round(v/1e3).toLocaleString('pt-BR')+' mil';}
+ function upd(){var c=+inp.value;$('ch-v').textContent='R$ '+c;$('ch-mes').textContent=f(H*c);$('ch-ano').textContent=f(H*c*12);$('ch-pot').textContent=f(P*c*12);}
+ inp.addEventListener('input',upd);upd();})();
+
+var PD=[["Agilizar o desbloqueio de lojas mediante promessa de pagamento","Automação e Eficiência Operacional","Bruno Capobianco","concluido",0,1,null,0],["Automatizar as operações de cartão","Experiência do Cliente e Atendimento","Marco Antonio Senff Peixoto","em_desenvolvimento",1,0,null,0],["Avaliar plataforma de gestão da Lei do Bem (incentivo fiscal a P&D)","Sem tema","Jacqueline Pereira","ideia",0,0,40.0,1],["Automatizar o relatório geral da loja","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar o relatório da manutenção e zeladoria predial","Dados, BI e Relatórios","Christian Lobo","concluido",1,0,null,0],["Automatizar geração e envio automatizado de relatórios de posição de clientes","Experiência do Cliente e Atendimento","Maurício Rodrigues","em_desenvolvimento",0,0,3.0,0],["Automatizar o envio de boletos aos clientes","Experiência do Cliente e Atendimento","Marcelino Axt","em_desenvolvimento",0,0,1.5,0],["Automatizar a conciliação dos repasses a lojistas","Risco, Compliance e Regulação","Jacqueline Pereira","em_desenvolvimento",0,1,null,0],["Automatizar a geração dos mockups de produtos","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","em_desenvolvimento",1,0,7.5,0],["Automatizar o cadastro do credenciamento de lojistas","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","em_desenvolvimento",1,0,20.0,0],["Automatizar o envio do registro de ponto","Eficiência Corporativa","Everton Dzikovicz","concluido",0,1,8.0,0],["Automatizar consultas ao banco de dados via IA","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar o fluxo de mensagens do atendimento","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar o fechamento diário das apólices ANA, ANT e ANV","Automação e Eficiência Operacional","Bruno Capobianco","concluido",0,1,null,0],["Automatizar o preenchimento de dados repetitivos entre plataformas","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,1,78.0,0],["Manter atualizado(a) os indicadores de risco","Risco, Compliance e Regulação","Jacqueline Pereira","em_desenvolvimento",0,0,null,0],["Automatizar o envio das operações do Senff Shopping","Risco, Compliance e Regulação","Everton Dzikovicz","concluido",0,0,null,0],["Automatizar os créditos e débitos das lojas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Aviso quando o volume de um dia já publicado mudar no relatório seguinte (Volumetria)","Sem tema","Controladoria","em_desenvolvimento",0,1,4.0,1],["Automatizar a atualização de domicílio bancário das lojas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a consulta de localizador de arquivos","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,2.0,0],["Automatizar a extração dos acordos internos para cobrança","Dados, BI e Relatórios","Marco Antonio Senff Peixoto","concluido",1,0,1.0,0],["Automatizar as movimentações de crédito consignado","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a fila de atendimento via chat","Experiência do Cliente e Atendimento","Everton Dzikovicz","concluido",1,0,null,0],["Automatizar o atendimento da área de Operações via agente de IA","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar o envio de disparador de e-mails automáticos","Experiência do Cliente e Atendimento","Marco Antonio Senff Peixoto","concluido",1,1,20.0,0],["Agilizar o desbloqueio de lojas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Centralizar o canal de dúvidas dos colaboradores via robô no Bitrix (RH)","Dados, BI e Relatórios","Christian Lobo","em_desenvolvimento",1,0,null,0],["Automatizar os alertas de controle financeiro","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a validação e aprovação diária de comissões do consignado","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Centralizar em painel gerencial o controle de Due Diligence","Risco, Compliance e Regulação","Christian Lobo","em_desenvolvimento",1,0,null,0],["Automatizar a integração e engajamento de novos colaboradores","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,20.0,0],["Automatizar o envio das operações do Senff Shopping","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,1,null,0],["Automatizar a conferência de extratos bancários","Eficiência Operacional","Marco Antonio Senff Peixoto","em_desenvolvimento",1,1,null,0],["Automatizar a consulta da validação de segurança (IP/domínio)","Risco, Compliance e Regulação","Everton Dzikovicz","concluido",0,0,null,0],["Automatizar a certificação das apólices ANA, ANT e ANV","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a análise consultiva de risco de crédito","Risco, Compliance e Regulação","Marco Antonio Senff Peixoto","em_desenvolvimento",1,0,null,0],["Automatizar as validações de compliance","Risco, Compliance e Regulação","Adrielle Gritten","em_desenvolvimento",0,0,null,0],["Automatizar a integração e engajamento de novos colaboradores","Eficiência Corporativa","Christian Lobo","em_desenvolvimento",1,1,3.0,0],["Automatizar a conciliação contábil","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar as operações de crédito consignado","Eficiência Operacional","Christian Lobo","em_desenvolvimento",1,0,null,0],["Automatizar a coleta de assinaturas","Eficiência Operacional","Everton Dzikovicz","concluido",1,1,null,0],["Automatizar o envio da obrigação regulatória Cadoc 9810","Risco, Compliance e Regulação","Controladoria","concluido",0,1,3.5,1],["Automatizar a consulta da validação de segurança (IP/domínio)","Risco, Compliance e Regulação","Everton Dzikovicz","concluido",0,0,null,0],["Automatizar o atendimento comercial via agente de IA","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Centralizar em painel gerencial os acessos encurtados via Bitly","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","em_desenvolvimento",1,0,3.0,0],["Automação de lançamentos de titulos no Soft Expert e consolidação dos titulos para aprovação.","Sem tema","Controladoria","em_teste",1,0,20.0,1],["Painel do Depósito à prazo para Tesouraria, Contabilidade e Carteiras e Regulatórios","Sem tema","Controladoria","em_desenvolvimento",0,1,4.0,1],["Automatizar a consulta das operações de crédito consignado","Experiência do Cliente e Atendimento","Marco Antonio Senff Peixoto","concluido",1,0,null,0],["Integrar automaticamente dados financeiros do TOTVS","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a consulta das vendas","Eficiência Operacional","Pós Vendas","concluido",1,1,100.0,1],["Automatizar o envio do controle de consumo de combustível","Eficiência Corporativa","Christian Lobo","concluido",1,1,2.0,0],["Análise Transacional","Sem tema","Everton Dzikovicz","em_teste",1,0,null,1],["Automatizar o envio da geração e assinatura de contratos","Eficiência Operacional","Adrielle Gritten","em_desenvolvimento",0,0,null,0],["Automatizar as informações do Senff Odonto","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,null,0],["Automatizar a consulta do credenciamento de lojistas","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,315.0,0],["Centralizar em painel gerencial as vendas","Sem tema","Bruno Capobianco","concluido",1,0,15.0,1],["Automatizar o relatório de antecipação de recebíveis","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar consultas ao histórico de fechamento via IA","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a consulta de buscar todas as tags na hi e salvar no banco","Experiência do Cliente e Atendimento","Everton Dzikovicz","concluido",1,0,null,0],["Agilizar as operações do Senff Shopping","Automação e Eficiência Operacional","Bruno Capobianco","concluido",0,1,null,0],["Automatizar a consulta das operações de crédito consignado","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",0,0,4.0,0],["Automatizar o relatório da transcrição de ligações","Eficiência Operacional","Não informado","em_teste",1,0,132.0,1],["Sistema Centralizador de Controle e Operações do FIDC","Sem tema","Jacqueline Pereira","em_teste",1,1,20.0,1],["Monitorar automaticamente o processo de CTE","Eficiência Operacional","Controladoria","concluido",0,1,1.0,1],["Automatizar a extração de ingestão dos dados de compras da VTEX no banco de dados","Risco, Compliance e Regulação","Everton Dzikovicz","concluido",0,0,null,0],["Monitorar automaticamente o tratamento de reclamações","Experiência do Cliente e Atendimento","Bruno Capobianco","em_desenvolvimento",1,0,null,0],["Automatizar as liberações de CDC","Automação e Eficiência Operacional","Bruno Capobianco","concluido",0,1,null,0],["Automatizar as campanhas para lojistas","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","em_desenvolvimento",1,0,9.0,0],["Automatizar a gestão das tarefas de automação da equipe","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar as informações de clientes Private Label","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar atualização de BI internos da área","Risco, Compliance e Regulação","Jacqueline Pereira","em_desenvolvimento",0,0,null,0],["Automatizar o relatório das vendas","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,10.0,0],["Automatizar a tarifa de abertura de crédito (TAC) e os seguros","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar o envio do desbloqueio de lojas","Risco, Compliance e Regulação","Everton Dzikovicz","concluido",0,0,null,0],["Automatizar os saldos financeiros","Eficiência Operacional","Marco Antonio Senff Peixoto","em_desenvolvimento",1,1,null,0],["Automatizar o fluxo de mensagens do atendimento","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Centralizar em painel gerencial a parceria com o Paraná Banco","Dados, BI e Relatórios","Jacqueline Pereira","em_desenvolvimento",0,0,0.0,0],["Automatizar a classificação do cadastro de produtos na VTEX","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,null,0],["Automatizar o envio do controle de banco de horas","Eficiência Corporativa","Christian Lobo","em_desenvolvimento",0,0,8.0,0],["Centralizar em painel gerencial venda Parcelada","Receita, Comercial e Marketing","Jacqueline Pereira","concluido",0,0,null,0],["Agilizar o desbloqueio de lojas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar o cancelamento dos processos de seguros","Experiência do Cliente e Atendimento","Everton Dzikovicz","concluido",0,1,20.0,0],["Centralizar em painel gerencial a carteira em runoff","Dados, BI e Relatórios","Jacqueline Pereira","em_desenvolvimento",0,0,0.0,0],["Automação análises consignado","Sem tema","TI","concluido",0,0,220.0,1],["Automatizar o envio da abertura de sinistros","Experiência do Cliente e Atendimento","Marco Antonio Senff Peixoto","concluido",1,0,1.0,0],["Automatizar a carteira de crédito","Risco, Compliance e Regulação","Jacqueline Pereira","em_desenvolvimento",0,0,null,0],["Automatizar as liberações da Veripag","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a validação de repasses RRE","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar o credenciamento de lojistas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Agilizar o desbloqueio de lojas","Experiência do Cliente e Atendimento","Bruno Capobianco","em_teste",1,1,40.0,0],["Automatizar a compensação financeira entre contas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Criação de termos API Webdox","Sem tema","Jacqueline Pereira","cancelado",0,1,20.0,1],["Automatizar o envio do disparo de mensagens via WhatsApp","Experiência do Cliente e Atendimento","Marco Antonio Senff Peixoto","em_desenvolvimento",1,0,null,0],["Automatizar a geração do fluxo de caixa","Sem tema","Maurício Rodrigues","em_desenvolvimento",0,0,24.0,1],["Automatizar a consulta da posição de ativos e passivos (ALM)","Dados, BI e Relatórios","Maurício Rodrigues","em_teste",0,0,20.0,1],["Automatizar a geração e assinatura de contratos","Eficiência Operacional","Adrielle Gritten","em_desenvolvimento",0,0,null,0],["Automatizar as certificações e os alertas regulatórios","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Antecipar alertas sobre a cobrança de chamados em aberto","Eficiência Operacional","Everton Dzikovicz","concluido",1,0,null,0],["Automatizar o fluxo de mensagens do atendimento","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a validação das operações de cartão","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","em_desenvolvimento",1,0,3.0,0],["Centralizar em painel gerencial as operações de saque","Dados, BI e Relatórios","Jacqueline Pereira","concluido",0,0,null,0],["Monitorar automaticamente as operações do Senff Shopping","Experiência do Cliente e Atendimento","Bruno Capobianco","em_desenvolvimento",1,0,null,0],["Automatizar a validação das personas de clientes B2B","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,null,0],["Automatizar o cálculo da liquidação antecipada de contratos","Experiência do Cliente e Atendimento","Everton Dzikovicz","concluido",1,0,20.0,0],["Automatizar o credenciamento de lojistas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",0,1,null,0],["Automatizar o envio da gestão da frota de veículos","Experiência do Cliente e Atendimento","Christian Lobo","em_desenvolvimento",1,1,3.0,0],["Automatizar o envio e a liberação de repasses aos lojistas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a consulta do processo de CTE","Experiência do Cliente e Atendimento","Bruno Capobianco","em_desenvolvimento",1,0,null,0],["Automatizar os saldos financeiros","Risco, Compliance e Regulação","Marco Antonio Senff Peixoto","em_desenvolvimento",1,1,null,0],["Centralizar em painel gerencial as liberações de CDC","Dados, BI e Relatórios","Jacqueline Pereira","concluido",0,0,null,0],["Centralizar em painel gerencial o balancete contábil","Dados, BI e Relatórios","Jacqueline Pereira","concluido",0,0,null,0],["Monitorar automaticamente as ligações registradas na URA","Risco, Compliance e Regulação","Bruno Capobianco","em_teste",1,0,null,0],["Automatizar o envio da obrigação regulatória Cadoc 9810","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",1,1,null,0],["Automatizar a gestão da frota de veículos","Eficiência Corporativa","Christian Lobo","concluido",1,0,null,0],["Automatizar as lojas sem vendas no período","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar gerador XML 3040 Senffnet","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",0,0,null,0],["Automatizar a criação de personagens digitais para marketing","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,288.0,0],["Centralizar em painel gerencial a conferência de extratos bancários","Dados, BI e Relatórios","Maurício Rodrigues","concluido",0,0,2.0,0],["Automação do Processo de Importação de Arquivos do FIDC na Evertec","Sem tema","Jacqueline Pereira","concluido",1,0,10.0,1],["Automatizar a carta de circularização de auditoria","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar o processo de credenciamento de lojistas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",0,1,null,0],["Automatizar o envio das propostas comerciais","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,null,0],["Automatizar a gestão da frota de veículos","Dados, BI e Relatórios","Christian Lobo","concluido",1,0,4.0,0],["Automatizar os prazos judiciais","Risco, Compliance e Regulação","Luiz Carlos Beltzac","em_desenvolvimento",0,1,null,0],["Automatizar o relatório das notas fiscais","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",1,0,3.0,0],["Automatizar o processo de credenciamento de lojistas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar o relatório dos repasses a lojistas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a conciliação do encontro de contas ACS, ACQ, ACM e COA","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a validação da atualização cadastral","Experiência do Cliente e Atendimento","Everton Dzikovicz","em_teste",1,1,40.0,0],["Automatizar consulta Rápida","Risco, Compliance e Regulação","Everton Dzikovicz","concluido",1,0,8.0,0],["Centralizar em painel gerencial as operações via Pix","Dados, BI e Relatórios","Jacqueline Pereira","concluido",0,0,null,0],["Automatizar a consulta dos lojistas","Experiência do Cliente e Atendimento","Adrielle Gritten","concluido",0,0,null,0],["Automatizar a provisão de risco de crédito","Risco, Compliance e Regulação","Jacqueline Pereira","em_desenvolvimento",0,0,null,0],["Antecipar alertas sobre os repasses a lojistas","Experiência do Cliente e Atendimento","Everton Dzikovicz","concluido",0,1,100.0,0],["Automatizar a consulta dos saldos financeiros","Eficiência Operacional","Maurício Rodrigues","concluido",0,0,40.0,1],["Automatizar a consulta da atualização cadastral","Experiência do Cliente e Atendimento","Everton Dzikovicz","concluido",0,0,4.0,0],["Monitorar automaticamente os saldos financeiros","Eficiência Operacional","Maurício Rodrigues","concluido",0,0,20.0,1],["Automatizar a produção de personagens digitais","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","em_desenvolvimento",1,0,6.0,0],["Centralizar em painel gerencial as operações de crédito consignado","Dados, BI e Relatórios","Jacqueline Pereira","concluido",0,0,null,0],["Automatizar o envio de taxas às corretoras","Sem tema","Maurício Rodrigues","concluido",0,0,null,1],["Automatizar as operações de cartão","Risco, Compliance e Regulação","Marco Antonio Senff Peixoto","em_desenvolvimento",1,1,null,0],["Monitorar automaticamente a atualização cadastral","Risco, Compliance e Regulação","Jacqueline Pereira","em_desenvolvimento",0,0,null,0],["Automatizar o envio das notas fiscais","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",1,0,20.0,0],["Automatizar o controle antifraude","Risco, Compliance e Regulação","Everton Dzikovicz","em_desenvolvimento",1,0,null,0],["Agilizar os repasses a lojistas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Centralizar em painel gerencial o pagamento de contas","Dados, BI e Relatórios","Jacqueline Pereira","concluido",0,0,null,0],["Automatizar a consulta das operações do Senff Shopping","Risco, Compliance e Regulação","Everton Dzikovicz","concluido",0,0,4.0,0],["Automatizar as comissões","Eficiência Operacional","Everton Dzikovicz","concluido",0,0,null,0],["Automatizar o fechamento diário de repasses","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar o cadastro das operações de crédito consignado","Risco, Compliance e Regulação","Everton Dzikovicz","concluido",0,0,88.0,0],["Antecipar alertas sobre as campanhas para lojistas","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,1,1.0,0],["Automatizar os lojistas","Experiência do Cliente e Atendimento","Marco Antonio Senff Peixoto","concluido",0,0,96.0,0],["Automatizar a consulta de framework de análises temporais","Risco, Compliance e Regulação","Everton Dzikovicz","concluido",0,0,null,0],["Automatizar a geração da gestão de licitações públicas","Eficiência Operacional","Diretoria Comercial","em_teste",1,0,0.0,1],["Automatizar os processos de seguros","Experiência do Cliente e Atendimento","Marco Antonio Senff Peixoto","concluido",1,0,57.3,0],["Automatizar o relatório diário Private Label","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a produção de vídeos institucionais com IA","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,384.0,0],["Automatizar a validação de segurança (IP/domínio)","Risco, Compliance e Regulação","Everton Dzikovicz","concluido",0,0,null,0],["Agilizar o desbloqueio de lojas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Centralizar em painel gerencial as liberações de CDC","Experiência do Cliente e Atendimento","Jacqueline Pereira","concluido",0,0,null,0],["Monitorar automaticamente os indicadores de risco","Risco, Compliance e Regulação","Jacqueline Pereira","em_desenvolvimento",0,0,null,0],["Automatizar a consulta do índice de liquidez","Dados, BI e Relatórios","Maurício Rodrigues","em_teste",0,0,26.0,1],["Centralizar em painel gerencial observabilidade de ETLs e Dashboards - Financeiro","Sem tema","Maurício Rodrigues","concluido",0,0,16.0,1],["Automatizar a geração dos processos de seguros","Experiência do Cliente e Atendimento","Everton Dzikovicz","concluido",1,0,null,0],["Automatizar a validação dos pedidos","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,1.2,0],["Automatizar o cálculo da antecipação de recebíveis","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,189.0,0],["Automatizar o relatório das ligações registradas na URA","Experiência do Cliente e Atendimento","Everton Dzikovicz","concluido",1,0,11.0,0],["Automatizar a extração das notas fiscais","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,2.5,0],["Agilizar o desbloqueio de lojas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Centralizar em painel gerencial a carteira de crédito","Dados, BI e Relatórios","Jacqueline Pereira","concluido",0,0,null,0],["Automatizar a geração dos textos de marketing (copy)","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,null,0],["Centralizar em painel gerencial a folha de pagamento","Dados, BI e Relatórios","Jacqueline Pereira","concluido",0,0,null,0],["Automatizar a conciliação contábil","Dados, BI e Relatórios","Jacqueline Pereira","em_desenvolvimento",0,0,null,0],["Automatizar a consulta de software de busca nos diálogos exportados","Experiência do Cliente e Atendimento","Everton Dzikovicz","concluido",1,0,16.0,0],["Automatizar o relatório financeiro diário","Automação e Eficiência Operacional","Bruno Capobianco","concluido",0,1,null,0],["Automatizar envio de produção parcial e mensal dos correspondentes","Dados, BI e Relatórios","Não informado","concluido",1,1,null,0],["Automatizar as operações de cartão","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",0,0,3.0,0],["Automatizar o envio e a liberação de repasses aos lojistas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",0,1,null,0],["Automatizar o fechamento diário de repasses","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Garantir contingência do registro regulatório 4060 (Sinqia)","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",0,0,4.0,0],["Automatizar a consulta do atendimento de segundo nível","Experiência do Cliente e Atendimento","Everton Dzikovicz","concluido",1,0,13.0,0],["Automatizar o controle de limites de clientes","Experiência do Cliente e Atendimento","Marcelino Axt","concluido",0,0,null,0],["Automatizar a identidade visual da marca","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","em_desenvolvimento",1,0,null,0],["Automatizar os dados do crédito consignado","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar o backup e versionamento dos fluxos de automação","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar o envio de processo fechamento","Eficiência Corporativa","Christian Lobo","em_desenvolvimento",0,0,8.0,0],["Automatizar o atendimento via agente de IA","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a certificação de anuidade bonificada","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Automatizar a provisão de risco de crédito","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",0,0,8.0,0],["Automatizar a consulta dos processos jurídicos","Risco, Compliance e Regulação","Everton Dzikovicz","em_desenvolvimento",1,0,160.0,0],["Automatizar as liberações de crédito Pontual","Automação e Eficiência Operacional","Bruno Capobianco","concluido",0,1,null,0],["Rebalancear dinamicamente as licenças de fila de espera do atendimento (HI)","Experiência do Cliente e Atendimento","Everton Dzikovicz","concluido",1,0,null,0],["Automatizar a extração da entrega da e-Financeira","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",1,0,5.0,0],["Automatizar a conciliação de comissões diversas","Risco, Compliance e Regulação","Marco Antonio Senff Peixoto","em_desenvolvimento",1,1,null,0],["Automatizar o cálculo das liberações de CDC","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,null,0],["Automatizar a comparação de arquivos (PDF/PNG) para identificar divergências","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,1.0,0],["Automatizar o relatório geral das operações","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Centralizar em painel gerencial as operações de crédito consignado","Dados, BI e Relatórios","Jacqueline Pereira","concluido",0,0,null,0],["Centralizar em painel gerencial o reporte IFRS","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",0,0,2.0,0],["Automatizar a consulta das vendas","Receita, Comercial e Marketing","Fernanda Silva","concluido",0,0,null,0],["Automatizar o processo de CTE","Risco, Compliance e Regulação","Jacqueline Pereira","em_desenvolvimento",0,1,null,0],["Automatizar a conciliação contábil","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",0,0,1.0,0],["Simulador Posição da Carteira de Passivos - Banco Senff","Sem tema","Maurício Rodrigues","concluido",0,0,null,1],["Automatizar a validação da análise documental de clientes PJ","Experiência do Cliente e Atendimento","Marcelino Axt","em_desenvolvimento",0,0,null,0],["Integrar automaticamente a gestão de licitações públicas","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,2.0,0],["Centralizar em painel gerencial a antecipação de recebíveis","Dados, BI e Relatórios","Jacqueline Pereira","concluido",0,0,null,0],["Automatizar o envio de disparador de mensagens em massa","Experiência do Cliente e Atendimento","Marco Antonio Senff Peixoto","concluido",1,1,5.5,0],["Automatizar os vídeos institucionais","Experiência do Cliente e Atendimento","Marco Antonio Senff Peixoto","concluido",1,0,12.0,0],["Centralizar em painel gerencial as comissões","Dados, BI e Relatórios","Jacqueline Pereira","em_desenvolvimento",0,0,0.0,0],["Automatizar as operações de crédito consignado","Risco, Compliance e Regulação","Marco Antonio Senff Peixoto","em_desenvolvimento",1,0,null,0],["Automatizar o envio e a liberação de repasses aos lojistas","Automação e Eficiência Operacional","Bruno Capobianco","concluido",0,1,null,0],["Consultar dados da Tesouraria em linguagem natural com IA local","Sem tema","Maurício Rodrigues","em_desenvolvimento",1,0,null,1],["Automatizar a taxa CDI","Eficiência Operacional","Maurício Rodrigues","concluido",0,0,1.5,0],["Centralizar dúvidas dos colaboradores em um agente de IA interno","Dados, BI e Relatórios","Christian Lobo","concluido",1,0,null,0],["Centralizar em painel gerencial o capital de giro","Dados, BI e Relatórios","Jacqueline Pereira","concluido",0,0,null,0],["Automatizar a extração do balancete contábil","Dados, BI e Relatórios","Jacqueline Pereira","em_desenvolvimento",0,0,null,0],["Automatizar os alertas por e-mail relevantes à área","Experiência do Cliente e Atendimento","Everton Dzikovicz","concluido",0,0,20.0,0],["Automatizar o processo de CTE","Dados, BI e Relatórios","Jacqueline Pereira","em_desenvolvimento",0,1,null,0],["Centralizar em painel gerencial a captação de recursos","Dados, BI e Relatórios","Jacqueline Pereira","em_desenvolvimento",0,0,0.0,0],["Automatizar os pedidos","Eficiência Corporativa","Christian Lobo","concluido",1,0,20.0,0],["Automatizar a validação das operações de cartão","Eficiência Operacional","Everton Dzikovicz","concluido",0,0,6.0,0],["Automatizar a transferência de dívida do cheque especial","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",0,0,6.0,0],["Automatizar o relatório dos repasses a lojistas","Risco, Compliance e Regulação","Marco Antonio Senff Peixoto","concluido",1,0,1.2,0],["Automatizar a avaliação de imóveis em garantia","Eficiência Operacional","Everton Dzikovicz","concluido",1,0,null,0],["Automatizar o envio do disparo de mensagens via WhatsApp","Experiência do Cliente e Atendimento","Everton Dzikovicz","concluido",1,0,22.0,0],["Painel do Depósito à vista para Carteiras e Regulatórios, Contabilidade e Tesouraria","Sem tema","Controladoria","em_teste",0,1,4.0,1],["Automatizar o fluxo de mensagens do atendimento","Automação e Eficiência Operacional","Bruno Capobianco","concluido",1,1,null,0],["Centralizar em painel gerencial o spread das operações","Dados, BI e Relatórios","Jacqueline Pereira","em_desenvolvimento",0,0,0.0,0],["Melhorar a qualidade dos dados contábeis enviados ao BACEN","Risco, Compliance e Regulação","Marco Antonio Senff Peixoto","em_desenvolvimento",1,1,null,0],["Agilizar as operações via Pix","Risco, Compliance e Regulação","Everton Dzikovicz","concluido",0,0,null,0],["Centralizar em painel gerencial fechamento Banco","Dados, BI e Relatórios","Jacqueline Pereira","concluido",0,0,null,0],["Automatizar o relatório da organização de eventos internos","Dados, BI e Relatórios","Christian Lobo","concluido",1,0,null,0],["Automatizar a consulta das avaliações no App Senff","Experiência do Cliente e Atendimento","Marco Antonio Senff Peixoto","concluido",1,0,6.5,0],["Automatizar a aprovação por alçada","Eficiência Operacional","Adrielle Gritten","em_desenvolvimento",0,0,null,0],["Automatizar o cadastro de marcas na VTEX","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,50.0,0],["Automatizar alterações em massa no XML do registro 3040","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",0,0,3.0,0],["Automatizar o aviso de pedidos cancelados no Senff Shopping","Risco, Compliance e Regulação","Everton Dzikovicz","concluido",1,0,6.0,0],["Automatizar o relatório dos lojistas","Experiência do Cliente e Atendimento","Fernanda Silva","concluido",0,0,null,0],["Automatizar o estorno de juros e IOF","Risco, Compliance e Regulação","Jacqueline Pereira","concluido",0,0,16.0,0],["Automatizar o relatório de propostas pendentes (Fluxo SE)","Receita, Comercial e Marketing","Marco Antonio Senff Peixoto","concluido",1,0,null,0]];
+(function(){
+var SL={concluido:['Concluída','ok'],em_desenvolvimento:['Em desenvolvimento','prog'],em_teste:['Em teste','warn'],ideia:['Ideia','idle'],cancelado:['Cancelada','idle']};
+function nf(v,d){return v.toLocaleString('pt-BR',{minimumFractionDigits:d||0,maximumFractionDigits:d==null?1:d});}
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+var N=PD.length, conc=PD.filter(function(r){return r[3]==='concluido';});
+var ch=conc.filter(function(r){return r[6]!=null;}), tot=ch.reduce(function(a,r){return a+r[6];},0);
+var sorted=ch.slice().sort(function(a,b){return b[6]-a[6];});
+var top5=sorted.slice(0,5).reduce(function(a,r){return a+r[6];},0);
+var nw=PD.filter(function(r){return r[7];}), nwc=nw.filter(function(r){return r[3]==='concluido';}), nwh=nwc.reduce(function(a,r){return a+(r[6]||0);},0);
+var withH=PD.filter(function(r){return r[6]!=null;}).length;
+$('pl-conc').innerHTML='5 iniciativas respondem por <b>'+pc(top5,tot)+'%</b> das horas devolvidas ('+nf(top5,0)+' de '+nf(tot,0)+' h por mês). O tema Receita, Comercial e Marketing sozinho soma mais da metade.';
+$('pl-sub').innerHTML='Só <b>'+ch.length+' das '+conc.length+'</b> iniciativas concluídas ('+pc(ch.length,conc.length)+'%) têm horas informadas. As outras '+(conc.length-ch.length)+' já entregam e não entram na conta. Nenhuma iniciativa tem valor em reais preenchido.';
+$('pl-new').innerHTML='<b>'+nw.length+' iniciativas</b> foram cadastradas pelas áreas desde agosto. '+nwc.length+' já estão concluídas e devolvem '+nf(nwh,1)+' h por mês. As outras 216 vieram da carga inicial do que já existia.';
+function cnt(f){return PD.filter(f).length;}
+var ai=cnt(function(r){return r[4];}), n8=cnt(function(r){return r[5];}), dev=cnt(function(r){return r[3]==='em_desenvolvimento';}), tst=cnt(function(r){return r[3]==='em_teste';});
+tiles('kp-port',[
+ [pc(conc.length,N)+'%','concluídas',conc.length+' de '+N,pc(conc.length,N),'ok'],
+ [pc(dev,N)+'%','em desenvolvimento',dev+' de '+N,pc(dev,N),''],
+ [pc(tst,N)+'%','em teste',tst+' de '+N,pc(tst,N),''],
+ [pc(ai,N)+'%','usam IA',ai+' de '+N,pc(ai,N),''],
+ [pc(n8,N)+'%','usam n8n',n8+' de '+N,pc(n8,N),''],
+ [pc(withH,N)+'%','com horas informadas',withH+' de '+N,pc(withH,N),'warn'],
+ ['0%','com valor em reais informado','0 de '+N,0,'alert'],
+ ['3%','pontuadas na matriz de priorização','7 de '+N,3,'alert']
+]);
+function group(idx){var m={};conc.forEach(function(r){var k=r[idx];m[k]=m[k]||{h:0,n:0,c:0};m[k].c++;if(r[6]!=null){m[k].h+=r[6];m[k].n++;}});
+ return Object.keys(m).map(function(k){return [k,m[k].h,m[k].n,m[k].c];}).sort(function(a,b){return b[1]-a[1]||b[3]-a[3];});}
+function bars(id,arr,lab){var mx=arr[0][1]||1;$(id).innerHTML=arr.map(function(a){return '<div class="hrow"><div class="nm">'+esc(a[0])+' <small>'+lab(a)+'</small></div><div class="v">'+nf(a[1],1)+' h</div><div class="b"><i style="width:'+(a[1]/mx*100).toFixed(1)+'%"></i></div></div>';}).join('');}
+bars('hb-tema',group(1),function(a){return '('+a[2]+' de '+a[3]+')';});
+bars('hb-dir',group(2).slice(0,9),function(a){return '('+a[2]+' de '+a[3]+')';});
+bars('hb-top',sorted.slice(0,10).map(function(r){return [r[0],r[6],r[2],pc(r[6],tot)];}),function(a){return '· '+esc(a[2])+' · '+a[3]+'% do total';});
+
+function opts(id,vals,all){$(id).innerHTML='<option value="">'+all+'</option>'+vals.map(function(v){return '<option value="'+esc(v[0])+'">'+esc(v[1])+'</option>';}).join('');}
+function uniq(i){var m={};PD.forEach(function(r){m[r[i]]=1;});return Object.keys(m).sort(function(a,b){return a.localeCompare(b,'pt-BR');});}
+opts('pf-st',Object.keys(SL).map(function(k){return [k,SL[k][0]];}),'Todos');
+opts('pf-th',uniq(1).map(function(v){return [v,v];}),'Todos');
+opts('pf-di',uniq(2).map(function(v){return [v,v];}),'Todas');
+function draw(){
+ var q=$('pf-q').value.trim().toLowerCase(), st=$('pf-st').value, th=$('pf-th').value, di=$('pf-di').value, oh=$('pf-h').checked, on=$('pf-n').checked, oa=$('pf-ia').checked;
+ var L=PD.filter(function(r){return (!q||r[0].toLowerCase().indexOf(q)>=0)&&(!st||r[3]===st)&&(!th||r[1]===th)&&(!di||r[2]===di)&&(!oh||r[6]!=null)&&(!on||r[7])&&(!oa||r[4]);})
+  .sort(function(a,b){return (b[6]==null?-1:b[6])-(a[6]==null?-1:a[6])||a[0].localeCompare(b[0],'pt-BR');});
+ var sum=L.reduce(function(a,r){return a+(r[6]||0);},0);
+ $('pf-cnt').textContent=L.length+' de '+N+' iniciativas · '+nf(sum,1)+' h por mês';
+ $('pf-rows').innerHTML=L.length?L.map(function(r){var u=[];if(r[4])u.push('IA');if(r[5])u.push('n8n');
+  return '<tr><td class="t">'+esc(r[0])+(r[7]?' <span class="tag">nova</span>':'')+'</td><td class="s"><span class="pill '+SL[r[3]][1]+'">'+SL[r[3]][0]+'</span></td><td>'+esc(r[1])+'</td><td>'+esc(r[2])+'</td><td class="s">'+(u.join(' + ')||'<span class="mut">outros</span>')+'</td><td class="n">'+(r[6]==null?'<span class="mut">não informado</span>':nf(r[6],1))+'</td></tr>';}).join(''):'<tr><td colspan="6" class="mut">Nenhuma iniciativa com esses filtros. Limpe a busca ou troque o filtro.</td></tr>';
+}
+['pf-q','pf-st','pf-th','pf-di','pf-h','pf-n','pf-ia'].forEach(function(i){$(i).addEventListener('input',draw);});
+draw();
+})();
+
+function show(v,keep){
+ ['uso','pulso','gestao'].forEach(function(k){var on=k===v;$('v-'+k).hidden=!on;$('hero-'+k).hidden=!on;$('sw-'+k).setAttribute('aria-pressed',on);});
+ try{localStorage.setItem('painel-visao',v);}catch(e){}
+ if(!keep)window.scrollTo(0,0);
+}
+$('sw-uso').addEventListener('click',function(){show('uso');});
+$('sw-gestao').addEventListener('click',function(){show('gestao');});
+$('sw-pulso').addEventListener('click',function(){show('pulso');});
+var GA=['gestao','leitura','indicadores','prioridades','resultados','regua','ganhos','fechar'];
+var start='uso';try{start=localStorage.getItem('painel-visao')||'uso';}catch(e){}
+var hs=(location.hash||'').slice(1);
+if(GA.indexOf(hs)>=0)start='gestao';else if(hs.indexOf('pulso')===0||hs==='portfolio')start='pulso';else if(hs)start='uso';
+show(start==='gestao'||start==='pulso'?start:'uso',true);
+
+
+tiles('kp-uso',[
+ ['79%','do potencial de horas já capturado','2.420 h de 3.049 h por mês',79,'ok'],
+ ['71%','das iniciativas concluídas','171 de 241 no portfólio',71,'ok'],
+ ['92%','das contas de IA com uso','11 de 12 contas do workspace',92,'ok'],
+ ['+114%','mensagens ao ChatGPT','3º trimestre contra o 2º',100,''],
+ ['99%','do uso em dias úteis','IA como ferramenta de trabalho',99,''],
+ ['45%','das áreas geraram código','5 das 11 áreas com uso, via Codex',45,''],
+ ['94%','do portfólio triado para a Lei do Bem','227 de 241 iniciativas',94,''],
+ ['+82%','maturidade dos assistentes','nota de 4,9 para 8,9 em 11 GPTs',89,'']
+]);
+tiles('kp-dir',[
+ [pc(moving,PRIOS.length)+'%','prioridades com entrega em curso',moving+' de '+PRIOS.length,pc(moving,PRIOS.length),''],
+ ['0%','prioridades concluídas','0 de '+PRIOS.length,0,'alert'],
+ [pc(met,RES.length)+'%','resultados esperados atendidos',met+' de '+RES.length,pc(met,RES.length),'warn'],
+ [pc(part,RES.length)+'%','resultados parciais',part+' de '+RES.length,pc(part,RES.length),'warn'],
+ [pc(prod,ROWS.length)+'%','entregas em produção',prod+' de '+ROWS.length,pc(prod,ROWS.length),''],
+ [pc(meas,ROWS.length)+'%','entregas com resultado medido',meas+' de '+ROWS.length,0,'alert']
+]);
+tiles('kp-pulso',[
+ ['71%','iniciativas concluídas','171 de 241',71,'ok'],
+ ['29%','iniciativas ativas','69 de 241',29,''],
+ ['79%','das horas potenciais já devolvidas','2.420,2 h de 3.049,2 h por mês',79,'ok'],
+ ['12%','das ativas em dia','8 de 69 atualizadas em até 30 dias',12,'alert'],
+ ['88%','das ativas em atenção','61 de 69; nenhuma crítica (0%)',88,'warn'],
+ ['33%','da meta de participantes','cerca de 40 de 120',33,'warn'],
+ ['133%','dos encontros previstos','4 realizados em setembro, para 3',100,'ok'],
+ ['0%','presença confirmada','encontro nº 1 de outubro; meta de 80%',0,'alert']
+]);
+tiles('kp-lei',[
+ ['94%','do portfólio na triagem','227 de 241 iniciativas',94,'ok'],
+ ['1,8%','enquadradas','4 de 227',1.8,''],
+ ['48,5%','em avaliação interna','110 de 227',48.5,''],
+ ['16,7%','em backlog','38 de 227',16.7,'warn'],
+ ['33,0%','não enquadradas','75 de 227',33,''],
+ ['49,8%','com baixo potencial na triagem','113 de 227; 48,5% parcial e 1,8% elegível',49.8,'']
+]);
+tiles('kp-ia',[
+ ['92%','das contas com uso','11 de 12',92,'ok'],
+ ['+114%','mensagens ao ChatGPT','16,4 mil no trimestre',100,''],
+ ['91%','do código em 2 contas','Fraudes e Comercial IA',91,'warn'],
+ ['0%','de contas nominais','12 de 12 são contas de área',0,'alert'],
+ ['+179%','tokens por linha de código','de 13,5 mil para 37,7 mil, de julho a setembro',100,'warn']
+]);
+
+var counts=[0,0,0,0,0];ROWS.forEach(function(r){counts[r[3]-1]++;});
+$('stages').innerHTML=STAGES.map(function(s,i){return '<div class="'+(i===4?'goal':'')+'"><div class="n">'+counts[i]+' <small>'+pc(counts[i],ROWS.length)+'%</small></div><div class="l">'+s+'</div></div>';}).join('');
+
+var cur='all';
+function drawRows(){
+ $('rows').innerHTML=ROWS.filter(function(r){return cur==='all'||r[2]===cur;}).map(function(r){
+  return '<div class="rrow"><div class="nm"><b>'+r[0]+'</b><span>'+r[1]+'</span></div>'+track(r[3])+'<div class="st">'+stageName(r[3])+'</div><div class="tags"><span class="tag">'+FNAME[r[2]]+'</span><span class="tag">'+r[4]+'</span></div></div>';
+ }).join('');
+}
+var keys=['all'].concat(Object.keys(FNAME));
+$('filters').innerHTML=keys.map(function(k){return '<button type="button" id="f-'+k+'" data-k="'+k+'" aria-pressed="'+(k==='all')+'">'+(k==='all'?'Todas':FNAME[k])+'</button>';}).join('');
+$('filters').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;cur=b.dataset.k;
+ Array.prototype.forEach.call($('filters').children,function(x){x.setAttribute('aria-pressed',x===b);});drawRows();});
+drawRows();
+
+var M=[['mar',952],['abr',2275],['mai',2984],['jun',2379],['jul',3783],['ago',5527],['set',7119]];
+$('bars').innerHTML=M.map(function(m){return '<div style="height:'+(m[1]/7119*100).toFixed(1)+'%" title="'+m[0]+': '+m[1].toLocaleString('pt-BR')+'"><span>'+m[0]+'</span></div>';}).join('');
+})();
+</script>
+</body></html>

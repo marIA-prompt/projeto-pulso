@@ -1,0 +1,2412 @@
+[
+  {
+    "title": "Agilizar o desbloqueio de lojas mediante promessa de pagamento",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as operações de cartão",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Avaliar plataforma de gestão da Lei do Bem (incentivo fiscal a P&D)",
+    "theme": "Sem tema",
+    "directorate": "Jacqueline Pereira",
+    "stage": "ideia",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 40,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar o relatório geral da loja",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o relatório da manutenção e zeladoria predial",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Christian Lobo",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar geração e envio automatizado de relatórios de posição de clientes",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Maurício Rodrigues",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 3,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio de boletos aos clientes",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Marcelino Axt",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 1.5,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a conciliação dos repasses a lojistas",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a geração dos mockups de produtos",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 7.5,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o cadastro do credenciamento de lojistas",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 20,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio do registro de ponto",
+    "theme": "Eficiência Corporativa",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": 8,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar consultas ao banco de dados via IA",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o fluxo de mensagens do atendimento",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o fechamento diário das apólices ANA, ANT e ANV",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o preenchimento de dados repetitivos entre plataformas",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": 78,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Manter atualizado(a) os indicadores de risco",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio das operações do Senff Shopping",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar os créditos e débitos das lojas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Aviso quando o volume de um dia já publicado mudar no relatório seguinte (Volumetria)",
+    "theme": "Sem tema",
+    "directorate": "Controladoria",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": 4,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar a atualização de domicílio bancário das lojas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta de localizador de arquivos",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 2,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a extração dos acordos internos para cobrança",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 1,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as movimentações de crédito consignado",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a fila de atendimento via chat",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o atendimento da área de Operações via agente de IA",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio de disparador de e-mails automáticos",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": 20,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Agilizar o desbloqueio de lojas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar o canal de dúvidas dos colaboradores via robô no Bitrix (RH)",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Christian Lobo",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar os alertas de controle financeiro",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a validação e aprovação diária de comissões do consignado",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial o controle de Due Diligence",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Christian Lobo",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a integração e engajamento de novos colaboradores",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 20,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio das operações do Senff Shopping",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a conferência de extratos bancários",
+    "theme": "Eficiência Operacional",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta da validação de segurança (IP/domínio)",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a certificação das apólices ANA, ANT e ANV",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a análise consultiva de risco de crédito",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as validações de compliance",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Adrielle Gritten",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a integração e engajamento de novos colaboradores",
+    "theme": "Eficiência Corporativa",
+    "directorate": "Christian Lobo",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": 3,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a conciliação contábil",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as operações de crédito consignado",
+    "theme": "Eficiência Operacional",
+    "directorate": "Christian Lobo",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a coleta de assinaturas",
+    "theme": "Eficiência Operacional",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio da obrigação regulatória Cadoc 9810",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Controladoria",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": 3.5,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar a consulta da validação de segurança (IP/domínio)",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o atendimento comercial via agente de IA",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial os acessos encurtados via Bitly",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 3,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automação de lançamentos de titulos no Soft Expert e consolidação dos titulos para aprovação.",
+    "theme": "Sem tema",
+    "directorate": "Controladoria",
+    "stage": "em_teste",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 20,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Painel do Depósito à prazo para Tesouraria, Contabilidade e Carteiras e Regulatórios",
+    "theme": "Sem tema",
+    "directorate": "Controladoria",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": 4,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar a consulta das operações de crédito consignado",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Integrar automaticamente dados financeiros do TOTVS",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta das vendas",
+    "theme": "Eficiência Operacional",
+    "directorate": "Pós Vendas",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": 100,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar o envio do controle de consumo de combustível",
+    "theme": "Eficiência Corporativa",
+    "directorate": "Christian Lobo",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": 2,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Análise Transacional",
+    "theme": "Sem tema",
+    "directorate": "Everton Dzikovicz",
+    "stage": "em_teste",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar o envio da geração e assinatura de contratos",
+    "theme": "Eficiência Operacional",
+    "directorate": "Adrielle Gritten",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as informações do Senff Odonto",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta do credenciamento de lojistas",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 315,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial as vendas",
+    "theme": "Sem tema",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 15,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar o relatório de antecipação de recebíveis",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar consultas ao histórico de fechamento via IA",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta de buscar todas as tags na hi e salvar no banco",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Agilizar as operações do Senff Shopping",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta das operações de crédito consignado",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 4,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o relatório da transcrição de ligações",
+    "theme": "Eficiência Operacional",
+    "directorate": "Não informado",
+    "stage": "em_teste",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 132,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Sistema Centralizador de Controle e Operações do FIDC",
+    "theme": "Sem tema",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_teste",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": 20,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Monitorar automaticamente o processo de CTE",
+    "theme": "Eficiência Operacional",
+    "directorate": "Controladoria",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": 1,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar a extração de ingestão dos dados de compras da VTEX no banco de dados",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Monitorar automaticamente o tratamento de reclamações",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Bruno Capobianco",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as liberações de CDC",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as campanhas para lojistas",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 9,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a gestão das tarefas de automação da equipe",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as informações de clientes Private Label",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar atualização de BI internos da área",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o relatório das vendas",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 10,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a tarifa de abertura de crédito (TAC) e os seguros",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio do desbloqueio de lojas",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar os saldos financeiros",
+    "theme": "Eficiência Operacional",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o fluxo de mensagens do atendimento",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial a parceria com o Paraná Banco",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 0,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a classificação do cadastro de produtos na VTEX",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio do controle de banco de horas",
+    "theme": "Eficiência Corporativa",
+    "directorate": "Christian Lobo",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 8,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial venda Parcelada",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Agilizar o desbloqueio de lojas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o cancelamento dos processos de seguros",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": 20,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial a carteira em runoff",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 0,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automação análises consignado",
+    "theme": "Sem tema",
+    "directorate": "TI",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 220,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar o envio da abertura de sinistros",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 1,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a carteira de crédito",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as liberações da Veripag",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a validação de repasses RRE",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o credenciamento de lojistas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Agilizar o desbloqueio de lojas",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Bruno Capobianco",
+    "stage": "em_teste",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": 40,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a compensação financeira entre contas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Criação de termos API Webdox",
+    "theme": "Sem tema",
+    "directorate": "Jacqueline Pereira",
+    "stage": "cancelado",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": 20,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar o envio do disparo de mensagens via WhatsApp",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a geração do fluxo de caixa",
+    "theme": "Sem tema",
+    "directorate": "Maurício Rodrigues",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 24,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar a consulta da posição de ativos e passivos (ALM)",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Maurício Rodrigues",
+    "stage": "em_teste",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 20,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar a geração e assinatura de contratos",
+    "theme": "Eficiência Operacional",
+    "directorate": "Adrielle Gritten",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as certificações e os alertas regulatórios",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Antecipar alertas sobre a cobrança de chamados em aberto",
+    "theme": "Eficiência Operacional",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o fluxo de mensagens do atendimento",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a validação das operações de cartão",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 3,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial as operações de saque",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Monitorar automaticamente as operações do Senff Shopping",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Bruno Capobianco",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a validação das personas de clientes B2B",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o cálculo da liquidação antecipada de contratos",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 20,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o credenciamento de lojistas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio da gestão da frota de veículos",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Christian Lobo",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": 3,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio e a liberação de repasses aos lojistas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta do processo de CTE",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Bruno Capobianco",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar os saldos financeiros",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial as liberações de CDC",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial o balancete contábil",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Monitorar automaticamente as ligações registradas na URA",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Bruno Capobianco",
+    "stage": "em_teste",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio da obrigação regulatória Cadoc 9810",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a gestão da frota de veículos",
+    "theme": "Eficiência Corporativa",
+    "directorate": "Christian Lobo",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as lojas sem vendas no período",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar gerador XML 3040 Senffnet",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a criação de personagens digitais para marketing",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 288,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial a conferência de extratos bancários",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Maurício Rodrigues",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 2,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automação do Processo de Importação de Arquivos do FIDC na Evertec",
+    "theme": "Sem tema",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 10,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar a carta de circularização de auditoria",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o processo de credenciamento de lojistas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio das propostas comerciais",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a gestão da frota de veículos",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Christian Lobo",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 4,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar os prazos judiciais",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Luiz Carlos Beltzac",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o relatório das notas fiscais",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 3,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o processo de credenciamento de lojistas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o relatório dos repasses a lojistas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a conciliação do encontro de contas ACS, ACQ, ACM e COA",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a validação da atualização cadastral",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "em_teste",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": 40,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar consulta Rápida",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 8,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial as operações via Pix",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta dos lojistas",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Adrielle Gritten",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a provisão de risco de crédito",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Antecipar alertas sobre os repasses a lojistas",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": 100,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta dos saldos financeiros",
+    "theme": "Eficiência Operacional",
+    "directorate": "Maurício Rodrigues",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 40,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar a consulta da atualização cadastral",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 4,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Monitorar automaticamente os saldos financeiros",
+    "theme": "Eficiência Operacional",
+    "directorate": "Maurício Rodrigues",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 20,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar a produção de personagens digitais",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 6,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial as operações de crédito consignado",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio de taxas às corretoras",
+    "theme": "Sem tema",
+    "directorate": "Maurício Rodrigues",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar as operações de cartão",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Monitorar automaticamente a atualização cadastral",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio das notas fiscais",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 20,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o controle antifraude",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Agilizar os repasses a lojistas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial o pagamento de contas",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta das operações do Senff Shopping",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 4,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as comissões",
+    "theme": "Eficiência Operacional",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o fechamento diário de repasses",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o cadastro das operações de crédito consignado",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 88,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Antecipar alertas sobre as campanhas para lojistas",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": 1,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar os lojistas",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 96,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta de framework de análises temporais",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a geração da gestão de licitações públicas",
+    "theme": "Eficiência Operacional",
+    "directorate": "Diretoria Comercial",
+    "stage": "em_teste",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 0,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar os processos de seguros",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 57.3,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o relatório diário Private Label",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a produção de vídeos institucionais com IA",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 384,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a validação de segurança (IP/domínio)",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Agilizar o desbloqueio de lojas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial as liberações de CDC",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Monitorar automaticamente os indicadores de risco",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta do índice de liquidez",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Maurício Rodrigues",
+    "stage": "em_teste",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 26,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Centralizar em painel gerencial observabilidade de ETLs e Dashboards - Financeiro",
+    "theme": "Sem tema",
+    "directorate": "Maurício Rodrigues",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 16,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar a geração dos processos de seguros",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a validação dos pedidos",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 1.2,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o cálculo da antecipação de recebíveis",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 189,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o relatório das ligações registradas na URA",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 11,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a extração das notas fiscais",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 2.5,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Agilizar o desbloqueio de lojas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial a carteira de crédito",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a geração dos textos de marketing (copy)",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial a folha de pagamento",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a conciliação contábil",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta de software de busca nos diálogos exportados",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 16,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o relatório financeiro diário",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar envio de produção parcial e mensal dos correspondentes",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Não informado",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as operações de cartão",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 3,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio e a liberação de repasses aos lojistas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o fechamento diário de repasses",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Garantir contingência do registro regulatório 4060 (Sinqia)",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 4,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta do atendimento de segundo nível",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 13,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o controle de limites de clientes",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Marcelino Axt",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a identidade visual da marca",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar os dados do crédito consignado",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o backup e versionamento dos fluxos de automação",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio de processo fechamento",
+    "theme": "Eficiência Corporativa",
+    "directorate": "Christian Lobo",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 8,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o atendimento via agente de IA",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a certificação de anuidade bonificada",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a provisão de risco de crédito",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 8,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta dos processos jurídicos",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 160,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as liberações de crédito Pontual",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Rebalancear dinamicamente as licenças de fila de espera do atendimento (HI)",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a extração da entrega da e-Financeira",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 5,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a conciliação de comissões diversas",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o cálculo das liberações de CDC",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a comparação de arquivos (PDF/PNG) para identificar divergências",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 1,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o relatório geral das operações",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial as operações de crédito consignado",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial o reporte IFRS",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 2,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta das vendas",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Fernanda Silva",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o processo de CTE",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a conciliação contábil",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 1,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Simulador Posição da Carteira de Passivos - Banco Senff",
+    "theme": "Sem tema",
+    "directorate": "Maurício Rodrigues",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar a validação da análise documental de clientes PJ",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Marcelino Axt",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Integrar automaticamente a gestão de licitações públicas",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 2,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial a antecipação de recebíveis",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio de disparador de mensagens em massa",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": 5.5,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar os vídeos institucionais",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 12,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial as comissões",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 0,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar as operações de crédito consignado",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio e a liberação de repasses aos lojistas",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Consultar dados da Tesouraria em linguagem natural com IA local",
+    "theme": "Sem tema",
+    "directorate": "Maurício Rodrigues",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar a taxa CDI",
+    "theme": "Eficiência Operacional",
+    "directorate": "Maurício Rodrigues",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 1.5,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar dúvidas dos colaboradores em um agente de IA interno",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Christian Lobo",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial o capital de giro",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a extração do balancete contábil",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar os alertas por e-mail relevantes à área",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 20,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o processo de CTE",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial a captação de recursos",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 0,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar os pedidos",
+    "theme": "Eficiência Corporativa",
+    "directorate": "Christian Lobo",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 20,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a validação das operações de cartão",
+    "theme": "Eficiência Operacional",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 6,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a transferência de dívida do cheque especial",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 6,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o relatório dos repasses a lojistas",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 1.2,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a avaliação de imóveis em garantia",
+    "theme": "Eficiência Operacional",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o envio do disparo de mensagens via WhatsApp",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 22,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Painel do Depósito à vista para Carteiras e Regulatórios, Contabilidade e Tesouraria",
+    "theme": "Sem tema",
+    "directorate": "Controladoria",
+    "stage": "em_teste",
+    "uses_ai": false,
+    "uses_n8n": true,
+    "hours_saved_month": 4,
+    "is_legacy_import": false
+  },
+  {
+    "title": "Automatizar o fluxo de mensagens do atendimento",
+    "theme": "Automação e Eficiência Operacional",
+    "directorate": "Bruno Capobianco",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial o spread das operações",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 0,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Melhorar a qualidade dos dados contábeis enviados ao BACEN",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "em_desenvolvimento",
+    "uses_ai": true,
+    "uses_n8n": true,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Agilizar as operações via Pix",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Centralizar em painel gerencial fechamento Banco",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o relatório da organização de eventos internos",
+    "theme": "Dados, BI e Relatórios",
+    "directorate": "Christian Lobo",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a consulta das avaliações no App Senff",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 6.5,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar a aprovação por alçada",
+    "theme": "Eficiência Operacional",
+    "directorate": "Adrielle Gritten",
+    "stage": "em_desenvolvimento",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o cadastro de marcas na VTEX",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 50,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar alterações em massa no XML do registro 3040",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 3,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o aviso de pedidos cancelados no Senff Shopping",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Everton Dzikovicz",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": 6,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o relatório dos lojistas",
+    "theme": "Experiência do Cliente e Atendimento",
+    "directorate": "Fernanda Silva",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o estorno de juros e IOF",
+    "theme": "Risco, Compliance e Regulação",
+    "directorate": "Jacqueline Pereira",
+    "stage": "concluido",
+    "uses_ai": false,
+    "uses_n8n": false,
+    "hours_saved_month": 16,
+    "is_legacy_import": true
+  },
+  {
+    "title": "Automatizar o relatório de propostas pendentes (Fluxo SE)",
+    "theme": "Receita, Comercial e Marketing",
+    "directorate": "Marco Antonio Senff Peixoto",
+    "stage": "concluido",
+    "uses_ai": true,
+    "uses_n8n": false,
+    "hours_saved_month": null,
+    "is_legacy_import": true
+  }
+]
