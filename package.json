@@ -12,7 +12,7 @@
     "test:nav": "npx tsx src/lib/nav.test.ts",
     "test:cadastro": "npx tsx src/lib/cadastro-iniciativa.test.ts",
     "test:projeto": "npx tsx src/lib/projeto-erro.test.ts",
-    "test:valor": "npx tsx src/lib/valor/conteudo.test.ts",
+    "test:valor": "npx tsx src/lib/valor/conteudo.test.ts && npx tsx src/lib/valor/portfolio.test.ts",
     "prebuild": "npm run test:valor"
   },
   "dependencies": {
