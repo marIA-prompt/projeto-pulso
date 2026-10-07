@@ -1,0 +1,25 @@
+{
+  "diretoria": {
+    "Jaqueline": "Jacqueline Pereira",
+    "Jackeline": "Jacqueline Pereira",
+    "Bruno": "Bruno Capobianco",
+    "Mauricio Rodrigues": "Maurício Rodrigues",
+    "CONTROLADORIA": "Controladoria",
+    "": "Não informado"
+  },
+  "tema": {
+    "Eficiência Operacional / Automação de Preocessos": "Eficiência Operacional",
+    "": "Sem tema"
+  },
+  "estagio": {
+    "concluido": "Concluída",
+    "em_desenvolvimento": "Em desenvolvimento",
+    "em_teste": "Em teste",
+    "ideia": "Ideia",
+    "cancelado": "Cancelada"
+  },
+  "pendente_de_confirmacao": [
+    "Jackeline = Jacqueline Pereira?",
+    "Bruno = Bruno Capobianco?"
+  ]
+}

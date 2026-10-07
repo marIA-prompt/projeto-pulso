@@ -11,7 +11,9 @@
     "test:lei-do-bem": "npx tsx src/lib/lei-do-bem.test.ts",
     "test:nav": "npx tsx src/lib/nav.test.ts",
     "test:cadastro": "npx tsx src/lib/cadastro-iniciativa.test.ts",
-    "test:projeto": "npx tsx src/lib/projeto-erro.test.ts"
+    "test:projeto": "npx tsx src/lib/projeto-erro.test.ts",
+    "test:valor": "npx tsx src/lib/valor/conteudo.test.ts",
+    "prebuild": "npm run test:valor"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

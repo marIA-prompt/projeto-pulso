@@ -1,0 +1,56 @@
+[
+  {
+    "ordem": 1,
+    "resultado": "Pelo menos uma solução de IA em produção",
+    "situacao": "Parcial",
+    "nota": "A plataforma Pulso está em produção desde agosto. Falta uma solução de negócio com indicador."
+  },
+  {
+    "ordem": 2,
+    "resultado": "Pelo menos um modelo tradicional com resultado medido",
+    "situacao": "Não",
+    "nota": "O antifraude está em desenvolvimento, sem tráfego real."
+  },
+  {
+    "ordem": 3,
+    "resultado": "Reuniões de governança estruturadas e recorrentes",
+    "situacao": "Atendido",
+    "nota": "4 encontros em setembro, com pauta e projetos das áreas."
+  },
+  {
+    "ordem": 4,
+    "resultado": "Portfólio priorizado e acompanhado",
+    "situacao": "Parcial",
+    "nota": "241 iniciativas mapeadas, 71% concluídas. Priorização formal não evidenciada."
+  },
+  {
+    "ordem": 5,
+    "resultado": "Mapa de competências disponível",
+    "situacao": "Parcial",
+    "nota": "Existe para 2 perfis a contratar. Falta a equipe atual."
+  },
+  {
+    "ordem": 6,
+    "resultado": "Acompanhamento formal das capacitações",
+    "situacao": "Não",
+    "nota": "Sem registro de horas."
+  },
+  {
+    "ordem": 7,
+    "resultado": "Aumento da utilização do SenffLabs",
+    "situacao": "Não",
+    "nota": "Sem medição de uso."
+  },
+  {
+    "ordem": 8,
+    "resultado": "Fluxo de versionamento definido, documentado e aplicado",
+    "situacao": "Parcial",
+    "nota": "Definido e aplicado em projetos novos. Falta documento formal."
+  },
+  {
+    "ordem": 9,
+    "resultado": "Indicadores de produtividade, adoção, eficiência e retorno",
+    "situacao": "Parcial",
+    "nota": "Adoção medida no painel de ChatGPT e Codex e horas devolvidas calculadas no Pulso. Falta validar o retorno."
+  }
+]

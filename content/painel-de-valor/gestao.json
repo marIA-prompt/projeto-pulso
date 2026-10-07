@@ -1,0 +1,122 @@
+{
+  "diagnostico": [
+    {
+      "titulo": "O trabalho foi contado por vertical, não por prioridade",
+      "texto": "Os relatórios mensais organizam as entregas em IA Generativa, Governança, Machine Learning e Pulso. Várias entregas listadas como proativas servem às prioridades e não foram contadas nelas."
+    },
+    {
+      "titulo": "Quase tudo parou uma etapa antes da linha de chegada",
+      "texto": "Há entregas construídas e em teste em todas as frentes, mas as que estão em produção são de plataforma e governança, e nenhuma tem ainda o antes e depois medido."
+    },
+    {
+      "titulo": "Duas prioridades simples continuam zeradas",
+      "texto": "Horas de capacitação e SenffLabs seguem sem registro há dois ciclos."
+    }
+  ],
+  "ganhos": {
+    "comprovado": [
+      {
+        "valor": "11 áreas",
+        "texto": "usando IA na rotina (92% das contas), com 16,4 mil mensagens ao ChatGPT no 3º trimestre, 114% acima do trimestre anterior."
+      },
+      {
+        "valor": "US$ 175",
+        "texto": "de custo estimado de uso entre 05/07 e 02/10, sem licenças. Os 22 projetos de API foram auditados e os 4 acima do teto, reclassificados."
+      },
+      {
+        "valor": "241 iniciativas",
+        "texto": "de IA e automação de 32 áreas visíveis em um só lugar.",
+        "ao_vivo": true
+      },
+      {
+        "valor": "R$ 250 mil/mês",
+        "texto": "de proposta externa não contratada (Distrito). A da NeoLabs, de R$ 267 mil a R$ 353 mil em 6 meses, também não segue nesse valor.",
+        "nota": "Não é economia líquida: a capacidade será buscada com 2 profissionais ou parceiros mais acessíveis."
+      },
+      {
+        "valor": "4 riscos",
+        "texto": "encontrados antes de virar incidente: credenciais em texto claro no fluxo MASP, projetos de API sem responsável vinculado, dado pessoal na base de um GPT e um GPT que inventava evidência de auditoria."
+      },
+      {
+        "valor": "4 formulários",
+        "texto": "oficiais de Conta PJ preenchidos pelo assistente a partir dos documentos do cliente, validados em 3 casos reais."
+      }
+    ],
+    "estimado": [
+      {
+        "valor": "2.420 h/mês",
+        "texto": "devolvidas às áreas pelas iniciativas concluídas do portfólio.",
+        "nota": "Declarado pelos donos no cadastro. Passa a comprovado com a validação de uma amostra.",
+        "ao_vivo": true
+      },
+      {
+        "valor": "220 h/mês",
+        "texto": "devolvidas pela automação das análises de contestação do Consignado, concluída em setembro.",
+        "nota": "Declarado no Pulso."
+      },
+      {
+        "valor": "35 min → 1,5 min",
+        "texto": "em uma etapa dos scripts de cobrança, e cerca de US$ 10 mil/mês de ferramenta comercial de mascaramento não comprada.",
+        "nota": "Estimativas da área de Dados com Claude Code. Não descontam o esforço interno."
+      },
+      {
+        "valor": "10 a 15%",
+        "texto": "de ganho sobre uma base de controle é a meta dos primeiros modelos preditivos.",
+        "nota": "Meta, ainda sem base de controle definida."
+      }
+    ],
+    "sem_medicao": [
+      "Conta PJ: tempo de preenchimento dos 4 formulários à mão e com o assistente.",
+      "Antifraude: taxa de challenge, fricção e perdas de hoje, para comparar depois.",
+      "Lei do Bem: valor do incentivo fiscal das iniciativas enquadradas e em avaliação.",
+      "Assistentes das áreas: uso por GPT depois de publicado e tempo poupado.",
+      "Painel de Qualidade: horas de consolidação mensal substituídas e índice real."
+    ]
+  },
+  "movimentos": [
+    {
+      "texto": "Montar o GPT executivo do MASP e rodar os 17 testes.",
+      "serve_a": "P1"
+    },
+    {
+      "texto": "Cronometrar a Conta PJ nos próximos casos, com e sem o assistente.",
+      "serve_a": "Resultado 9"
+    },
+    {
+      "texto": "Publicar os GPTs sem bloqueio no Workspace e acompanhar o uso por área.",
+      "serve_a": "Resultado 1"
+    },
+    {
+      "texto": "Abrir o registro de horas de capacitação.",
+      "serve_a": "P5"
+    },
+    {
+      "texto": "Estender o mapa de competências para as pessoas que já atuam com automação e IA.",
+      "serve_a": "P4"
+    },
+    {
+      "texto": "Ligar a telemetria do antifraude no tráfego real e fechar a linha de base com Fraudes.",
+      "serve_a": "P3"
+    },
+    {
+      "texto": "Formalizar o fluxo de versionamento em um documento único, com os Agentes de Monitoramento como primeiro caso.",
+      "serve_a": "P7"
+    }
+  ],
+  "decisoes_da_diretoria": [
+    "Como repor a capacidade de IA Preditiva: 2 profissionais ou um parceiro de valor mais acessível.",
+    "O Pulso é o veículo do SenffLabs ou são coisas distintas?",
+    "Acesso do Presidente e do sucessor no Power BI para o MASP.",
+    "Carga da carteira oficial, que bloqueia o índice do Painel de Qualidade.",
+    "Aprovação e publicação do ajuste da Lei do Bem e do Guia de Boas Práticas.",
+    "As 7 definições pendentes antes de abrir as 2 vagas de IA Preditiva.",
+    "Quais decisões o Agente de Monitoramento passa a tomar sozinho. Escopo ainda não definido."
+  ],
+  "riscos_abertos": [
+    "Credenciais do fluxo MASP em texto claro. Apontado em agosto, sem confirmação de rotação.",
+    "12 de 12 contas do ChatGPT são de área, nenhuma nominal.",
+    "Base legal e DPA para envio real ao JEV ainda não confirmados.",
+    "Iniciativas ativas do Pulso sem atualização do dono há mais de 30 dias (calcular ao vivo).",
+    "Retenção e residência de dados dos projetos OpenAI pendentes de validação com LGPD."
+  ]
+}

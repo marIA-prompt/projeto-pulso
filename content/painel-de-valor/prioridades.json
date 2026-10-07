@@ -1,0 +1,116 @@
+[
+  {
+    "id": "P1",
+    "titulo": "Colocar em produção o projeto da entrevista (MASP)",
+    "status": "Em teste",
+    "etapa": 3,
+    "ja_existe": [
+      "GPT executivo do Comercial PF desenhado em 3 fases, com o Power BI como única fonte de cálculo",
+      "Orquestrador JEV MASP com a primeira análise em 30/09",
+      "Piloto com a Nekt concluído e substituído por solução interna"
+    ],
+    "falta": [
+      "Os 17 testes de validação ainda não rodaram",
+      "Acesso do Presidente e do sucessor no Power BI",
+      "Indicadores de sucesso e cronograma formalizados"
+    ],
+    "proximo_passo": "Montar o GPT, rodar os 17 testes e validar categorias e limiares com o Comercial PF."
+  },
+  {
+    "id": "P2",
+    "titulo": "Estruturar e conduzir as reuniões de Automação e IA",
+    "status": "Em operação",
+    "etapa": 4,
+    "ja_existe": [
+      "Metodologia Pulso v1.0 com ritmo semanal e report mensal",
+      "4 encontros em setembro, 133% do previsto, com 8 projetos apresentados pelas áreas",
+      "Plataforma Pulso em produção, com 241 iniciativas de 32 áreas (71% concluídas)"
+    ],
+    "falta": [
+      "Registro de decisões e priorização formal a cada encontro",
+      "Report executivo automatizado",
+      "Cerca de 40 participantes ativos, 33% da meta de 120",
+      "Só 12% das iniciativas ativas foram atualizadas nos últimos 30 dias"
+    ],
+    "proximo_passo": "Publicar a ata de decisões de cada encontro e levar os projetos apresentados para o cadastro no Pulso."
+  },
+  {
+    "id": "P3",
+    "titulo": "Primeiro modelo de IA tradicional com resultado comprovado",
+    "status": "Em desenvolvimento",
+    "etapa": 2,
+    "ja_existe": [
+      "Pipeline de treino testado em 316.561 transações sintéticas: precisão de 96,8% e recall de 59,4%",
+      "4 decisões de arquitetura registradas",
+      "Segunda linha do challenge (JEV) rodando em simulação"
+    ],
+    "falta": [
+      "Telemetria no tráfego real",
+      "Linha de base e validação com o time de Fraudes",
+      "Implantação, monitoramento e comparação antes e depois",
+      "Capacidade: a área busca 2 profissionais de IA Preditiva ou um parceiro mais acessível"
+    ],
+    "proximo_passo": "Executar a Fase 0 (telemetria e shadow) e calibrar limiares com Fraudes e Compliance."
+  },
+  {
+    "id": "P4",
+    "titulo": "Visão consolidada das competências da equipe",
+    "status": "Iniciado",
+    "etapa": 1,
+    "ja_existe": [
+      "Mapa de competências dos 2 perfis de IA Preditiva (Cientista de Dados e Engenheiro de ML), que orienta a busca pelos 2 profissionais",
+      "Mapeamento de perfil enviado à BRQ"
+    ],
+    "falta": [
+      "Visão por colaborador da equipe atual: ferramentas, certificações, proficiência e lacunas",
+      "Riscos de concentração de conhecimento"
+    ],
+    "proximo_passo": "Aplicar o mesmo modelo de competências às pessoas que já atuam com automação e IA."
+  },
+  {
+    "id": "P5",
+    "titulo": "Acompanhamento das horas de capacitação",
+    "status": "Não iniciado",
+    "etapa": 0,
+    "ja_existe": [
+      "2 treinamentos de IA Generativa publicados em agosto",
+      "Treinamento de ChatGPT e guia do Claude previstos para outubro"
+    ],
+    "falta": [
+      "Relatório periódico por colaborador, com carga horária, competência e aplicação no trabalho"
+    ],
+    "proximo_passo": "Abrir o registro com os treinamentos já realizados e publicar a primeira edição mensal."
+  },
+  {
+    "id": "P6",
+    "titulo": "Ampliar a utilização do SenffLabs",
+    "status": "Sem registro",
+    "etapa": 0,
+    "ja_existe": [
+      "Nenhuma entrega registrada nos dois ciclos",
+      "O Pulso já cobre parte do pedido: portfólio, participação das áreas e visibilidade"
+    ],
+    "falta": [
+      "Governança de entrada, priorização e encerramento de experimentos",
+      "Medida de uso do ambiente"
+    ],
+    "proximo_passo": "Definir com a Diretoria se o Pulso é o veículo do SenffLabs e, a partir daí, medir o uso."
+  },
+  {
+    "id": "P7",
+    "titulo": "Revisar os fluxos de versionamento",
+    "status": "Em andamento",
+    "etapa": 2,
+    "ja_existe": [
+      "Modelo de 3 camadas definido (código, prompts e conteúdo, modelos)",
+      "Padrão aplicado nos projetos novos: simulação por padrão, revisão antes de publicar e testes automatizados",
+      "Novo fluxo de criação de Agentes de Monitoramento por merge request, desenhado para os 13 agentes e 369 alertas"
+    ],
+    "falta": [
+      "Documento formal aprovado",
+      "Aplicação aos projetos existentes",
+      "As 7 propostas do fluxo dos Agentes de Monitoramento aguardam aprovação"
+    ],
+    "proximo_passo": "Consolidar em um documento único e pilotar em um Agente de Monitoramento com poucos alertas."
+  }
+]

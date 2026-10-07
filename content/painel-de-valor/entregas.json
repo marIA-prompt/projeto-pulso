@@ -1,0 +1,131 @@
+{
+  "etapas": [
+    "Desenhado",
+    "Construído",
+    "Em teste",
+    "Em produção",
+    "Resultado medido"
+  ],
+  "frentes": {
+    "gen": "Assistentes",
+    "gov": "Governança",
+    "ml": "Fraude e previsão",
+    "pulso": "Pulso",
+    "masp": "MASP",
+    "qual": "Qualidade"
+  },
+  "entregas": [
+    {
+      "titulo": "Plataforma Pulso",
+      "evidencia": "241 iniciativas de 32 áreas; 71% concluídas",
+      "frente": "pulso",
+      "etapa": 4,
+      "serve_a": "P2"
+    },
+    {
+      "titulo": "Encontros do Grupo de Trabalho",
+      "evidencia": "4 em setembro, com 8 projetos das áreas",
+      "frente": "pulso",
+      "etapa": 4,
+      "serve_a": "P2"
+    },
+    {
+      "titulo": "Triagem da Lei do Bem",
+      "evidencia": "227 triadas (94% do portfólio); 4 enquadradas e 110 em avaliação",
+      "frente": "pulso",
+      "etapa": 4,
+      "serve_a": "Proativa"
+    },
+    {
+      "titulo": "Controle de gastos da API OpenAI",
+      "evidencia": "22 projetos auditados; 4 acima do teto reclassificados",
+      "frente": "gov",
+      "etapa": 4,
+      "serve_a": "Proativa"
+    },
+    {
+      "titulo": "Painel de uso de ChatGPT e Codex",
+      "evidencia": "3º trimestre publicado, com 12 contas e uso por área",
+      "frente": "gov",
+      "etapa": 4,
+      "serve_a": "Resultado 9"
+    },
+    {
+      "titulo": "Piloto do Claude Team",
+      "evidencia": "5 licenças contratadas; 90 dias com go/no-go",
+      "frente": "gov",
+      "etapa": 3,
+      "serve_a": "Proativa"
+    },
+    {
+      "titulo": "Assistente de formulários de Conta PJ",
+      "evidencia": "4 formulários oficiais; validado em 3 casos reais",
+      "frente": "gen",
+      "etapa": 3,
+      "serve_a": "Proativa"
+    },
+    {
+      "titulo": "Painel de Qualidade de correspondentes",
+      "evidencia": "52 testes passando; revisão aberta; aguarda carteira",
+      "frente": "qual",
+      "etapa": 3,
+      "serve_a": "Proativa"
+    },
+    {
+      "titulo": "Orquestrador JEV MASP",
+      "evidencia": "Primeira análise em 30/09; limiares aguardam o Comercial PF",
+      "frente": "masp",
+      "etapa": 3,
+      "serve_a": "P1"
+    },
+    {
+      "titulo": "JEV Antifraude, segunda linha do challenge",
+      "evidencia": "Em simulação; sem tráfego real",
+      "frente": "ml",
+      "etapa": 3,
+      "serve_a": "P3"
+    },
+    {
+      "titulo": "11 GPTs reescritos",
+      "evidencia": "Validados em 03/09; publicação não evidenciada",
+      "frente": "gen",
+      "etapa": 2,
+      "serve_a": "Proativa"
+    },
+    {
+      "titulo": "Motor antifraude supervisionado",
+      "evidencia": "Pipeline testado em dados sintéticos; modelo em treino",
+      "frente": "ml",
+      "etapa": 2,
+      "serve_a": "P3"
+    },
+    {
+      "titulo": "GPT executivo do MASP",
+      "evidencia": "Desenhado em 3 fases; 17 testes por rodar",
+      "frente": "masp",
+      "etapa": 1,
+      "serve_a": "P1"
+    },
+    {
+      "titulo": "9 GPTs novos",
+      "evidencia": "Especificados; prontos para o Sandbox",
+      "frente": "gen",
+      "etapa": 1,
+      "serve_a": "Proativa"
+    },
+    {
+      "titulo": "Agentes de Monitoramento: criação pelas áreas",
+      "evidencia": "Novo fluxo em rascunho (05/10); 7 propostas a aprovar",
+      "frente": "gov",
+      "etapa": 1,
+      "serve_a": "P7"
+    },
+    {
+      "titulo": "Mapa de competências de IA Preditiva",
+      "evidencia": "2 perfis, 10 competências obrigatórias cada",
+      "frente": "ml",
+      "etapa": 1,
+      "serve_a": "P4"
+    }
+  ]
+}

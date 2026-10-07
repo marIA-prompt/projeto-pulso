@@ -1,0 +1,22 @@
+{
+  "data_base": "2026-10-06",
+  "ciclos": "agosto e setembro de 2026",
+  "premissas": {
+    "custo_hora_padrao_brl": 50,
+    "custo_hora_min": 20,
+    "custo_hora_max": 200,
+    "custo_hora_passo": 5,
+    "horas_mes_por_pessoa": 168,
+    "nota_custo_hora": "Premissa para simulação, não é dado da Senff. Trocar pelo custo médio real com encargos quando a Controladoria informar."
+  },
+  "fontes": [
+    "Direcionamento Executivo para a Gerência de IA",
+    "Relatórios de Entregas 08.2026 e 09.2026",
+    "Relatório de Setembro.26",
+    "Plano de Governança e Contratação do Claude Team",
+    "Dashboard do 3º trimestre de uso de ChatGPT e Codex",
+    "Mapa de Competências de IA Preditiva",
+    "Documento dos Agentes de Monitoramento (05/10/2026)",
+    "Pulso (dados ao vivo)"
+  ]
+}

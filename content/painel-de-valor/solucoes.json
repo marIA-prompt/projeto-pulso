@@ -1,0 +1,83 @@
+[
+  {
+    "titulo": "Agente de Monitoramento",
+    "grupo": "disponivel",
+    "status": "Em uso",
+    "pedido": "Precisamos saber na hora quando um número da operação sair do normal.",
+    "o_que_faz": "Confere os indicadores sozinho, a cada minuto, hora ou dia, compara com o limite combinado com a área e avisa o grupo certo no Bitrix24. A pessoa que recebe o aviso analisa e age.",
+    "quem_usa": "Já funcionam há tempo: 13 agentes e 369 alertas em Atendimento, Operações, Fraude, Conta Corrente e Pix, Crédito, Cobrança e outras áreas. A Gerência de IA está padronizando o modelo e preparando o treinamento para cada área criar os seus.",
+    "exemplos": "Chamadas abandonadas acima do normal na última hora; fila parada; volume de Pix fora do padrão."
+  },
+  {
+    "titulo": "Assistentes das áreas",
+    "grupo": "disponivel",
+    "status": "Em uso",
+    "pedido": "Precisamos de resposta rápida e no padrão sobre uma norma, política ou procedimento nosso.",
+    "o_que_faz": "Cada assistente conhece o material de uma área e responde em linguagem simples, sem inventar o que não está na fonte e pedindo validação humana onde é necessário.",
+    "quem_usa": "11 assistentes: BACEN, Nuvem, Webdox, GMUD, TI Responde, Solicitações Administrativas, Frota, Copywriting, Entregas de Valor, Navigate V2 e OKRs.",
+    "exemplos": "Como abro esta solicitação? O que a norma diz sobre este caso? Monte o comunicado no padrão."
+  },
+  {
+    "titulo": "ChatGPT e Codex corporativos",
+    "grupo": "disponivel",
+    "status": "Em uso",
+    "pedido": "Precisamos escrever, resumir, analisar uma planilha ou programar mais rápido.",
+    "o_que_faz": "O ChatGPT apoia texto, documentos e planilhas. O Codex escreve e corrige código a pedido da equipe, sempre com revisão humana antes de ir para produção.",
+    "quem_usa": "12 contas em 11 áreas. No 3º trimestre foram 16,4 mil mensagens e 5 áreas geraram código, entre elas Fraudes, Compliance e Controladoria.",
+    "exemplos": "Resuma este contrato. Revise este relatório. Crie o script desta conciliação."
+  },
+  {
+    "titulo": "Pulso",
+    "grupo": "disponivel",
+    "status": "Em uso",
+    "pedido": "Temos uma ideia de automação e queremos saber se alguém já fez algo parecido.",
+    "o_que_faz": "Reúne em um só lugar o que cada área está automatizando, mostra o estágio de cada iniciativa e aponta as que podem se enquadrar no incentivo fiscal da Lei do Bem.",
+    "quem_usa": "241 iniciativas de 32 áreas, 71% já concluídas. Nos encontros de setembro, 8 projetos foram apresentados pelas áreas, como a Integração B3 na Tesouraria e o Simulador de Exposição Flex Frota.",
+    "exemplos": "Cadastrar uma iniciativa, apresentar no encontro, pedir ajuda de quem já resolveu."
+  },
+  {
+    "titulo": "Claude para Dados, IA e Comercial PJ",
+    "grupo": "disponivel",
+    "status": "Em piloto",
+    "pedido": "Precisamos entregar automações e análises em horas, não em semanas.",
+    "o_que_faz": "Assistente que participa do ciclo de desenvolvimento: escreve, testa e documenta junto com o time, só com dados mascarados e com revisão humana antes de publicar.",
+    "quem_usa": "5 licenças em piloto de 90 dias, com decisão de continuar ou não ao final. Cobrança já pediu para entrar.",
+    "exemplos": "Automatizar uma homologação; reescrever um script de cobrança."
+  },
+  {
+    "titulo": "Assistente de formulários de Conta PJ",
+    "grupo": "em_teste_ou_desenvolvimento",
+    "status": "Em teste",
+    "pedido": "Precisamos abrir conta PJ sem redigitar os dados do cliente em quatro formulários.",
+    "o_que_faz": "Lê os documentos do cliente (contrato social, QSA, cartão CNPJ, balanço) e devolve preenchidos o Cartão de Assinatura, a Ficha Cadastral e os Questionários API e ESG, no PDF oficial do banco.",
+    "quem_usa": "Back-office do Comercial PJ, validado em 3 casos reais com 1 sócio, vários sócios e administração em conjunto.",
+    "exemplos": "Abertura de conta e atualização cadastral de empresas com até 5 sócios."
+  },
+  {
+    "titulo": "Analista executivo do Comercial PF",
+    "grupo": "em_teste_ou_desenvolvimento",
+    "status": "Em teste",
+    "pedido": "Precisamos consultar os números do Comercial PF sem esperar uma extração.",
+    "o_que_faz": "Responde em linguagem natural sobre vendas, mix, concentração e cartões, sempre com o número oficial do Power BI, e sinaliza os recortes que merecem atenção.",
+    "quem_usa": "Presidente e sucessor, com o Comercial PF validando as regras.",
+    "exemplos": "Como foi o mês por região? Onde a venda está concentrada demais?"
+  },
+  {
+    "titulo": "Painel de Qualidade de correspondentes",
+    "grupo": "em_teste_ou_desenvolvimento",
+    "status": "Em teste",
+    "pedido": "Precisamos classificar correspondentes e agentes de crédito no padrão da auditoria, sem planilha paralela.",
+    "o_que_faz": "Reúne reclamações e ações judiciais por correspondente e por agente, aplica as regras de pontuação e suspensão da norma e guarda o registro de auditoria no formato da EY.",
+    "quem_usa": "Operações do Consignado e Compliance, sobre a base Navigate de março a setembro (187 agentes).",
+    "exemplos": "Quais agentes ficaram fora do limite neste mês? Qual a nota da última auditoria?"
+  },
+  {
+    "titulo": "Motor antifraude de cartões",
+    "grupo": "em_teste_ou_desenvolvimento",
+    "status": "Em desenvolvimento",
+    "pedido": "Precisamos barrar a fraude sem travar o cliente bom.",
+    "o_que_faz": "Está sendo construído para avaliar cada transação no momento da compra e responder aprovar, pedir confirmação ou negar, com registro auditável dos sinais que pesaram e revisão humana em toda negação.",
+    "quem_usa": "Em desenvolvimento com a Prevenção a Fraudes. O treino já foi testado com dados sintéticos; ainda não roda em transações reais.",
+    "exemplos": "Compra fora do padrão do cliente; estabelecimento com histórico de fraude."
+  }
+]

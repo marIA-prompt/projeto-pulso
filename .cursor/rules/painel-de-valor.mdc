@@ -1,0 +1,34 @@
+---
+description: Regras da área Painel de Valor (rota /valor) dentro do Pulso
+globs: ["src/app/(app)/valor/**", "src/lib/valor/**", "src/components/valor/**", "content/painel-de-valor/**", "docs/painel-de-valor/**", "tests/fixtures/painel-de-valor/**"]
+alwaysApply: false
+---
+
+# Painel de Valor — regras
+
+Leia `docs/painel-de-valor/PRD.md`, `ARQUITETURA.md` e `REGRAS-DE-CALCULO.md` antes de escrever código.
+
+## Não negociável
+- **Não criar projeto Supabase, tabela, coluna, view, função nem migration.** Esta área só lê.
+- Arquivos existentes que podem mudar: `src/lib/nav.ts`, `src/lib/nav.test.ts`, `src/lib/supabase/middleware.ts` e `package.json`. Nenhum outro, em especial as telas de Acompanhamento, Lei do Bem e Admin.
+- Leitura do banco só no servidor, com o cliente Supabase e as regras de acesso que o Pulso já usa. Nunca expor chave de serviço ao navegador.
+- Nenhum número de iniciativas escrito à mão no código ou nos JSON: tudo o que vem de `projects` é calculado na hora.
+- Não inventar dado. Campo vazio aparece como "não informado", nunca como zero.
+
+## Como trabalhar
+- Antes de criar qualquer coisa, procure o equivalente no repositório (cliente Supabase, layout, cartões, pílulas, tabela, tema claro/escuro, testes) e reutilize.
+- Código em `src/lib/valor`, `src/components/valor` e `src/app/(app)/valor`. Testes com `node:assert/strict` e `npx tsx`, validação com Zod. Não adicione dependência sem necessidade clara; se precisar, pergunte.
+- Funções de cálculo são puras, ficam em um módulo próprio e têm teste contra `tests/fixtures/painel-de-valor/`.
+- Conteúdo editorial vem de `content/painel-de-valor/*.json`, validado por schema ao carregar. JSON inválido deve quebrar o build, não a tela.
+- Textos da interface em português do Brasil, copiados do protótipo e dos JSON. Não reescrever.
+
+## Linguagem
+- É "Agente de Monitoramento", nunca "robô".
+- A visão "O que a IA já faz" mostra só o que existe hoje. Lacunas e planos ficam na visão "Direcionamento".
+- Valores declarados pelas áreas aparecem como "declarado" ou "estimado", não como resultado comprovado.
+- O valor em reais só aparece junto com a premissa de custo da hora.
+
+## Segurança e privacidade
+- Não exibir descrição, links, notas nem caminhos de rede das iniciativas; só os campos listados na arquitetura.
+- Sem dados pessoais além do nome de diretoria que o Pulso já mostra.
+- Todo código gerado passa por revisão humana antes do merge, conforme a Política de Uso de IA (PLT-03).
