@@ -4,6 +4,8 @@
 
 Este dossiê **não substitui** validação fiscal, contábil ou documental. A triagem e a pré-análise MCTI já existentes no produto (`src/lib/lei-do-bem.ts`) **sinalizam**; o parecer humano continua obrigatório.
 
+**Entrega HTML (imprimir / PDF):** abra [`index.html`](index.html) no navegador e use *Imprimir / PDF*. Paleta Senff, sumário interno, FormP&D, Frascati, catálogo, linha do tempo e QA num único arquivo.
+
 Painel navegável da coleta: canvas [Evidências Lei do Bem — Sistema Pulso](https://cursor.com/canvas/store-296c0355-f615-40c4-9684-8315ffef16b0/83836a58-6672-4fee-9698-dad5b10181bf).
 
 **Projeto:** Sistema Pulso (Senff — IA & Automação)
@@ -17,6 +19,7 @@ Painel navegável da coleta: canvas [Evidências Lei do Bem — Sistema Pulso](h
 
 | Necessidade | Arquivo |
 |---|---|
+| Abrir, navegar e imprimir o dossiê completo em HTML | [`index.html`](index.html) |
 | Preencher o FormP&D (blocos §6.1–6.5) e o cadastro Lei do Bem do Pulso | [`01-formpd.md`](01-formpd.md) |
 | Delimitar o que é P&D e o que é rotina; cruzar Frascati e as 12 perguntas da triagem | [`02-escopo-e-frascati.md`](02-escopo-e-frascati.md) |
 | Inventário de artefatos (POC, arquitetura, git, testes, QA) | [`03-catalogo.md`](03-catalogo.md) |

@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dossiê de evidências técnicas — Sistema Pulso · Lei do Bem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0F2467;
+      --navy-deep: #0B1C54;
+      --blue: #1D58EE;
+      --blue-2: #173288;
+      --yellow: #F0C21D;
+      --green: #06760B;
+      --red: #D72727;
+      --g90: #26292C;
+      --g80: #4C5156;
+      --g60: #686D73;
+      --g50: #8A9199;
+      --g40: #B5BBC2;
+      --g30: #DADFE5;
+      --g20: #EDEFF3;
+      --g10: #F6F7F9;
+      --white: #FFFFFF;
+      --sig-ok: #06760B;
+      --sig-ok-bg: #E6F3E7;
+      --sig-warn: #B98A00;
+      --sig-warn-bg: #FDF4D6;
+      --sig-crit: #D72727;
+      --sig-crit-bg: #FBE6E6;
+      --ff: "Poppins", -apple-system, "Segoe UI", Roboto, sans-serif;
+      --fm: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+      --r: 8px;
+      --max: 1100px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--g10);
+      color: var(--g90);
+      font-family: var(--ff);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+    a { color: var(--blue); }
+    code, .num {
+      font-family: var(--fm);
+      font-size: 0.86em;
+      font-variant-numeric: tabular-nums;
+    }
+    code {
+      background: var(--g20);
+      padding: 0.08em 0.35em;
+      border-radius: 4px;
+    }
+    pre {
+      font-family: var(--fm);
+      font-size: 12px;
+      background: var(--navy-deep);
+      color: #EDEFF3;
+      padding: 16px 18px;
+      border-radius: var(--r);
+      overflow-x: auto;
+      line-height: 1.45;
+    }
+    .top {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(11, 28, 84, 0.96);
+      color: var(--white);
+      border-bottom: 3px solid var(--yellow);
+    }
+    .top-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand { font-weight: 700; letter-spacing: 0.02em; }
+    .brand span { color: var(--yellow); font-weight: 500; margin-left: 8px; font-size: 12px; }
+    .top nav { display: flex; flex-wrap: wrap; gap: 6px; }
+    .top nav a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .top nav a:hover, .top nav a:focus-visible { background: rgba(255,255,255,.12); }
+    .btn {
+      appearance: none;
+      border: 0;
+      background: var(--yellow);
+      color: var(--navy-deep);
+      font-family: var(--ff);
+      font-weight: 600;
+      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    main { max-width: var(--max); margin: 0 auto; padding: 32px 24px 80px; }
+    .cover {
+      background: var(--navy);
+      color: #fff;
+      border-radius: 14px;
+      padding: 36px 40px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::after {
+      content: "";
+      position: absolute;
+      right: -40px; bottom: -40px;
+      width: 180px; height: 180px;
+      background: var(--yellow);
+      opacity: 0.15;
+      border-radius: 50%;
+    }
+    .cover .kicker {
+      font-family: var(--fm);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin: 0 0 10px;
+    }
+    .cover h1 { margin: 0 0 10px; font-size: 30px; line-height: 1.2; letter-spacing: -0.02em; }
+    .cover p { margin: 0; max-width: 42em; color: #DADFE5; }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .meta div {
+      background: rgba(255,255,255,.08);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .meta dt { font-size: 11px; color: #B5BBC2; text-transform: uppercase; letter-spacing: 0.08em; }
+    .meta dd { margin: 4px 0 0; font-weight: 600; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 0 0 28px;
+    }
+    .kpi {
+      background: var(--white);
+      border: 1px solid var(--g30);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .kpi .v { font-family: var(--fm); font-size: 28px; font-weight: 600; color: var(--navy); line-height: 1; }
+    .kpi .l { margin-top: 8px; font-size: 13px; color: var(--g60); font-weight: 500; }
+    .aviso {
+      background: var(--sig-warn-bg);
+      border-left: 4px solid var(--yellow);
+      padding: 14px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 0 0 32px;
+      color: var(--g90);
+    }
+    .aviso strong { color: var(--navy); }
+    section { margin: 0 0 40px; }
+    h2 {
+      color: var(--navy);
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--yellow);
+    }
+    h3 { color: var(--navy); font-size: 16px; margin: 22px 0 8px; }
+    h4 { color: var(--blue-2); font-size: 14px; margin: 16px 0 6px; }
+    p { margin: 0 0 12px; }
+    ul, ol { margin: 0 0 14px; padding-left: 1.2em; }
+    li { margin: 0 0 6px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .card {
+      background: var(--white);
+      border: 1px solid var(--g30);
+      border-radius: 10px;
+      padding: 16px 18px;
+    }
+    .card h3 { margin-top: 0; }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--sig-ok-bg);
+      color: var(--sig-ok);
+    }
+    .badge.warn { background: var(--sig-warn-bg); color: var(--sig-warn); }
+    .badge.out { background: var(--g20); color: var(--g60); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--white);
+      font-size: 13px;
+      margin: 0 0 16px;
+    }
+    th, td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--g30);
+      vertical-align: top;
+    }
+    th {
+      background: var(--g20);
+      color: var(--navy);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    tr:nth-child(even) td { background: #FAFBFC; }
+    .toc {
+      background: var(--white);
+      border: 1px solid var(--g30);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 0 0 28px;
+    }
+    .toc ol { margin: 0; }
+    footer {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 24px 40px;
+      color: var(--g50);
+      font-size: 12px;
+    }
+    @media (max-width: 800px) {
+      .kpis, .grid2 { grid-template-columns: 1fr 1fr; }
+      .top-inner { flex-wrap: wrap; }
+      .cover { padding: 24px; }
+    }
+    @media (max-width: 560px) {
+      .kpis, .grid2 { grid-template-columns: 1fr; }
+    }
+    @media print {
+      .top nav, .btn { display: none !important; }
+      .top { position: static; }
+      body { background: #fff; }
+      .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      section { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand">PULSO <span>Lei do Bem · evidências técnicas</span></div>
+      <nav aria-label="Seções do dossiê">
+        <a href="#sintese">Síntese</a>
+        <a href="#formpd">FormP&amp;D</a>
+        <a href="#escopo">Escopo</a>
+        <a href="#catalogo">Catálogo</a>
+        <a href="#timeline">Linha do tempo</a>
+        <a href="#qa">Testes e QA</a>
+      </nav>
+      <button class="btn" type="button" onclick="window.print()">Imprimir / PDF</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="cover">
+      <p class="kicker">Lei nº 11.196/2005 · Decreto nº 5.798/2006 · Guia Prático MCTI §6 · Frascati</p>
+      <h1>Dossiê de evidências técnicas<br />Sistema Pulso</h1>
+      <p>Coleta estruturada para consolidar a narrativa técnica, delimitar o escopo elegível e demonstrar, de forma consistente, o atendimento aos requisitos da Lei do Bem. Fonte de verdade: código, migrations, PRs e documentação versionados — não inferência.</p>
+      <dl class="meta">
+        <div><dt>Projeto</dt><dd>Sistema Pulso — IA &amp; Automação Senff</dd></div>
+        <div><dt>Repositório</dt><dd class="num">marIA-prompt/projeto-pulso</dd></div>
+        <div><dt>Recorte</dt><dd>13/08/2026 – 22/09/2026</dd></div>
+        <div><dt>Coleta HTML</dt><dd>16/10/2026</dd></div>
+      </dl>
+    </div>
+
+    <div class="aviso">
+      <strong>Aviso.</strong> Este dossiê sinaliza potencial técnico. Não substitui validação fiscal, contábil ou documental. A classificação final (enquadrado / não enquadrado) é da auditoria humana — a mesma regra da aba <code>/lei-do-bem</code>.
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="v">75</div><div class="l">Commits inspecionados</div></div>
+      <div class="kpi"><div class="v">27</div><div class="l">Pull requests (#1–#27)</div></div>
+      <div class="kpi"><div class="v">14</div><div class="l">Migrations 0001–0014</div></div>
+      <div class="kpi"><div class="v">48</div><div class="l">Testes passando + tsc 0</div></div>
+    </div>
+
+    <nav class="toc" aria-label="Sumário">
+      <h2 style="border:0;padding:0;margin:0 0 10px;font-size:16px">Sumário</h2>
+      <ol>
+        <li><a href="#sintese">Síntese executiva e barreiras tecnológicas</a></li>
+        <li><a href="#formpd">FormP&amp;D — cadastro (Grupo 1) e MCTI §6.1–6.5</a></li>
+        <li><a href="#escopo">Escopo elegível, Frascati e triagem de 12 itens</a></li>
+        <li><a href="#catalogo">Catálogo de artefatos (POC, arquitetura, decisões)</a></li>
+        <li><a href="#timeline">Linha do tempo, migrations, PRs e retrabalhos</a></li>
+        <li><a href="#qa">Testes, QA, tratamento de erros e incertezas</a></li>
+      </ol>
+    </nav>
+
+    <section id="sintese">
+      <h2>1. Síntese executiva</h2>
+      <p>O Pulso nasceu da insuficiência de planilha + HTML estático para governar <strong>161 iniciativas</strong>, <strong>~1.995 h/mês</strong> devolvidas e <strong>31 setores reais</strong>. Ferramentas de prateleira (ClickUp, Bitrix, n8n, Power BI) cobrem canal, tarefa ou BI — não cobrem, ao mesmo tempo, a metodologia Senff, autorização que não vive no cliente, reconciliação institucional dos números e triagem Lei do Bem com as fórmulas B27–B30.</p>
+      <h3>Cinco barreiras tecnológicas</h3>
+      <ol>
+        <li><strong>Três relógios no lugar de um</strong> — o CSV tinha só data de cadastro; o semáforo de <em>atualização</em> exige <code>created_at</code> ≠ <code>updated_at</code> ≠ <code>last_activity_at</code>.</li>
+        <li><strong>Escalas de score incompatíveis</strong> — legado 5–65 versus matriz 1–5; importar direto classificaria 100% como prioridade alta.</li>
+        <li><strong>Autorização em camadas</strong> — papel no Postgres, nunca em <code>user_metadata</code>/JWT; convite com SHA-256; RLS como garantia.</li>
+        <li><strong>Motor de triagem Lei do Bem duplicado</strong> — TypeScript e trigger PL/pgSQL com as mesmas fórmulas da planilha, sem bloquear o cadastro.</li>
+        <li><strong>Gate de metodologia versus dado real</strong> — o trigger <code>score ≥ 3,0</code> foi implementado, colidiu com a retirada da Matriz e teve de ser desligado (<code>0013</code>/<code>0014</code>).</li>
+      </ol>
+    </section>
+
+    <section id="formpd">
+      <h2>2. FormP&amp;D — Guia Prático MCTI, seção 6</h2>
+      <p>Texto pronto para os blocos §6.1–6.5 e para os cinco campos de escopo do cadastro Lei do Bem (<code>GRUPO1_CAMPOS</code> / <code>GRUPO2_CAMPOS</code> em <code>src/lib/lei-do-bem.ts</code>).</p>
+
+      <h3>Cadastro do projeto (Grupo 1)</h3>
+      <h4>Objetivo estratégico / OKR</h4>
+      <p>Centralizar o acompanhamento do programa de IA &amp; Automação da Senff — Manifesto, Metodologias, dashboard do portfólio, frequências e cadastro de iniciativas — com acesso restrito a colaboradores e governança alinhada ao RACI da Metodologia Executiva. Meta de programa: 120 participantes; o Pulso é o sistema que torna essa cadência mensurável.</p>
+      <p><em>Evidência:</em> <code>docs/PRD.md</code> §1–2, <code>docs/manifesto.md</code>, <code>docs/metodologia-executiva.md</code> §1.</p>
+
+      <h4>Contexto e problema</h4>
+      <p>O acompanhamento era disperso. As fontes herdadas não formavam um sistema: CSV de 161 linhas com 39 grafias de setor e score 5–65; HTML com dataset embutido (~160 KB) e idades congeladas em <code>2026-08-11</code>; PDFs que na prática eram ZIP de JPEG; planilha isolada de triagem Lei do Bem; Bitrix/Teams/ClickUp como canal, não como governança. Sem dono autenticado, sem RLS, sem cadência de atualização. O painel projetado na reunião semanal mentia no dia seguinte.</p>
+      <p><em>Evidência:</em> <code>docs/AUDITORIA.md</code> blocos A–C, <code>docs/QUESTIONAMENTOS.md</code> §1, <code>docs/PRD.md</code> §2.</p>
+
+      <h4>O que será desenvolvido ou alterado?</h4>
+      <p>Uma plataforma web (Next.js 14 + TypeScript + Supabase Auth/Postgres/RLS) que:</p>
+      <ul>
+        <li>autentica por convite (token SHA-256) ou auto-cadastro <code>@senff.com.br</code>, com cinco papéis mapeados ao RACI;</li>
+        <li>reconcilia o portfólio real (áreas canônicas, de-para de status, três marcos temporais, score legado separado da matriz);</li>
+        <li>calcula KPIs institucionais em views SQL (<code>horas_mes_devolvidas</code> só de concluídas; semáforo de atualização; alerta &gt;14 dias);</li>
+        <li>captura RSVP de encontros e consolida frequência;</li>
+        <li>executa triagem preliminar Lei do Bem (12 itens, fórmulas B27–B30) e pré-análise MCTI/Frascati, com auditoria gerencial e histórico de status.</li>
+      </ul>
+
+      <h4>Quais são os resultados esperados?</h4>
+      <ol>
+        <li>Origem única e auditável para os números publicados (161 iniciativas, 1.994,7 h/mês, 31 setores reais).</li>
+        <li>Semáforo e alerta de 14 dias críveis na primeira reunião (não uma parede vermelha no go-live).</li>
+        <li>Autorização que sobrevive a Server Action esquecida: o banco é a fronteira.</li>
+        <li>Triagem Lei do Bem no mesmo sistema do portfólio, preliminar, sem bloquear cadastro, com parecer humano.</li>
+        <li>Operação não depende do n8n: webhook ausente não derruba convite, encontro nem cadastro.</li>
+      </ol>
+
+      <h4>Como será desenvolvido?</h4>
+      <ol>
+        <li>Auditoria dos artefatos herdados <strong>antes</strong> de codar (<code>docs/AUDITORIA.md</code>, 12/08/2026).</li>
+        <li>Tree of Thought das quatro decisões-chave (<code>docs/DECISOES.md</code>).</li>
+        <li>Schema idempotente com de-paras explícitos (<code>0001_pulso_schema.sql</code>).</li>
+        <li>POC de dashboard híbrido: Server Component entrega views; cliente filtra/recorta o semáforo em memória (D2).</li>
+        <li>Motor de triagem especificado duas vezes (TypeScript + PL/pgSQL) e confrontado por testes de fronteira.</li>
+        <li>Iterações em produção (PRs #1–#27): papéis, comunidade, Lei do Bem, reversão do gate da Matriz.</li>
+      </ol>
+
+      <h4>O que está fora do escopo?</h4>
+      <ul>
+        <li>Implantação, hospedagem e parametrização de ambiente (Vercel, variáveis, Redirect URLs).</li>
+        <li>Compra, configuração ou integração de solução pronta (ClickUp, Bitrix, n8n como canal).</li>
+        <li>Manutenção, suporte, correção cosmética de copy/CSS, paginação de listas, troca de widget.</li>
+        <li>SSO corporativo, app nativo, gamificação, RAG/pgvector, edição colaborativa em tempo real (PRD §9).</li>
+        <li>Sincronização real com ClickUp (<code>enviar_clickup</code> é flag de intenção) e Bitrix (W5).</li>
+        <li>ROI ≥ 3× sobre o acervo legado (cobertura de custo = 7%).</li>
+      </ul>
+
+      <h4>Quais são os principais desafios ou riscos?</h4>
+      <p>Desafios <strong>técnicos/tecnológicos</strong>, não só de prazo:</p>
+      <ul>
+        <li>Como medir “saúde” sem explodir o indicador no dia 1 (idade mediana 259 dias; 56/56 ativas críticas se o relógio for a data de cadastro).</li>
+        <li>Como não publicar “32 setores” e “1.995 h” se a base não reproduz esses números sem de-para e filtro.</li>
+        <li>Como autorizar cinco papéis sem colocar o papel em claim de cliente.</li>
+        <li>Como replicar a planilha Lei do Bem sem transformar “Não” em bloqueio de cadastro, e sem gerar falso P&amp;D por vocabulário.</li>
+        <li>Como o gate <code>score ≥ 3,0</code> da metodologia convive com um cadastro que deixou de pontuar os quatro eixos.</li>
+      </ul>
+
+      <h3>Avaliação técnica MCTI (Grupo 2)</h3>
+      <h4>§6.1 — Descrição do projeto</h4>
+      <p>O problema tecnológico é <strong>governar um portfólio institucional de inovação com dados sujos, regras de metodologia que o dado não comporta, e autorização que não pode viver no cliente</strong>. Progresso já alcançado: schema canônico (<code>areas</code>/<code>area_aliases</code>, pipeline de 8 estágios, <code>health</code> ortogonal ao estágio, <code>scoring_source</code>); views como origem única dos números; defesa em camadas (middleware + guarda de página + RLS); motor de triagem 1:1 com a planilha interna, mais pré-análise Frascati/MCTI.</p>
+      <p>A abordagem <strong>não</strong> se restringiu ao repertório já dominado (planilha + HTML + kanban genérico). Exigiu modelar de-paras, relógios, papéis e fórmulas fiscais que nenhuma ferramenta de prateleira expressa com RLS e auditoria.</p>
+
+      <h4>§6.2 — Elemento tecnologicamente novo ou inovador</h4>
+      <p>Antes: CSV + HTML estático + canais. Dataset embutido, <code>innerHTML</code>, idade pré-calculada, score direcional 5–65, setor como string livre. Limitações: o número institucional mudava conforme a soma; o semáforo era 100% vermelho; o papel em metadado de cliente era gravável; a planilha Lei do Bem não conversava com o portfólio.</p>
+      <ol>
+        <li><strong>Semáforo de atualização substantiva</strong> — <code>bump_last_activity()</code> só renova o relógio em campos de conteúdo; arquivar ou corrigir área não zera o alerta.</li>
+        <li><strong>Score legado isolado</strong> — importar 5–65 na matriz 1–5 foi rejeitado; <code>legacy_score</code> e <code>scoring_source = 'legado'</code> preservam o rastro sem contaminar o corte 4,0/3,0.</li>
+        <li><strong>Triagem duplicada e testada</strong> — <code>(2×Sim + Parcialmente)/24</code>; “Não sei” prevalece sobre bloqueio duro; “Não” nos itens 3, 4, 5, 6, 9, 10, 11 classifica baixo potencial <strong>sem</strong> impedir o save. A mesma fórmula vive em TS e em trigger.</li>
+        <li><strong>Pré-análise MCTI/Frascati</strong> — substitui o laudo genérico de agente; amarra itens da triagem aos blocos §6.1–6.5.</li>
+        <li><strong>Papel no Postgres, não no JWT</strong> — a <code>0003</code> corrige um script anexado que usava <code>auth.jwt() -&gt;&gt; 'user_role'</code>, o antipadrão já podado em D4.</li>
+      </ol>
+
+      <h4>§6.3 — Barreira ou desafio tecnológico</h4>
+      <table>
+        <thead><tr><th>Barreira</th><th>Hipótese inicial</th><th>Como foi atacada</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td>Semáforo explode no go-live</td><td>Usar a data do CSV</td><td>Três timestamps; semear <code>last_activity_at</code></td><td>Superada no modelo; carga ainda manual</td></tr>
+          <tr><td>32 setores irreproduzíveis</td><td>Contar strings distintas</td><td><code>areas</code> + aliases; KPI exclui “Não informado” → 31</td><td>Superada</td></tr>
+          <tr><td>Score 5–65 vs 1–5</td><td>Normalizar ou re-scorar 161</td><td>Eixos nulos + <code>scoring_source</code></td><td>Superada</td></tr>
+          <tr><td>Papel em metadado de cliente</td><td><code>inviteUserByEmail</code></td><td>Tabela <code>invitations</code> + SHA-256 + service-role</td><td>Superada</td></tr>
+          <tr><td>Planilha Lei do Bem isolada</td><td>Campos livres</td><td>12 enums + trigger + testes de fronteira</td><td>Superada</td></tr>
+          <tr><td>Falso P&amp;D na pré-triagem</td><td>Vocabulário inicial</td><td>Ampliação do léxico (<code>d5c3281</code>, <code>76341d0</code>)</td><td>Superada em código</td></tr>
+          <tr><td>Gate da Matriz vs cadastro sem Matriz</td><td>“Gate no banco é sempre desejável”</td><td><code>0013</code>/<code>0014</code>; <code>projeto-erro.ts</code> traduz o residual</td><td>Superada após retrabalho</td></tr>
+          <tr><td>Wizard da triagem em loop</td><td>Estado React atrasado</td><td>Máquina de etapas pura + testes</td><td>Superada</td></tr>
+        </tbody>
+      </table>
+      <p>Hipóteses ainda em aberto: importação automatizada das 161 linhas; sync ClickUp/Bitrix; check-in no dia (D3); W3/W4 puxados pelo n8n em produção.</p>
+
+      <h4>§6.4 — Metodologia e métodos</h4>
+      <p>Não é Scrum genérico. Métodos experimentais: auditoria de consistência contra a base <strong>antes</strong> de implementar; Tree of Thought com ramos podados; prototipação a partir do <code>pulsoimproved</code> e rejeição do <code>dashboard_light.html</code>; reconciliação numérica como critério de verdade (161 / 1.994,7 h / 31 setores); duplicação deliberada da fórmula (aplicação + banco); defesa em camadas; retrabalho quando a regra no papel não cabe no dado — de-para explícito, nunca correção silenciosa.</p>
+
+      <h4>§6.5 — Descritivo complementar</h4>
+      <ul>
+        <li>Equipe no repositório <code>projeto-pulso</code> (75 commits até 22/09/2026; 27 PRs; Cursor Agent + Maria Clara).</li>
+        <li>14 migrations idempotentes (<code>0001</code>–<code>0014</code>).</li>
+        <li>Testes: <code>test:lei-do-bem</code>, <code>test:cadastro</code>, <code>test:nav</code>, <code>test:projeto</code>.</li>
+        <li>POCs: HTML de referência do dashboard; planilha <code>Triagem_Preliminar_Lei_do_Bem_Simples</code>; ramo Painel de Valor (não mergeado).</li>
+        <li>Referências: Manual de Frascati 2015, Manual de Oslo 2018, Lei 11.196/2005, Decreto 5.798/2006.</li>
+        <li>Customização Senff (não é skin): domínio <code>@senff.com.br</code>, paleta do Design System, organograma real em <code>areas</code>, RACI, instrumento interno da triagem.</li>
+      </ul>
+    </section>
+
+    <section id="escopo">
+      <h2>3. Escopo elegível e critérios de Frascati</h2>
+      <p>Delimita o que entra como desenvolvimento experimental e o que permanece rotina, implantação ou parametrização. A triagem de 12 itens é respondida <strong>para o Pulso</strong> com a mesma regra do produto: sinaliza, não decide.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h3><span class="badge">P&amp;D</span> Recorte elegível</h3>
+          <ul>
+            <li>Modelo temporal do semáforo (três relógios)</li>
+            <li>Reconciliação de horas, setores, status e score</li>
+            <li>Autorização em camadas; convite com SHA-256</li>
+            <li>Motor Lei do Bem (TS + SQL) e pré-análise MCTI</li>
+            <li>Saúde ortogonal ao estágio; reversão do gate da Matriz</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span class="badge out">Rotina</span> Fora do escopo P&amp;D</h3>
+          <ul>
+            <li>Deploy Vercel, env vars, Redirect URLs</li>
+            <li>POST HTTP do n8n; flag ClickUp sem sync</li>
+            <li>Paginação, textarea da pauta, sol/lua, copiar link</li>
+            <li>Callout editorial; menu no avatar</li>
+            <li>SSO, app nativo, gamificação, RAG — PRD §9</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Cinco critérios de Frascati</h3>
+      <table>
+        <thead><tr><th>Critério</th><th>Seção</th><th>Avaliação</th><th>Âncora</th></tr></thead>
+        <tbody>
+          <tr><td>Inovador</td><td>§6.2</td><td><span class="badge">Atende</span></td><td>Três relógios, score isolado, motor Lei do Bem, papel no Postgres</td></tr>
+          <tr><td>Criativo</td><td>§6.4</td><td><span class="badge">Atende</span></td><td>ToT, auditoria pré-código, testes de fronteira, retrabalho do gate</td></tr>
+          <tr><td>Incerto</td><td>§6.3</td><td><span class="badge">Atende</span></td><td>C1–C3 bloqueavam implementação no dia 1</td></tr>
+          <tr><td>Sistemático</td><td>§6.4</td><td><span class="badge">Atende</span></td><td>PRD, 14 migrations, 27 PRs, este dossiê</td></tr>
+          <tr><td>Transferível</td><td>§6.1</td><td><span class="badge">Atende</span></td><td>A aba /lei-do-bem reproduz o método no portfólio</td></tr>
+        </tbody>
+      </table>
+      <p>Síntese: <strong>5/5 Frascati atendidos no Pulso como iniciativa</strong>, desde que o parecer humano confirme o recorte elegível e exclua a rotina.</p>
+
+      <h3>Triagem preliminar (12 itens) — respostas propostas</h3>
+      <p>Escala: Sim / Parcialmente / Não / Não sei. “Não” nos itens 3, 4, 5, 6, 9, 10, 11 é bloqueio <strong>da fórmula</strong>, não do cadastro. Índice bruto: 12 Sim → <code>(12×2)/24 = 1,00</code> → <strong>potencialmente elegível</strong>.</p>
+      <table>
+        <thead><tr><th>#</th><th>Pergunta (resumo)</th><th>Resposta</th><th>Justificativa</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td>Vínculo estratégico</td><td>Sim</td><td>Programa Senff de IA &amp; Automação; Metodologia Executiva e Manifesto.</td></tr>
+          <tr><td class="num">2</td><td>Problema e afetados definidos</td><td>Sim</td><td>Acompanhamento disperso; 80+ colaboradores; auditoria quantificou o dano.</td></tr>
+          <tr><td class="num">3</td><td>Desenvolvimento/alteração relevante</td><td>Sim</td><td>Plataforma nova; não é parametrização de kanban.</td></tr>
+          <tr><td class="num">4</td><td>Novidade ou ganho técnico</td><td>Sim</td><td>Ver §6.2.</td></tr>
+          <tr><td class="num">5</td><td>Incerteza técnica no início</td><td>Sim</td><td>C1–C3 bloqueavam implementação; D1–D4 eram ramos abertos.</td></tr>
+          <tr><td class="num">6</td><td>Hipóteses, testes, protótipos</td><td>Sim</td><td>Auditoria, ToT, HTML de referência, testes de fórmula, PRs de retrabalho.</td></tr>
+          <tr><td class="num">7</td><td>Planejado e documentado por etapas</td><td>Sim</td><td>PRD → auditoria → schema → PRs #1–#27 → este dossiê.</td></tr>
+          <tr><td class="num">8</td><td>Conhecimento reproduzível</td><td>Sim</td><td>Motor Lei do Bem reutilizado no portfólio; migrations idempotentes.</td></tr>
+          <tr><td class="num">9</td><td>Separar experimental de rotina</td><td>Sim</td><td>Tabelas de recorte neste dossiê.</td></tr>
+          <tr><td class="num">10</td><td>Desafios técnicos, não só prazo/custo</td><td>Sim</td><td>Relógio, escala, RLS, fórmula fiscal, gate vs. UX.</td></tr>
+          <tr><td class="num">11</td><td>Além de compra/configuração de pronta</td><td>Sim</td><td>ClickUp/Bitrix/n8n/Power BI avaliados e insuficientes.</td></tr>
+          <tr><td class="num">12</td><td>Registros de atividades, testes, decisões</td><td>Sim</td><td>Git, PRs, testes, <code>DECISOES.md</code>, este HTML.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>O que deliberadamente não entra no índice institucional</h3>
+      <ul>
+        <li>ROI ≥ 3× sobre 12/161 registros (7%).</li>
+        <li>Score legado 5–65 como prioridade da matriz.</li>
+        <li>Idade do registro como saúde.</li>
+        <li>“Não informado” como setor.</li>
+        <li>Dataset do HTML (fonte = view sob RLS).</li>
+        <li>INSERTs fictícios do script de relatoria.</li>
+      </ul>
+    </section>
+
+    <section id="catalogo">
+      <h2>4. Catálogo de evidências</h2>
+      <h3>POCs e protótipos</h3>
+      <table>
+        <thead><tr><th>Artefato</th><th>O que prova</th><th>Onde</th></tr></thead>
+        <tbody>
+          <tr><td><code>pulsoimproved.html</code></td><td>Dashboard-alvo: semáforo, CSV, filtros, paleta Senff; idade congelada em 2026-08-11</td><td>PRD §4/§11, PATCH §1/§3</td></tr>
+          <tr><td><code>dashboard_light.html</code></td><td>Hipótese descartada (identidade errada)</td><td>AUDITORIA B1–B2</td></tr>
+          <tr><td>Planilha Triagem Preliminar</td><td>Fórmulas B27–B30, frases B29, bloqueios 3/4/5/6/9/10/11</td><td><code>lei-do-bem.ts</code> + trigger 0010</td></tr>
+          <tr><td>Painel de Valor (não mergeado)</td><td>Cálculo puro + fixtures 06/10/2026</td><td>branch <code>painel-de-valor</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Arquitetura e requisitos</h3>
+      <table>
+        <thead><tr><th>Artefato</th><th>Papel</th></tr></thead>
+        <tbody>
+          <tr><td><code>docs/PRD.md</code></td><td>Requisitos v3, aceite, fora de escopo, roadmap F1–F6</td></tr>
+          <tr><td><code>docs/DECISOES.md</code></td><td>Tree of Thought D1–D4</td></tr>
+          <tr><td><code>docs/AUDITORIA.md</code> + PATCH</td><td>Diagnóstico pré-código</td></tr>
+          <tr><td><code>docs/QUESTIONAMENTOS.md</code></td><td>Sete respostas com evidência no código</td></tr>
+          <tr><td><code>supabase/migrations/0001</code>…<code>0014</code></td><td>Schema, RLS, views, Lei do Bem, gate</td></tr>
+          <tr><td><code>middleware.ts</code> + <code>auth.ts</code></td><td>Camadas 1 e 2 da autorização</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Decisões e alternativas avaliadas (ToT)</h3>
+      <table>
+        <thead><tr><th>ID</th><th>Escolhido</th><th>Descartado</th></tr></thead>
+        <tbody>
+          <tr><td>D1 Convite</td><td>Tabela própria + service-role + link copiável</td><td><code>inviteUserByEmail</code>; tabela pura sem fallback</td></tr>
+          <tr><td>D2 Dashboard</td><td>Híbrido: views no servidor, filtro no cliente</td><td>Agregar a cada slider; agregar tudo no cliente</td></tr>
+          <tr><td>D3 Frequência</td><td>RSVP no MVP; <code>confirmed_at</code> separado</td><td>Só check-in; os dois estados na UI agora</td></tr>
+          <tr><td>D4 Autorização</td><td>Middleware + página + RLS</td><td>Só middleware; só RLS; papel no JWT</td></tr>
+          <tr><td>Semáforo</td><td><code>last_activity_at</code> substantivo</td><td>Idade do registro / data congelada</td></tr>
+          <tr><td>Score</td><td>Eixos nulos + <code>scoring_source</code></td><td>Importar 5–65; default 0</td></tr>
+          <tr><td>Gate Matriz</td><td>Desligado (<code>0013</code>/<code>0014</code>)</td><td>Manter trigger depois que a UI deixou de pontuar</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="timeline">
+      <h2>5. Linha do tempo de desenvolvimento</h2>
+      <p>Fonte: <code>git log</code> do <code>main</code> e PRs #1–#27. Volume: <strong>75 commits</strong> (70 em ago/2026, 5 em set/2026); 66 Cursor Agent, 28 Maria Clara.</p>
+      <table>
+        <thead><tr><th>Data</th><th>Marco</th><th>Ref</th></tr></thead>
+        <tbody>
+          <tr><td>12/08/2026</td><td>Auditoria: três bloqueios de implementação</td><td>AUDITORIA.md</td></tr>
+          <tr><td>13/08/2026</td><td>MVP no main (schema, RLS, convite, dashboard)</td><td><code>0b89720</code></td></tr>
+          <tr><td>14/08/2026</td><td>Features + callout da Executiva em produção</td><td>PRs #1–#3</td></tr>
+          <tr><td>19–24/08</td><td>Auth, paginação, cadastro @senff.com.br</td><td>PRs #4–#8</td></tr>
+          <tr><td>26/08/2026</td><td>Proprietário, tema, Lei do Bem (triagem + aba)</td><td>PRs #9–#14</td></tr>
+          <tr><td>27/08/2026</td><td>Gerencial, wizard, falso P&amp;D, gate da Matriz</td><td>PRs #15–#25</td></tr>
+          <tr><td>16/09/2026</td><td>Questionamentos técnicos</td><td>QUESTIONAMENTOS.md</td></tr>
+          <tr><td>22/09/2026</td><td>Escopo obrigatório + FormP&amp;D/Frascati</td><td>PR #27</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Migrations</h3>
+      <table>
+        <thead><tr><th>Arquivo</th><th>Intenção</th></tr></thead>
+        <tbody>
+          <tr><td><code>0001</code></td><td>Resolve A2, A3, C1, C2, C3, F1, F2: áreas, três relógios, score legado, views, RLS</td></tr>
+          <tr><td><code>0003</code></td><td>5 papéis RACI; <code>decisions</code>; <code>health</code> ≠ <code>stage</code>; rejeita papel no JWT</td></tr>
+          <tr><td><code>0005</code>/<code>0007</code></td><td>Callout: regex da 0005 falhou em produção; 0007 linha a linha</td></tr>
+          <tr><td><code>0010</code></td><td>Lei do Bem: tabela 1:1, trigger B27–B30, log de status</td></tr>
+          <tr><td><code>0011</code></td><td>Aba só gerencial+; dono lê a própria linha</td></tr>
+          <tr><td><code>0013</code>/<code>0014</code></td><td>Gate da Matriz vira no-op e o trigger é dropado</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Ciclos de aprendizado</h3>
+      <ol>
+        <li><strong>Arquivo de referência errado</strong> — a auditoria bloqueou o código até o <code>pulsoimproved</code> chegar.</li>
+        <li><strong>0005 não limpa produção</strong> — correção newline-sensitive na <code>0007</code>.</li>
+        <li><strong>Só-convite vs. onboarding</strong> — auto-cadastro <code>@senff.com.br</code> (PR #8).</li>
+        <li><strong>Vocabulário da pré-triagem</strong> — léxico inicial gerava falso P&amp;D (<code>d5c3281</code>, <code>76341d0</code>).</li>
+        <li><strong>Wizard em loop</strong> — máquina de etapas pura + teste de regressão.</li>
+        <li><strong>Gate no banco vs. Matriz fora da UI</strong> — <code>0013</code>/<code>0014</code>; erro traduzido em vez de genérico.</li>
+        <li><strong>Triagem sinaliza, não bloqueia</strong> — rótulo “bloqueio duro” saiu da UI (PR #23).</li>
+      </ol>
+
+      <h3>Commits do núcleo Lei do Bem</h3>
+      <pre>04a347f / 6bf56de  feat: add Lei do Bem triage workflow
+67efcf0            fix: restrict Lei do Bem assessment creation
+f3434b4            feat: wizard de cadastro, triagem e aba de auditoria
+c318f99            feat: pré-análise de enquadramento (Lei 11.196/2005)
+9f7bf50            fix: restringe a aba a gerencial e administrador
+0f34cae            feat: pré-triagem do portfólio já cadastrado
+d5c3281            fix: amplia o vocabulário da pré-triagem
+76341d0            fix: corrige falso P&amp;D na pré-triagem do portfólio real
+7fef517            feat: ordenação crescente/decrescente na lista
+9bed7e0            fix: avança a Lei do Bem e enxuga o wizard
+b38fdf2            fix: remove o rótulo de bloqueio duro
+2c57aad            feat: escopo obrigatório, pré-análise MCTI e ações
+58726be            fix: grava os blocos MCTI junto com a auditoria
+af83fe0            fix: não deixa pular os cinco campos
+b85d6c1            fix: Abrir cadastro só visualiza; botão confirma o save</pre>
+    </section>
+
+    <section id="qa">
+      <h2>6. Testes, QA, erros e incertezas</h2>
+      <h3>Testes reexecutados em 16/10/2026</h3>
+      <p>Ambiente: Node v22.14.0, TypeScript 5.6.3, tsx 4.23.15. Resultado: <strong>48/48 ok</strong>; <code>tsc --noEmit</code> exit 0. Log: <code>qa-testes-2026-10-16.log</code>.</p>
+      <table>
+        <thead><tr><th>Suite</th><th>Resultado</th><th>O que valida</th></tr></thead>
+        <tbody>
+          <tr><td><code>lei-do-bem.test.ts</code></td><td><span class="badge">30/30</span></td><td>Fórmula B27–B30, fronteira 0,75, bloqueios, MCTI/Frascati</td></tr>
+          <tr><td><code>cadastro-iniciativa.test.ts</code></td><td><span class="badge">9/9</span></td><td>Máquina de etapas; regressão do loop do opt-in</td></tr>
+          <tr><td><code>nav.test.ts</code></td><td><span class="badge">4/4</span></td><td>Lei do Bem só gerencial+; Admin só administrador</td></tr>
+          <tr><td><code>projeto-erro.test.ts</code></td><td><span class="badge">5/5</span></td><td>Tradução do gate residual e da coluna ausente</td></tr>
+          <tr><td><code>tsc --noEmit</code></td><td><span class="badge">exit 0</span></td><td>Tipos do App Router</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Validações contra a base real</h3>
+      <table>
+        <thead><tr><th>Indicador</th><th>Critério de verdade</th><th>Onde</th></tr></thead>
+        <tbody>
+          <tr><td>161 iniciativas</td><td>CSV = RAW_DATA</td><td>AUDITORIA A1</td></tr>
+          <tr><td>1.995 h/mês</td><td>1.994,7 h = Σ horas só concluído (não 2.309,7 h)</td><td><code>v_portfolio_kpis</code></td></tr>
+          <tr><td>31 setores</td><td>32 grafias − “Não informado”</td><td><code>areas.is_real_area</code></td></tr>
+          <tr><td>+80 colaboradores</td><td>Participantes do grupo ≠ 48 responsáveis do CSV</td><td>AUDITORIA A4</td></tr>
+          <tr><td>Go-live do semáforo</td><td><code>update last_activity_at = now() where is_legacy_import</code></td><td>0001 §6</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Tratamento de erros</h3>
+      <table>
+        <thead><tr><th>Situação</th><th>Comportamento</th><th>Onde</th></tr></thead>
+        <tbody>
+          <tr><td>n8n ausente ou fora do ar</td><td>Operação principal segue; timeout 5 s</td><td><code>src/lib/n8n.ts</code></td></tr>
+          <tr><td>Convite revogado entre tela e submit</td><td>Revalida no servidor</td><td>actions do convite</td></tr>
+          <tr><td>E-mail altera maiúsculas do token</td><td><code>hashesDoToken</code> original + minúsculo</td><td><code>invite-token.ts</code></td></tr>
+          <tr><td>Member edita iniciativa alheia</td><td>0 linhas; não confirma existência</td><td>DECISOES D4</td></tr>
+          <tr><td>Gate da Matriz ainda no banco</td><td>Mensagem aponta Estágio / migration</td><td><code>projeto-erro.ts</code></td></tr>
+          <tr><td>Senha no campo e-mail</td><td><code>key</code> distinto nos dois forms</td><td>PR #4</td></tr>
+        </tbody>
+      </table>
+      <p>Falha de webhook <strong>nunca</strong> derruba convite, encontro ou cadastro.</p>
+
+      <h3>Incertezas superadas</h3>
+      <table>
+        <thead><tr><th>Incerteza</th><th>Como se revelou</th><th>Resolução</th></tr></thead>
+        <tbody>
+          <tr><td>Qual HTML é a referência?</td><td>PRD descrevia features inexistentes</td><td>Esperar <code>pulsoimproved</code></td></tr>
+          <tr><td>Semáforo no dia 1</td><td>160/161 críticos se usar cadastro</td><td>Três relógios + semeadura</td></tr>
+          <tr><td>“32 setores”</td><td>Nenhum agrupamento no CSV chega a 32</td><td>31 reais</td></tr>
+          <tr><td>Score 5–65</td><td>100% Prioridade Alta se importar</td><td><code>scoring_source</code>; eixos nulos</td></tr>
+          <tr><td>Papel no cliente</td><td><code>inviteUserByEmail</code> e script JWT</td><td>D1/D4; correção na 0003</td></tr>
+          <tr><td>Gate vs. Matriz ausente</td><td>Cadastro falhava opaco</td><td>0013/0014 + <code>projeto-erro.ts</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Incertezas ainda abertas</h3>
+      <div class="aviso" style="margin-top:8px">
+        <strong>O caminho ainda não é totalmente conhecido.</strong> Estas pendências são evidência do item 5 da triagem, não falha de dossiê.
+      </div>
+      <table>
+        <thead><tr><th>Pendência</th><th>Impacto</th></tr></thead>
+        <tbody>
+          <tr><td>Carga das 161 não automatizada</td><td>Portfólio interno e CSV oficial podem divergir</td></tr>
+          <tr><td>W3/W4 exigem n8n puxando views</td><td>Report quinzenal não sai sem o cron</td></tr>
+          <tr><td><code>enviar_clickup</code> sem sync</td><td>Risco de duplicar parecer fiscal</td></tr>
+          <tr><td>Check-in no dia (D3)</td><td>Taxa do MVP é de confirmação</td></tr>
+          <tr><td>ROI ≥ 3× fora do dashboard</td><td>Custo preenchido em 12/161 (7%)</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    Sistema Pulso · Senff · Dossiê interno de evidências Lei do Bem · Gerado a partir de <code>docs/evidencias-lei-do-bem/</code> em 16/10/2026.
+    A classificação automática “potencialmente elegível” não equivale a enquadramento.
+  </footer>
+  <script>
+    (function () {
+      var sec = new URLSearchParams(location.search).get('sec');
+      if (!sec) return;
+      var main = document.querySelector('main');
+      if (!main) return;
+      Array.prototype.forEach.call(main.children, function (el) {
+        if (el.id === sec) return;
+        el.style.display = 'none';
+      });
+      var target = document.getElementById(sec);
+      if (target) target.style.display = 'block';
+    })();
+  </script>
+</body>
+</html>
