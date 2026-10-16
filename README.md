@@ -105,6 +105,10 @@ Opcionais por definição — falha de webhook nunca derruba a operação princi
 
 W3 e W4 são puxados pelo n8n, não empurrados pela aplicação: o relatório precisa sair mesmo que ninguém abra o sistema naquela semana.
 
+## Evidências Lei do Bem
+
+Dossiê técnico do **próprio Sistema Pulso** (narrativa FormP&D, escopo elegível, Frascati, catálogo de artefatos, linha do tempo, testes e incertezas): [`docs/evidencias-lei-do-bem/README.md`](docs/evidencias-lei-do-bem/README.md). Questionamentos técnicos com evidência no código: [`docs/QUESTIONAMENTOS.md`](docs/QUESTIONAMENTOS.md). A aba `/lei-do-bem` tria as demais iniciativas; este dossiê documenta o Pulso.
+
 ## Pendências reais
 
 - **`npm install` e `npm run build` não foram executados** — o ambiente de geração está sem rede. Rode os dois antes do primeiro deploy.

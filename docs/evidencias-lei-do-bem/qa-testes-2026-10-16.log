@@ -1,0 +1,68 @@
+=== test:lei-do-bem ===
+ok  todas Sim → potencialmente elegível, índice 1.00
+ok  todas Parcialmente → potencial parcial, índice 0.50
+ok  bloqueio duro em Não (item 5) mesmo com o resto Sim → baixo potencial
+ok  bloqueio duro item 11 → frase da planilha
+ok  uma resposta Não sei → informações insuficientes
+ok  Não sei tem precedência sobre bloqueio duro
+ok  menos de 12 respostas → pendente, índice nulo
+ok  vazio → pendente
+ok  Não em item sem bloqueio duro não derruba elegibilidade se índice ≥ 0,75
+ok  índice < 0,5 sem bloqueio duro → baixo potencial
+ok  fronteira 0,75: 9 Sim + 3 Parcialmente = 0,875 → elegível
+ok  fronteira exata 9 Sim + 0 Parcial + 3 Não (sem bloqueio) = 18/24 = 0,75
+ok  síntese concatena Não na ordem 1→12
+ok  os 7 itens de bloqueio duro são 3,4,5,6,9,10,11
+ok  cada item de bloqueio duro em Não sozinho classifica baixo potencial
+ok  ciclo da ordem: inativo → desc → asc → limpa
+ok  ordenar por índice desc coloca o maior no topo e nulos no fim
+ok  ordenar por status desc coloca Enquadrado no topo
+ok  ordenar por triagem desc coloca potencialmente elegível no topo
+ok  ordenar por prioridade desc coloca Alta no topo e vazios no fim
+ok  sem coluna de ordem devolve a lista original
+ok  texto da ordem descreve o sentido ativo
+ok  os 5 campos obrigatórios do cadastro Lei do Bem são os de escopo
+ok  faltamCamposCadastroLeiDoBem lista só os vazios, na ordem
+ok  avaliarItensTriagem: sim/parcial/não/não sei
+ok  pré-análise MCTI estrutura os 5 blocos do Guia Prático e os 5 Frascati
+ok  pré-análise MCTI: triagem toda Sim e blocos preenchidos → segue para validação
+ok  Abrir cadastro vai para a iniciativa em somente visualização
+ok  rótulo do botão de auditoria: pendente, salvo e padrão
+ok  pré-análise MCTI aponta critério Frascati não evidenciado
+
+todos os casos passaram
+
+=== test:cadastro ===
+ok  o wizard não tem Avaliação técnica; Cadastro do projeto só entra com opt-in
+ok  sem opção, Continuar em Lei do Bem não sai da tela (o loop antigo)
+ok  Sim, seguir para a triagem avança para o cadastro do projeto
+ok  Não, só cadastrar avança para a revisão
+ok  Continuar em Dados vai para Lei do Bem
+ok  Continuar em cadastro do projeto vai para a triagem
+ok  pular Cadastro do projeto pela barra volta para o cadastro se o escopo está incompleto
+ok  destino inexistente ou sem opt-in não inventa etapa
+ok  voltar a partir da triagem retorna ao cadastro do projeto
+
+todos os casos passaram
+
+=== test:nav ===
+ok  leitor, participante e editor não veem Lei do Bem nem Admin
+ok  gerencial vê Lei do Bem e não vê Admin
+ok  administrador vê Lei do Bem e Admin
+ok  os cinco papéis cobrem o gate gerencial+
+
+todos os casos passaram
+
+=== test:projeto ===
+ok  reconhece a recusa do gate de Em Desenvolvimento
+ok  reconhece coluna nova ausente no schema cache
+ok  criar aponta Estágio quando o gate da Matriz ainda dispara
+ok  criar aponta migration quando falta coluna nova
+ok  salvar e mover usam o mesmo diagnóstico de gate
+
+todos os casos passaram
+
+=== typecheck ===
+
+=== typecheck (./node_modules/.bin/tsc --noEmit) ===
+ok  tsc --noEmit (exit 0) — 16/10/2026
