@@ -107,7 +107,7 @@ W3 e W4 são puxados pelo n8n, não empurrados pela aplicação: o relatório pr
 
 ## Evidências Lei do Bem
 
-Dossiê técnico do **próprio Sistema Pulso** (narrativa FormP&D, escopo elegível, Frascati, catálogo de artefatos, linha do tempo, testes e incertezas): [`docs/evidencias-lei-do-bem/README.md`](docs/evidencias-lei-do-bem/README.md). Versão HTML imprimível (paleta Senff, sumário, Imprimir/PDF): [`docs/evidencias-lei-do-bem/index.html`](docs/evidencias-lei-do-bem/index.html). Questionamentos técnicos com evidência no código: [`docs/QUESTIONAMENTOS.md`](docs/QUESTIONAMENTOS.md). A aba `/lei-do-bem` tria as demais iniciativas; este dossiê documenta o Pulso.
+Dossiê técnico do **próprio Sistema Pulso** (narrativa FormP&D, escopo elegível, Frascati, catálogo de artefatos, linha do tempo, testes e incertezas): [`docs/evidencias-lei-do-bem/README.md`](docs/evidencias-lei-do-bem/README.md). Versão HTML imprimível (paleta Senff, sumário, Imprimir/PDF): [`docs/evidencias-lei-do-bem/index.html`](docs/evidencias-lei-do-bem/index.html). Rastreio de horas (Nome Completo, Cargo, C/H, Tarefa Realizada): [`docs/evidencias-lei-do-bem/rastreio-horas.html`](docs/evidencias-lei-do-bem/rastreio-horas.html). Questionamentos técnicos com evidência no código: [`docs/QUESTIONAMENTOS.md`](docs/QUESTIONAMENTOS.md). A aba `/lei-do-bem` tria as demais iniciativas; este dossiê documenta o Pulso.
 
 ## Pendências reais
 

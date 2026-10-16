@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rastreio de horas — Sistema Pulso · Lei do Bem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0F2467;
+      --navy-deep: #0B1C54;
+      --blue: #1D58EE;
+      --blue-2: #173288;
+      --yellow: #F0C21D;
+      --green: #06760B;
+      --g90: #26292C;
+      --g80: #4C5156;
+      --g60: #686D73;
+      --g50: #8A9199;
+      --g40: #B5BBC2;
+      --g30: #DADFE5;
+      --g20: #EDEFF3;
+      --g10: #F6F7F9;
+      --white: #FFFFFF;
+      --sig-ok: #06760B;
+      --sig-ok-bg: #E6F3E7;
+      --sig-warn: #B98A00;
+      --sig-warn-bg: #FDF4D6;
+      --ff: "Poppins", -apple-system, "Segoe UI", Roboto, sans-serif;
+      --fm: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+      --r: 8px;
+      --max: 1100px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--g10);
+      color: var(--g90);
+      font-family: var(--ff);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+    a { color: var(--blue); }
+    code, .num {
+      font-family: var(--fm);
+      font-size: 0.86em;
+      font-variant-numeric: tabular-nums;
+    }
+    code {
+      background: var(--g20);
+      padding: 0.08em 0.35em;
+      border-radius: 4px;
+    }
+    .top {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(11, 28, 84, 0.96);
+      color: var(--white);
+      border-bottom: 3px solid var(--yellow);
+    }
+    .top-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand { font-weight: 700; letter-spacing: 0.02em; }
+    .brand span { color: var(--yellow); font-weight: 500; margin-left: 8px; font-size: 12px; }
+    .top nav { display: flex; flex-wrap: wrap; gap: 6px; }
+    .top nav a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .top nav a:hover, .top nav a:focus-visible { background: rgba(255,255,255,.12); }
+    .btn {
+      appearance: none;
+      border: 0;
+      background: var(--yellow);
+      color: var(--navy-deep);
+      font-family: var(--ff);
+      font-weight: 600;
+      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    main { max-width: var(--max); margin: 0 auto; padding: 32px 24px 80px; }
+    .cover {
+      background: var(--navy);
+      color: #fff;
+      border-radius: 14px;
+      padding: 36px 40px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::after {
+      content: "";
+      position: absolute;
+      right: -40px; bottom: -40px;
+      width: 180px; height: 180px;
+      background: var(--yellow);
+      opacity: 0.15;
+      border-radius: 50%;
+    }
+    .cover .kicker {
+      font-family: var(--fm);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin: 0 0 10px;
+    }
+    .cover h1 { margin: 0 0 10px; font-size: 30px; line-height: 1.2; letter-spacing: -0.02em; }
+    .cover p { margin: 0; max-width: 46em; color: #DADFE5; }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .meta div {
+      background: rgba(255,255,255,.08);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .meta dt { font-size: 11px; color: #B5BBC2; text-transform: uppercase; letter-spacing: 0.08em; }
+    .meta dd { margin: 4px 0 0; font-weight: 600; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 0 0 28px;
+    }
+    .kpi {
+      background: var(--white);
+      border: 1px solid var(--g30);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .kpi .v { font-family: var(--fm); font-size: 28px; font-weight: 600; color: var(--navy); line-height: 1; }
+    .kpi .l { margin-top: 8px; font-size: 13px; color: var(--g60); font-weight: 500; }
+    .aviso {
+      background: var(--sig-warn-bg);
+      border-left: 4px solid var(--yellow);
+      padding: 14px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 0 0 32px;
+      color: var(--g90);
+    }
+    .aviso strong { color: var(--navy); }
+    section { margin: 0 0 40px; }
+    h2 {
+      color: var(--navy);
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--yellow);
+    }
+    h3 { color: var(--navy); font-size: 16px; margin: 22px 0 8px; }
+    p { margin: 0 0 12px; }
+    ul, ol { margin: 0 0 14px; padding-left: 1.2em; }
+    li { margin: 0 0 6px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--white);
+      font-size: 13px;
+      margin: 0 0 16px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--g30);
+      vertical-align: top;
+    }
+    th {
+      background: var(--g20);
+      color: var(--navy);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    tr:nth-child(even) td { background: #FAFBFC; }
+    td.ch {
+      font-family: var(--fm);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      font-weight: 600;
+      color: var(--navy);
+    }
+    tfoot td {
+      background: var(--navy) !important;
+      color: #fff;
+      font-weight: 600;
+    }
+    tfoot td.ch { color: var(--yellow); }
+    .orient {
+      background: var(--white);
+      border: 1px solid var(--g30);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 0 0 20px;
+    }
+    .orient h3 { margin-top: 0; }
+    footer {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 24px 40px;
+      color: var(--g50);
+      font-size: 12px;
+    }
+    @media (max-width: 800px) {
+      .kpis { grid-template-columns: 1fr 1fr; }
+      .top-inner { flex-wrap: wrap; }
+      .cover { padding: 24px; }
+    }
+    @media print {
+      .top nav, .btn { display: none !important; }
+      .top { position: static; }
+      body { background: #fff; }
+      .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      section { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand">PULSO <span>Lei do Bem · rastreio de horas</span></div>
+      <nav aria-label="Seções">
+        <a href="index.html">Dossiê técnico</a>
+        <a href="#formulario">Formulário</a>
+        <a href="#atividades">Atividades</a>
+        <a href="#calendario">Calendário</a>
+        <a href="#metodo">Método</a>
+      </nav>
+      <button class="btn" type="button" onclick="window.print()">Imprimir / PDF</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="cover">
+      <p class="kicker">Lei nº 11.196/2005 · rastreio de horas da equipe de P&amp;D</p>
+      <h1>Rastreio de horas<br />Sistema Pulso</h1>
+      <p>Relação dos envolvidos no desenvolvimento experimental do Pulso e das atividades realizadas. Colunas no padrão do formulário: Nome Completo, Cargo, C/H e Tarefa Realizada. Fonte: git, PRs #1–#27 e documentação versionada — não ponto eletrônico.</p>
+      <dl class="meta">
+        <div><dt>Projeto</dt><dd>Sistema Pulso — IA &amp; Automação Senff</dd></div>
+        <div><dt>Recorte</dt><dd>12/08/2026 – 16/10/2026</dd></div>
+        <div><dt>Pesquisadora no git</dt><dd>Maria Clara da Silva Morais</dd></div>
+        <div><dt>Total reconstruído</dt><dd class="num">92 h</dd></div>
+      </dl>
+    </div>
+
+    <div class="aviso">
+      <strong>Aviso.</strong> As horas abaixo foram reconstruídas a partir de dias com evidência no repositório (commits, merges, documentos datados). Não substituem folha de ponto, contrato ou declaração da área de Pessoas. Conferir cargo e C/H na folha antes de lançar no FormP&amp;D. Commits do Cursor Agent não geram linha própria: as horas são da pessoa que especificou, revisou, testou e mergeou.
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="v">1</div><div class="l">Pessoa identificada no git</div></div>
+      <div class="kpi"><div class="v">92 h</div><div class="l">C/H reconstruídas</div></div>
+      <div class="kpi"><div class="v">11</div><div class="l">Dias com evidência no repo</div></div>
+      <div class="kpi"><div class="v">27</div><div class="l">PRs mergeados (#1–#27)</div></div>
+    </div>
+
+    <section id="formulario">
+      <h2>1. Tabela para o formulário</h2>
+      <div class="orient">
+        <h3>Orientações</h3>
+        <p>Para o rastreio de horas, relacione os envolvidos e as respectivas atividades desenvolvidas.</p>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome Completo</th>
+            <th>Cargo</th>
+            <th>C/H</th>
+            <th>Tarefa Realizada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Maria Clara da Silva Morais</td>
+            <td>Gerente de IA</td>
+            <td class="ch">92h</td>
+            <td>Concepção, desenvolvimento experimental e validação do Sistema Pulso: auditoria da base real, schema com três relógios e RLS, autorização em camadas, motor Lei do Bem duplicado (TypeScript / PL/pgSQL), reversão do gate da Matriz, pré-análise MCTI/Frascati e dossiê de evidências. Repositório <code>projeto-pulso</code>, PRs #1–#27, migrations 0001–0014.</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2">Total lançado nesta coleta</td>
+            <td class="ch">92h</td>
+            <td>Somente quem consta como autora no git + merges. Demais da folha: completar abaixo.</td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+
+    <section id="atividades">
+      <h2>2. Detalhamento por atividade</h2>
+      <p>Mesmas colunas do formulário, uma linha por ciclo. Serve para anexar ao dossiê e para ratear o C/H se a área de Pessoas preferir lançar por mês.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome Completo</th>
+            <th>Cargo</th>
+            <th>C/H</th>
+            <th>Tarefa Realizada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Maria Clara da Silva Morais</td>
+            <td>Gerente de IA</td>
+            <td class="ch">12h</td>
+            <td>Auditoria de consistência dos artefatos herdados (CSV × HTML × PDFs) e Tree of Thought D1–D4; rejeição do <code>dashboard_light.html</code> como referência. <code>docs/AUDITORIA.md</code>, <code>docs/DECISOES.md</code>, 12–13/08/2026.</td>
+          </tr>
+          <tr>
+            <td>Maria Clara da Silva Morais</td>
+            <td>Gerente de IA</td>
+            <td class="ch">16h</td>
+            <td>MVP: schema idempotente, RLS, três relógios do semáforo, convite SHA-256, dashboard híbrido. Commit <code>0b89720</code>, 13–14/08/2026.</td>
+          </tr>
+          <tr>
+            <td>Maria Clara da Silva Morais</td>
+            <td>Gerente de IA</td>
+            <td class="ch">8h</td>
+            <td>Iteração em produção: Admin, Metodologia Executiva com RLS gerencial, Frequência, Kanban, Hub da Comunidade. PRs #1–#3, 14/08/2026.</td>
+          </tr>
+          <tr>
+            <td>Maria Clara da Silva Morais</td>
+            <td>Gerente de IA</td>
+            <td class="ch">8h</td>
+            <td>Onboarding <code>@senff.com.br</code>, correção da senha no campo e-mail, QA de auth. PRs #4–#8, 19–24/08/2026.</td>
+          </tr>
+          <tr>
+            <td>Maria Clara da Silva Morais</td>
+            <td>Gerente de IA</td>
+            <td class="ch">8h</td>
+            <td>Campo e filtro de proprietário, isolamento do score legado, ordenação do Acompanhamento. PRs #9–#14, 25–26/08/2026.</td>
+          </tr>
+          <tr>
+            <td>Maria Clara da Silva Morais</td>
+            <td>Gerente de IA</td>
+            <td class="ch">16h</td>
+            <td>Motor Lei do Bem (TypeScript + trigger B27–B30), aba só gerencial, wizard, vocabulário da pré-triagem, reversão do gate da Matriz. PRs #19–#25, migrations 0010–0014, 26–27/08/2026.</td>
+          </tr>
+          <tr>
+            <td>Maria Clara da Silva Morais</td>
+            <td>Gerente de IA</td>
+            <td class="ch">8h</td>
+            <td>Questionamentos técnicos da plataforma com evidência no código (sete pontos). <code>docs/QUESTIONAMENTOS.md</code>, 16/09/2026.</td>
+          </tr>
+          <tr>
+            <td>Maria Clara da Silva Morais</td>
+            <td>Gerente de IA</td>
+            <td class="ch">8h</td>
+            <td>Escopo obrigatório no cadastro, pré-análise MCTI FormP&amp;D §6.1–6.5 e Frascati na auditoria. PR #27, 22/09/2026.</td>
+          </tr>
+          <tr>
+            <td>Maria Clara da Silva Morais</td>
+            <td>Gerente de IA</td>
+            <td class="ch">8h</td>
+            <td>Dossiê de evidências técnicas (FormP&amp;D, escopo, catálogo, linha do tempo, QA) e HTML imprimível. 16/10/2026.</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2">Total</td>
+            <td class="ch">92h</td>
+            <td>12 + 16 + 8 + 8 + 8 + 16 + 8 + 8 + 8</td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+
+    <section id="calendario">
+      <h2>3. Calendário de evidência no repositório</h2>
+      <p>Cada dia abaixo tem commit ou merge. C/H do dia = 8 h nos dias densos, 4 h no dia de 1 commit (25/08). A auditoria de 12/08 entra pela data do documento, não pelo <code>git log</code>.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Evidência</th>
+            <th>C/H</th>
+            <th>Ref</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>12/08/2026</td><td>Auditoria pré-código (três bloqueios de implementação)</td><td class="ch">8h</td><td><code>AUDITORIA.md</code></td></tr>
+          <tr><td>13/08/2026</td><td>MVP no main</td><td class="ch">8h</td><td><code>0b89720</code></td></tr>
+          <tr><td>14/08/2026</td><td>16 commits; PRs #1–#3</td><td class="ch">8h</td><td>PRs #1 #2 #3</td></tr>
+          <tr><td>19/08/2026</td><td>PRs #4–#5; ajuste na página de iniciativas</td><td class="ch">8h</td><td>PRs #4 #5</td></tr>
+          <tr><td>24/08/2026</td><td>PRs #6–#8 (paginação, pauta, cadastro Senff)</td><td class="ch">8h</td><td>PRs #6 #7 #8</td></tr>
+          <tr><td>25/08/2026</td><td>1 commit (ciclo proprietário)</td><td class="ch">4h</td><td>git 25/08</td></tr>
+          <tr><td>26/08/2026</td><td>23 commits; PRs #9–#14</td><td class="ch">8h</td><td>PRs #9–#14</td></tr>
+          <tr><td>27/08/2026</td><td>30 commits; PRs #15–#25 (Lei do Bem + gate)</td><td class="ch">8h</td><td>PRs #15–#25</td></tr>
+          <tr><td>16/09/2026</td><td>Questionamentos técnicos</td><td class="ch">8h</td><td><code>QUESTIONAMENTOS.md</code></td></tr>
+          <tr><td>22/09/2026</td><td>Escopo + FormP&amp;D + Frascati</td><td class="ch">8h</td><td>PR #27</td></tr>
+          <tr><td>16/10/2026</td><td>Dossiê HTML de evidências</td><td class="ch">8h</td><td><code>docs/evidencias-lei-do-bem/</code></td></tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2">Soma do calendário</td>
+            <td class="ch">92h</td>
+            <td>Bate com o detalhamento por atividade</td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+
+    <section id="metodo">
+      <h2>4. Método, cargo e o que não entra</h2>
+      <h3>Como o C/H foi obtido</h3>
+      <ul>
+        <li>Dias com evidência densa no git (vários commits ou PR mergeado) = <strong>8 h</strong>.</li>
+        <li>Dia com um único commit (25/08) = <strong>4 h</strong>.</li>
+        <li>12/08 entra pela data de <code>docs/AUDITORIA.md</code>.</li>
+        <li>Não se soma hora de Cursor Agent: o C/H é da pesquisadora que conduziu o ciclo (especificação, revisão, teste, merge).</li>
+      </ul>
+      <h3>Cargo</h3>
+      <p><strong>Gerente de IA</strong> é o título público do perfil GitHub <code>marIA-prompt</code> (Engenheira Mecânica especialista em dados). Para o FormP&amp;D oficial, usar o cargo da folha Senff se for diferente.</p>
+      <h3>O que ficou de fora de propósito</h3>
+      <ul>
+        <li>POC do Painel de Valor (3 commits em 07/10, branch <code>cursor/painel-de-valor-conteudo-e426</code>, não mergeada no recorte) — <strong>+8 h</strong> se a área incluir esse experimento no mesmo projeto.</li>
+        <li>Paginação, tema sol/lua, textarea da pauta e deploy Vercel — tarefa de rotina; as horas desses PRs (#5–#7, #12–#14) já estão diluídas nos dias 24–26/08 e <em>não</em> foram infladas à parte.</li>
+        <li>Pessoas da folha sem autoria no git (PMO, QA, Sponsor, Operations). Completar a tabela abaixo se dedicaram horas.</li>
+      </ul>
+      <h3>Demais envolvidos — completar com a folha</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome Completo</th>
+            <th>Cargo</th>
+            <th>C/H</th>
+            <th>Tarefa Realizada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><em>(nome da folha)</em></td>
+            <td><em>(cargo da folha)</em></td>
+            <td class="ch">—</td>
+            <td>Especificação de produto / operações, revisão do dossiê ou testes de homologação — lançar só com evidência de ponto ou declaração.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    Sistema Pulso · Senff · Rastreio de horas Lei do Bem · Gerado em 16/10/2026 a partir de <code>docs/evidencias-lei-do-bem/</code>.
+    Conferir com Pessoas antes do FormP&amp;D.
+  </footer>
+  <script>
+    (function () {
+      var sec = new URLSearchParams(location.search).get('sec');
+      if (!sec) return;
+      var main = document.querySelector('main');
+      if (!main) return;
+      Array.prototype.forEach.call(main.children, function (el) {
+        if (el.id === sec) return;
+        el.style.display = 'none';
+      });
+      var target = document.getElementById(sec);
+      if (target) target.style.display = 'block';
+    })();
+  </script>
+</body>
+</html>
