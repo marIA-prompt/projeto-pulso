@@ -1,0 +1,225 @@
+import assert from 'node:assert/strict';
+import {
+  corteMeses,
+  dataEntrega,
+  indiceColaboracao,
+  montarRankings,
+  nomeRanking,
+  normalizarFerramenta,
+  RANKING_TOP,
+  type PessoaRanking,
+  type PresencaRanking,
+  type ProjetoRanking,
+} from './ranking';
+import type { ExperienceLevel, Stage } from './types';
+
+let falhas = 0;
+function caso(nome: string, fn: () => void) {
+  try {
+    fn();
+    console.log(`ok  ${nome}`);
+  } catch (err) {
+    falhas += 1;
+    console.error(`FAIL ${nome}`);
+    console.error(err);
+  }
+}
+
+const AGORA = new Date('2026-10-21T15:00:00.000Z');
+
+function pessoa(parcial: Partial<PessoaRanking> & { id: string; full_name: string }): PessoaRanking {
+  return {
+    nickname: null,
+    avatar_url: null,
+    experience_level: null,
+    languages: [],
+    automations: [],
+    available: false,
+    bio: null,
+    contact: null,
+    area_name: 'Produto',
+    ...parcial,
+  };
+}
+
+function projeto(parcial: Partial<ProjetoRanking> & { id: string; owner_id: string; stage: Stage }): ProjetoRanking {
+  return {
+    concluded_at: null,
+    last_activity_at: '2026-10-01T12:00:00.000Z',
+    is_legacy_import: false,
+    tool_tags: [],
+    hours_saved_month: null,
+    ...parcial,
+  };
+}
+
+caso('nomeRanking prefere o nome completo e cai no apelido', () => {
+  assert.equal(nomeRanking({ full_name: ' Ana Silva ', nickname: 'Ana' }), 'Ana Silva');
+  assert.equal(nomeRanking({ full_name: '  ', nickname: 'Ana' }), 'Ana');
+  assert.equal(nomeRanking({ full_name: null, nickname: null }), 'Sem nome');
+});
+
+caso('corteMeses recua 3 meses civis', () => {
+  const corte = corteMeses(AGORA, 3);
+  assert.equal(corte.toISOString().slice(0, 10), '2026-07-21');
+});
+
+caso('normalizarFerramenta ignora caixa e acento', () => {
+  assert.equal(normalizarFerramenta(' N8N '), 'n8n');
+  assert.equal(normalizarFerramenta('Python'), normalizarFerramenta('python'));
+  assert.equal(normalizarFerramenta('Automação'), 'automacao');
+});
+
+caso('dataEntrega ignora legado sem concluded_at e aceita showcase recente', () => {
+  assert.equal(
+    dataEntrega(projeto({
+      id: '1', owner_id: 'a', stage: 'concluido',
+      is_legacy_import: true, concluded_at: null,
+    })),
+    null,
+  );
+  const showcase = dataEntrega(projeto({
+    id: '2', owner_id: 'a', stage: 'showcase',
+    last_activity_at: '2026-09-01T00:00:00.000Z',
+  }));
+  assert.ok(showcase);
+  assert.equal(showcase?.toISOString().slice(0, 10), '2026-09-01');
+  assert.equal(
+    dataEntrega(projeto({ id: '3', owner_id: 'a', stage: 'em_desenvolvimento' })),
+    null,
+  );
+});
+
+caso('volume conta só entregas na janela e corta no top 10', () => {
+  const pessoas: PessoaRanking[] = [];
+  const projetos: ProjetoRanking[] = [];
+  for (let i = 1; i <= 12; i++) {
+    const id = `p${i}`;
+    pessoas.push(pessoa({ id, full_name: `Pessoa ${String(i).padStart(2, '0')}` }));
+    for (let k = 0; k < i; k++) {
+      projetos.push(projeto({
+        id: `${id}-${k}`,
+        owner_id: id,
+        stage: k % 2 === 0 ? 'concluido' : 'showcase',
+        concluded_at: '2026-08-10T00:00:00.000Z',
+        hours_saved_month: 10,
+      }));
+    }
+  }
+  // Fora da janela e legado sem data não entram.
+  pessoas.push(pessoa({ id: 'legado', full_name: 'Legado' }));
+  projetos.push(projeto({
+    id: 'leg-1', owner_id: 'legado', stage: 'concluido',
+    is_legacy_import: true, concluded_at: null,
+    last_activity_at: '2026-09-01T00:00:00.000Z',
+  }));
+  pessoas.push(pessoa({ id: 'antiga', full_name: 'Antiga' }));
+  projetos.push(projeto({
+    id: 'ant-1', owner_id: 'antiga', stage: 'concluido',
+    concluded_at: '2026-04-01T00:00:00.000Z',
+  }));
+
+  const r = montarRankings(pessoas, projetos, [], AGORA);
+  assert.equal(r.entregas.length, RANKING_TOP);
+  assert.equal(r.entregas[0].nome, 'Pessoa 12');
+  assert.equal(r.entregas[0].valor, 12);
+  assert.ok(r.entregas[0].detalhe.includes('12 entregas'));
+  assert.equal(r.entregas[9].nome, 'Pessoa 03');
+  assert.ok(!r.entregas.some((p) => p.nome === 'Pessoa 02'));
+  assert.ok(!r.entregas.some((p) => p.id === 'legado' || p.id === 'antiga'));
+});
+
+caso('especialistas privilegiam domínio e cobertura das ferramentas do time', () => {
+  const pessoas = [
+    pessoa({
+      id: 'carla', full_name: 'Carla',
+      experience_level: 'especialista' as ExperienceLevel,
+      automations: ['n8n', 'Power Automate'],
+      languages: ['Python'],
+    }),
+    pessoa({
+      id: 'diego', full_name: 'Diego',
+      experience_level: 'iniciante' as ExperienceLevel,
+      automations: ['ferramenta-rara'],
+    }),
+    pessoa({
+      id: 'eva', full_name: 'Eva',
+      experience_level: 'avancado' as ExperienceLevel,
+      automations: ['n8n'],
+    }),
+    pessoa({ id: 'zero', full_name: 'Zero' }),
+  ];
+  const projetos = [
+    projeto({ id: 't', owner_id: 'carla', stage: 'em_desenvolvimento', tool_tags: ['n8n', 'Python'] }),
+  ];
+  const r = montarRankings(pessoas, projetos, [], AGORA);
+  assert.equal(r.especialistas[0].id, 'carla');
+  assert.ok(r.especialistas[0].valor > r.especialistas.find((p) => p.id === 'eva')!.valor);
+  assert.ok(r.especialistas.find((p) => p.id === 'eva')!.valor > r.especialistas.find((p) => p.id === 'diego')!.valor);
+  assert.ok(!r.especialistas.some((p) => p.id === 'zero'));
+  assert.ok(r.especialistas[0].detalhe.includes('Especialista'));
+  assert.ok(r.especialistas[0].detalhe.includes('2 de 2'));
+});
+
+caso('índice de colaboração soma presença, disponibilidade, ativas e perfil', () => {
+  assert.equal(indiceColaboracao({
+    presentes3m: 0, convites3m: 0, available: false,
+    iniciativasAtivas: 0, ferramentas: 0, temBio: false, temContato: false,
+  }), 0);
+  assert.equal(indiceColaboracao({
+    presentes3m: 8, convites3m: 8, available: true,
+    iniciativasAtivas: 3, ferramentas: 4, temBio: true, temContato: true,
+  }), 100);
+  const meio = indiceColaboracao({
+    presentes3m: 4, convites3m: 8, available: true,
+    iniciativasAtivas: 1, ferramentas: 2, temBio: false, temContato: false,
+  });
+  assert.equal(meio, 20 + 20 + 7 + 6);
+});
+
+caso('top colaboradores usa o índice e empata pelo nome', () => {
+  const pessoas = [
+    pessoa({
+      id: 'ana', full_name: 'Ana', available: true,
+      automations: ['n8n', 'bitrix'], bio: 'Ajudo no desbloqueio.', contact: 'ana@senff',
+    }),
+    pessoa({
+      id: 'bruno', full_name: 'Bruno', available: true,
+      automations: ['n8n', 'bitrix'], bio: 'Ajudo no desbloqueio.', contact: 'bruno@senff',
+    }),
+    pessoa({ id: 'clara', full_name: 'Clara', available: false, automations: ['n8n'] }),
+  ];
+  const projetos = [
+    projeto({ id: 'a1', owner_id: 'ana', stage: 'em_desenvolvimento' }),
+    projeto({ id: 'b1', owner_id: 'bruno', stage: 'em_teste' }),
+  ];
+  const presencas: PresencaRanking[] = [
+    { user_id: 'ana', presentes_3m: 6, convites_3m: 8 },
+    { user_id: 'bruno', presentes_3m: 6, convites_3m: 8 },
+  ];
+  const r = montarRankings(pessoas, projetos, presencas, AGORA);
+  assert.equal(r.colaboradores[0].id, 'ana');
+  assert.equal(r.colaboradores[1].id, 'bruno');
+  assert.equal(r.colaboradores[0].valor, r.colaboradores[1].valor);
+  assert.ok(r.colaboradores[0].detalhe.includes('disponível'));
+  assert.ok(r.colaboradores.find((p) => p.id === 'clara')!.valor < r.colaboradores[0].valor);
+});
+
+caso('projeto sem dono cadastrado no hub não entra no ranking', () => {
+  const r = montarRankings(
+    [pessoa({ id: 'ana', full_name: 'Ana' })],
+    [projeto({
+      id: 'x', owner_id: 'fantasma', stage: 'concluido',
+      concluded_at: '2026-09-01T00:00:00.000Z',
+    })],
+    [],
+    AGORA,
+  );
+  assert.equal(r.entregas.length, 0);
+});
+
+if (falhas) {
+  console.error(`\n${falhas} caso(s) falharam`);
+  process.exit(1);
+}
+console.log('\ntodos os casos passaram');
