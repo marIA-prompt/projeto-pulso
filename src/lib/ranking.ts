@@ -1,5 +1,5 @@
 import { EXPERIENCE_LABEL, type ExperienceLevel, type Stage } from '@/lib/types';
-import { nf, nf1, plural } from '@/lib/format';
+import { diaISO, nf, nf1, plural } from '@/lib/format';
 
 export const RANKING_TOP = 10;
 export const RANKING_MESES = 3;
@@ -19,7 +19,10 @@ export type RankingsColaboradores = {
   entregas: RankingPessoa[];
   especialistas: RankingPessoa[];
   colaboradores: RankingPessoa[];
+  /** YYYY-MM-DD da janela no fuso de São Paulo. */
   corteDesde: string;
+  /** False quando o ranking de entregas caiu para o histórico (sem data na janela). */
+  entregasNaJanela: boolean;
 };
 
 export type ProjetoRanking = {
@@ -73,11 +76,26 @@ export function nomeRanking(p: Pick<PessoaRanking, 'full_name' | 'nickname'>): s
   return 'Sem nome';
 }
 
-/** Recua N meses civis a partir de `agora` — janela dos rankings. */
+/** Meio-dia UTC: o dia civil em São Paulo (UTC−3) coincide com o YMD. */
+function ymdUtcMeioDia(ymd: string): Date {
+  return new Date(`${ymd}T12:00:00.000Z`);
+}
+
+/** Recua N meses civis no fuso de São Paulo — janela dos rankings. */
 export function corteMeses(agora: Date, meses = RANKING_MESES): Date {
-  const d = new Date(agora.getTime());
-  d.setMonth(d.getMonth() - meses);
-  return d;
+  const ymd = diaISO(agora.toISOString());
+  const [y, m, d] = ymd.split('-').map(Number);
+  let mes = m - meses;
+  let ano = y;
+  while (mes <= 0) {
+    mes += 12;
+    ano -= 1;
+  }
+  const ultimo = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+  const dia = Math.min(d, ultimo);
+  return ymdUtcMeioDia(
+    `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`,
+  );
 }
 
 export function normalizarFerramenta(valor: string): string {
@@ -111,7 +129,11 @@ export function dataEntrega(p: ProjetoRanking): Date | null {
 }
 
 function noPeriodo(d: Date, desde: Date, ate: Date): boolean {
-  return d.getTime() >= desde.getTime() && d.getTime() <= ate.getTime();
+  const dia = diaISO(d.toISOString());
+  const de = diaISO(desde.toISOString());
+  const ateD = diaISO(ate.toISOString());
+  if (!dia || !de || !ateD) return false;
+  return dia >= de && dia <= ateD;
 }
 
 function topN(pessoas: RankingPessoa[], n = RANKING_TOP): RankingPessoa[] {
@@ -153,7 +175,7 @@ export function montarRankings(
   agora: Date,
 ): RankingsColaboradores {
   const desde = corteMeses(agora);
-  const corteDesde = desde.toISOString();
+  const corteDesde = diaISO(desde.toISOString());
   const porId = new Map(pessoas.map((p) => [p.id, p]));
   const presencaPorId = new Map(presencas.map((p) => [p.user_id, p]));
 
@@ -170,6 +192,7 @@ export function montarRankings(
   }
 
   const entregasAcc = new Map<string, { qtd: number; horas: number }>();
+  const historicoAcc = new Map<string, { qtd: number; horas: number }>();
   const ativasAcc = new Map<string, number>();
 
   for (const proj of projetos) {
@@ -181,10 +204,19 @@ export function montarRankings(
       atual.horas += Number(proj.hours_saved_month) || 0;
       entregasAcc.set(proj.owner_id, atual);
     }
+    if (ESTAGIOS_ENTREGA.has(proj.stage)) {
+      const hist = historicoAcc.get(proj.owner_id) ?? { qtd: 0, horas: 0 };
+      hist.qtd += 1;
+      hist.horas += Number(proj.hours_saved_month) || 0;
+      historicoAcc.set(proj.owner_id, hist);
+    }
     if (ESTAGIOS_ATIVOS.has(proj.stage)) {
       ativasAcc.set(proj.owner_id, (ativasAcc.get(proj.owner_id) ?? 0) + 1);
     }
   }
+
+  const entregasNaJanela = [...entregasAcc.values()].some((v) => v.qtd > 0);
+  const volumePorId = entregasNaJanela ? entregasAcc : historicoAcc;
 
   const entregas: RankingPessoa[] = [];
   const especialistas: RankingPessoa[] = [];
@@ -199,7 +231,7 @@ export function montarRankings(
       area_name: p.area_name,
     };
 
-    const vol = entregasAcc.get(p.id);
+    const vol = volumePorId.get(p.id);
     if (vol) {
       entregas.push({
         ...base,
@@ -250,5 +282,6 @@ export function montarRankings(
     especialistas: topN(especialistas),
     colaboradores: topN(colaboradores),
     corteDesde,
+    entregasNaJanela,
   };
 }
