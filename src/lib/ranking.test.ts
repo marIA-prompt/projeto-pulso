@@ -11,6 +11,7 @@ import {
   type PresencaRanking,
   type ProjetoRanking,
 } from './ranking';
+import { diaISO } from './format';
 import type { ExperienceLevel, Stage } from './types';
 
 let falhas = 0;
@@ -59,9 +60,15 @@ caso('nomeRanking prefere o nome completo e cai no apelido', () => {
   assert.equal(nomeRanking({ full_name: null, nickname: null }), 'Sem nome');
 });
 
-caso('corteMeses recua 3 meses civis', () => {
+caso('corteMeses recua 3 meses civis no fuso de São Paulo', () => {
   const corte = corteMeses(AGORA, 3);
-  assert.equal(corte.toISOString().slice(0, 10), '2026-07-21');
+  assert.equal(diaISO(corte.toISOString()), '2026-07-21');
+  // 02:00 UTC de 22/10 ainda é 21/10 em São Paulo — a janela não anda um dia.
+  const madrugadaUtc = new Date('2026-10-22T02:00:00.000Z');
+  assert.equal(diaISO(corteMeses(madrugadaUtc, 3).toISOString()), '2026-07-21');
+  // 31/03 → 31/12; 31/05 → 28/02 (ano não bissexto).
+  assert.equal(diaISO(corteMeses(new Date('2026-03-31T15:00:00.000Z'), 3).toISOString()), '2025-12-31');
+  assert.equal(diaISO(corteMeses(new Date('2026-05-31T15:00:00.000Z'), 3).toISOString()), '2026-02-28');
 });
 
 caso('normalizarFerramenta ignora caixa e acento', () => {
@@ -127,6 +134,57 @@ caso('volume conta só entregas na janela e corta no top 10', () => {
   assert.equal(r.entregas[9].nome, 'Pessoa 03');
   assert.ok(!r.entregas.some((p) => p.nome === 'Pessoa 02'));
   assert.ok(!r.entregas.some((p) => p.id === 'legado' || p.id === 'antiga'));
+  assert.equal(r.entregasNaJanela, true);
+  assert.equal(r.corteDesde, '2026-07-21');
+});
+
+caso('volume cai para o histórico quando a janela de 3 meses está vazia', () => {
+  const r = montarRankings(
+    [
+      pessoa({ id: 'legado', full_name: 'Legado' }),
+      pessoa({ id: 'ana', full_name: 'Ana' }),
+    ],
+    [
+      projeto({
+        id: 'leg-1', owner_id: 'legado', stage: 'concluido',
+        is_legacy_import: true, concluded_at: null,
+        hours_saved_month: 40,
+      }),
+      projeto({
+        id: 'leg-2', owner_id: 'legado', stage: 'showcase',
+        is_legacy_import: true, concluded_at: null,
+      }),
+      projeto({
+        id: 'ant-1', owner_id: 'ana', stage: 'concluido',
+        concluded_at: '2026-01-01T00:00:00.000Z',
+        hours_saved_month: 10,
+      }),
+    ],
+    [],
+    AGORA,
+  );
+  assert.equal(r.entregasNaJanela, false);
+  assert.equal(r.entregas[0].id, 'legado');
+  assert.equal(r.entregas[0].valor, 2);
+  assert.equal(r.entregas[1].id, 'ana');
+  assert.equal(r.entregas[1].valor, 1);
+  assert.equal(r.especialistas.length, 0);
+});
+
+caso('entrega na virada UTC entra pelo dia civil de São Paulo', () => {
+  const r = montarRankings(
+    [pessoa({ id: 'ana', full_name: 'Ana' })],
+    [projeto({
+      id: 'limite', owner_id: 'ana', stage: 'concluido',
+      // 21/07 02:00 UTC = 20/07 23:00 em São Paulo — fora da janela 21/07–21/10.
+      concluded_at: '2026-07-21T02:00:00.000Z',
+    })],
+    [],
+    AGORA,
+  );
+  assert.equal(r.entregasNaJanela, false);
+  assert.equal(r.entregas[0].id, 'ana');
+  assert.equal(r.entregas[0].valor, 1);
 });
 
 caso('especialistas privilegiam domínio e cobertura das ferramentas do time', () => {
