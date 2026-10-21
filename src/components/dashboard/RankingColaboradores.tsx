@@ -2,7 +2,7 @@
 
 import { useId, useState } from 'react';
 import { Avatar } from '@/components/Avatar';
-import { dataCurta, nf } from '@/lib/format';
+import { diaCurto, nf } from '@/lib/format';
 import { clsx } from '@/lib/clsx';
 import type { RankingCategoria, RankingPessoa, RankingsColaboradores } from '@/lib/ranking';
 
@@ -11,26 +11,37 @@ const ABAS: {
   rotulo: string;
   titulo: string;
   nota: string;
+  cor: string;
 }[] = [
   {
     id: 'entregas',
     rotulo: 'Entregas',
     titulo: 'Maior volume de entregas',
-    nota: 'Iniciativas concluídas ou em showcase nos últimos 3 meses. O acervo herdado sem data de conclusão não entra.',
+    nota: 'Iniciativas concluídas ou em showcase nos últimos 3 meses.',
+    cor: 'var(--blue)',
   },
   {
     id: 'especialistas',
     rotulo: 'Especialistas',
     titulo: 'Especialistas (conhecimento técnico)',
     nota: 'Nível de domínio no Hub e cobertura das ferramentas que o time declara no perfil e nas iniciativas.',
+    cor: 'var(--cat-7)',
   },
   {
     id: 'colaboradores',
     rotulo: 'Colaboração',
     titulo: 'Top colaboradores',
     nota: 'Índice 0–100: presença nos encontros (até 40), disponibilidade para ajudar (20), iniciativas ativas (até 20) e perfil encontrável (até 20).',
+    cor: 'var(--cat-3)',
   },
 ];
+
+function notaDaAba(id: RankingCategoria, rankings: RankingsColaboradores): string {
+  if (id === 'entregas' && !rankings.entregasNaJanela) {
+    return 'Nenhuma conclusão datada nos últimos 3 meses. Ranking pelo histórico de entregas concluídas ou em showcase.';
+  }
+  return ABAS.find((a) => a.id === id)?.nota ?? '';
+}
 
 export function RankingColaboradores({ rankings }: { rankings: RankingsColaboradores }) {
   const [aba, setAba] = useState<RankingCategoria>('entregas');
@@ -56,7 +67,9 @@ export function RankingColaboradores({ rankings }: { rankings: RankingsColaborad
           <h2 id={`${baseId}-titulo`} className="text-base font-semibold">Top 10 colaboradores</h2>
           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-g60">
             Reconhecimento com base nos dados do Pulso — entregas, conhecimento técnico e ajuda entre pares.
-            Janela de {dataCurta(rankings.corteDesde)} até hoje.
+            {rankings.entregasNaJanela
+              ? ` Entregas e presença desde ${diaCurto(rankings.corteDesde)}.`
+              : ` Presença desde ${diaCurto(rankings.corteDesde)}. Sem conclusão datada no período, o volume usa o histórico.`}
           </p>
         </div>
       </header>
@@ -112,8 +125,9 @@ export function RankingColaboradores({ rankings }: { rankings: RankingsColaborad
           >
             <PainelRanking
               titulo={a.titulo}
-              nota={a.nota}
+              nota={notaDaAba(a.id, rankings)}
               pessoas={rankings[a.id]}
+              cor={a.cor}
             />
           </div>
         ))}
@@ -125,8 +139,9 @@ export function RankingColaboradores({ rankings }: { rankings: RankingsColaborad
           <PainelRanking
             key={a.id}
             titulo={a.titulo}
-            nota={a.nota}
+            nota={notaDaAba(a.id, rankings)}
             pessoas={rankings[a.id]}
+            cor={a.cor}
           />
         ))}
       </div>
@@ -135,11 +150,12 @@ export function RankingColaboradores({ rankings }: { rankings: RankingsColaborad
 }
 
 function PainelRanking({
-  titulo, nota, pessoas,
+  titulo, nota, pessoas, cor,
 }: {
   titulo: string;
   nota: string;
   pessoas: RankingPessoa[];
+  cor: string;
 }) {
   const max = Math.max(...pessoas.map((p) => p.valor), 1);
   return (
@@ -178,10 +194,10 @@ function PainelRanking({
                       {p.nome}
                     </span>
                   </div>
-                  <span aria-hidden className="mt-1 block h-2 rounded-full bg-g20">
+                  <span aria-hidden className="mt-1 block h-2.5 rounded-full bg-g20">
                     <span
-                      className="block h-full rounded-full bg-[var(--blue)]"
-                      style={{ width: largura }}
+                      className="block h-full rounded-full"
+                      style={{ width: largura, background: cor }}
                     />
                   </span>
                   <p className="mt-0.5 truncate text-[0.7rem] leading-tight text-g50" title={p.detalhe}>
