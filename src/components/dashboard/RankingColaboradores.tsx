@@ -2,7 +2,7 @@
 
 import { useId, useState } from 'react';
 import { Avatar } from '@/components/Avatar';
-import { nf } from '@/lib/format';
+import { dataCurta, nf } from '@/lib/format';
 import { clsx } from '@/lib/clsx';
 import type { RankingCategoria, RankingPessoa, RankingsColaboradores } from '@/lib/ranking';
 
@@ -14,7 +14,7 @@ const ABAS: {
 }[] = [
   {
     id: 'entregas',
-    rotulo: 'Volume de entregas',
+    rotulo: 'Entregas',
     titulo: 'Maior volume de entregas',
     nota: 'Iniciativas concluídas ou em showcase nos últimos 3 meses. O acervo herdado sem data de conclusão não entra.',
   },
@@ -26,7 +26,7 @@ const ABAS: {
   },
   {
     id: 'colaboradores',
-    rotulo: 'Top colaboradores',
+    rotulo: 'Colaboração',
     titulo: 'Top colaboradores',
     nota: 'Índice 0–100: presença nos encontros (até 40), disponibilidade para ajudar (20), iniciativas ativas (até 20) e perfil encontrável (até 20).',
   },
@@ -56,13 +56,14 @@ export function RankingColaboradores({ rankings }: { rankings: RankingsColaborad
           <h2 id={`${baseId}-titulo`} className="text-base font-semibold">Top 10 colaboradores</h2>
           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-g60">
             Reconhecimento com base nos dados do Pulso — entregas, conhecimento técnico e ajuda entre pares.
+            Janela de {dataCurta(rankings.corteDesde)} até hoje.
           </p>
         </div>
       </header>
 
-      {/* Mobile/tablet: um gráfico, três abas. */}
+      {/* Mobile/tablet: um gráfico, três abas em grade fixa (não quebra a terceira). */}
       <div className="mt-4 lg:hidden">
-        <div role="tablist" aria-label="Categorias do ranking" className="flex flex-wrap gap-1 rounded-s border border-g40 p-1">
+        <div role="tablist" aria-label="Categorias do ranking" className="grid grid-cols-3 gap-1 rounded-s border border-g40 p-1">
           {ABAS.map((a) => {
             const selecionada = a.id === aba;
             return (
@@ -88,7 +89,7 @@ export function RankingColaboradores({ rankings }: { rankings: RankingsColaborad
                   });
                 }}
                 className={clsx(
-                  'flex-1 rounded-s px-3 py-1.5 text-sm font-medium',
+                  'rounded-s px-1.5 py-1.5 text-center text-[0.7rem] font-medium leading-tight sm:px-2 sm:text-sm',
                   selecionada
                     ? 'bg-[var(--navy)] text-white'
                     : 'text-g60 hover:bg-g20 hover:text-g90',
@@ -106,6 +107,7 @@ export function RankingColaboradores({ rankings }: { rankings: RankingsColaborad
             id={`${baseId}-painel-${a.id}`}
             aria-labelledby={`${baseId}-tab-${a.id}`}
             hidden={a.id !== aba}
+            aria-live={a.id === aba ? 'polite' : undefined}
             className="mt-4"
           >
             <PainelRanking
@@ -154,10 +156,10 @@ function PainelRanking({
             const posto = i + 1;
             const largura = `${Math.max(6, (p.valor / max) * 100)}%`;
             return (
-              <li key={p.id} className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-2">
+              <li key={p.id} className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] items-center gap-2">
                 <span
                   className={clsx(
-                    'num flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold',
+                    'num flex h-6 w-7 items-center justify-center rounded-full text-xs font-semibold',
                     posto === 1 && 'bg-[var(--yellow)] text-[var(--navy-deep)]',
                     posto === 2 && 'bg-g20 text-g80',
                     posto === 3 && 'bg-[var(--orange)] text-white',
@@ -169,7 +171,12 @@ function PainelRanking({
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <Avatar src={p.avatar_url} nome={p.nome} size={24} />
-                    <span className="truncate text-sm font-medium text-g90" title={p.nome}>{p.nome}</span>
+                    <span
+                      className="truncate text-sm font-medium text-g90"
+                      title={p.area_name ? `${p.nome} · ${p.area_name}` : p.nome}
+                    >
+                      {p.nome}
+                    </span>
                   </div>
                   <span aria-hidden className="mt-1 block h-2 rounded-full bg-g20">
                     <span
