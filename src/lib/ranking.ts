@@ -21,8 +21,29 @@ export type RankingsColaboradores = {
   colaboradores: RankingPessoa[];
   /** YYYY-MM-DD da janela no fuso de São Paulo. */
   corteDesde: string;
+  /** YYYY-MM-DD do fim da janela no fuso de São Paulo. */
+  corteAte: string;
   /** False quando o ranking de entregas caiu para o histórico (sem data na janela). */
   entregasNaJanela: boolean;
+};
+
+export type PeriodoRanking = {
+  desde: Date;
+  ate: Date;
+};
+
+export type PresencaEncontro = {
+  user_id: string;
+  scheduled_at: string;
+  status: string;
+};
+
+export type KpisScorecard = {
+  entregasNoPeriodo: number;
+  indiceMedio: number;
+  campeaoEntregas: RankingPessoa | null;
+  campeaoEspecialista: RankingPessoa | null;
+  campeaoColaboracao: RankingPessoa | null;
 };
 
 export type ProjetoRanking = {
@@ -77,8 +98,26 @@ export function nomeRanking(p: Pick<PessoaRanking, 'full_name' | 'nickname'>): s
 }
 
 /** Meio-dia UTC: o dia civil em São Paulo (UTC−3) coincide com o YMD. */
-function ymdUtcMeioDia(ymd: string): Date {
+export function ymdUtcMeioDia(ymd: string): Date {
   return new Date(`${ymd}T12:00:00.000Z`);
+}
+
+/** Recorte padrão do placar: últimos 3 meses civis até hoje, em São Paulo. */
+export function ymdPeriodoPadrao(agora = new Date()): { de: string; ate: string } {
+  return {
+    de: diaISO(corteMeses(agora).toISOString()),
+    ate: diaISO(agora.toISOString()),
+  };
+}
+
+export function datasDoPeriodo(de: string, ate: string, agora = new Date()): PeriodoRanking {
+  const padrao = ymdPeriodoPadrao(agora);
+  const deY = de || padrao.de;
+  const ateY = ate || padrao.ate;
+  return {
+    desde: ymdUtcMeioDia(deY),
+    ate: ymdUtcMeioDia(ateY),
+  };
 }
 
 /** Recua N meses civis no fuso de São Paulo — janela dos rankings. */
@@ -143,6 +182,51 @@ function topN(pessoas: RankingPessoa[], n = RANKING_TOP): RankingPessoa[] {
     .slice(0, n);
 }
 
+function ehEncontro(p: PresencaRanking | PresencaEncontro): p is PresencaEncontro {
+  return 'scheduled_at' in p;
+}
+
+function agregarPresencas(
+  presencas: Array<PresencaRanking | PresencaEncontro>,
+  desde: Date,
+  ate: Date,
+): Map<string, { presentes: number; convites: number }> {
+  const map = new Map<string, { presentes: number; convites: number }>();
+  for (const p of presencas) {
+    if (ehEncontro(p)) {
+      const d = new Date(p.scheduled_at);
+      if (Number.isNaN(d.getTime()) || !noPeriodo(d, desde, ate)) continue;
+      const atual = map.get(p.user_id) ?? { presentes: 0, convites: 0 };
+      atual.convites += 1;
+      if (p.status === 'present') atual.presentes += 1;
+      map.set(p.user_id, atual);
+    } else {
+      map.set(p.user_id, { presentes: p.presentes_3m, convites: p.convites_3m });
+    }
+  }
+  return map;
+}
+
+function resolverPeriodo(agoraOuPeriodo: Date | PeriodoRanking): PeriodoRanking {
+  if (agoraOuPeriodo instanceof Date) {
+    return { desde: corteMeses(agoraOuPeriodo), ate: agoraOuPeriodo };
+  }
+  return agoraOuPeriodo;
+}
+
+export function kpisDoScorecard(r: RankingsColaboradores): KpisScorecard {
+  const indiceMedio = r.colaboradores.length === 0
+    ? 0
+    : Math.round(r.colaboradores.reduce((s, p) => s + p.valor, 0) / r.colaboradores.length);
+  return {
+    entregasNoPeriodo: r.entregas.reduce((s, p) => s + p.valor, 0),
+    indiceMedio,
+    campeaoEntregas: r.entregas[0] ?? null,
+    campeaoEspecialista: r.especialistas[0] ?? null,
+    campeaoColaboracao: r.colaboradores[0] ?? null,
+  };
+}
+
 /**
  * Índice 0–100 de ajuda e colaboração:
  *   presença nos encontros (até 40) + disponibilidade (20)
@@ -171,13 +255,16 @@ export function indiceColaboracao(opts: {
 export function montarRankings(
   pessoas: PessoaRanking[],
   projetos: ProjetoRanking[],
-  presencas: PresencaRanking[],
-  agora: Date,
+  presencas: Array<PresencaRanking | PresencaEncontro>,
+  agoraOuPeriodo: Date | PeriodoRanking,
+  opts: { fallbackHistorico?: boolean } = {},
 ): RankingsColaboradores {
-  const desde = corteMeses(agora);
+  const { desde, ate } = resolverPeriodo(agoraOuPeriodo);
   const corteDesde = diaISO(desde.toISOString());
+  const corteAte = diaISO(ate.toISOString());
   const porId = new Map(pessoas.map((p) => [p.id, p]));
-  const presencaPorId = new Map(presencas.map((p) => [p.user_id, p]));
+  const presencaPorId = agregarPresencas(presencas, desde, ate);
+  const fallbackHistorico = opts.fallbackHistorico ?? agoraOuPeriodo instanceof Date;
 
   const ferramentasEquipe = new Set<string>();
   for (const p of projetos) {
@@ -198,7 +285,7 @@ export function montarRankings(
   for (const proj of projetos) {
     if (!proj.owner_id || !porId.has(proj.owner_id)) continue;
     const entrega = dataEntrega(proj);
-    if (entrega && noPeriodo(entrega, desde, agora)) {
+    if (entrega && noPeriodo(entrega, desde, ate)) {
       const atual = entregasAcc.get(proj.owner_id) ?? { qtd: 0, horas: 0 };
       atual.qtd += 1;
       atual.horas += Number(proj.hours_saved_month) || 0;
@@ -216,7 +303,7 @@ export function montarRankings(
   }
 
   const entregasNaJanela = [...entregasAcc.values()].some((v) => v.qtd > 0);
-  const volumePorId = entregasNaJanela ? entregasAcc : historicoAcc;
+  const volumePorId = (!entregasNaJanela && fallbackHistorico) ? historicoAcc : entregasAcc;
 
   const entregas: RankingPessoa[] = [];
   const especialistas: RankingPessoa[] = [];
@@ -258,8 +345,8 @@ export function montarRankings(
 
     const pres = presencaPorId.get(p.id);
     const indice = indiceColaboracao({
-      presentes3m: pres?.presentes_3m ?? 0,
-      convites3m: pres?.convites_3m ?? 0,
+      presentes3m: pres?.presentes ?? 0,
+      convites3m: pres?.convites ?? 0,
       available: p.available === true,
       iniciativasAtivas: ativasAcc.get(p.id) ?? 0,
       ferramentas: minhas.length,
@@ -282,6 +369,7 @@ export function montarRankings(
     especialistas: topN(especialistas),
     colaboradores: topN(colaboradores),
     corteDesde,
+    corteAte,
     entregasNaJanela,
   };
 }

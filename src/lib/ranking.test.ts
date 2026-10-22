@@ -2,12 +2,15 @@ import assert from 'node:assert/strict';
 import {
   corteMeses,
   dataEntrega,
+  datasDoPeriodo,
   indiceColaboracao,
+  kpisDoScorecard,
   montarRankings,
   nomeRanking,
   normalizarFerramenta,
   RANKING_TOP,
   type PessoaRanking,
+  type PresencaEncontro,
   type PresencaRanking,
   type ProjetoRanking,
 } from './ranking';
@@ -136,6 +139,7 @@ caso('volume conta só entregas na janela e corta no top 10', () => {
   assert.ok(!r.entregas.some((p) => p.id === 'legado' || p.id === 'antiga'));
   assert.equal(r.entregasNaJanela, true);
   assert.equal(r.corteDesde, '2026-07-21');
+  assert.equal(r.corteAte, '2026-10-21');
 });
 
 caso('volume cai para o histórico quando a janela de 3 meses está vazia', () => {
@@ -274,6 +278,78 @@ caso('projeto sem dono cadastrado no hub não entra no ranking', () => {
     AGORA,
   );
   assert.equal(r.entregas.length, 0);
+});
+
+caso('período explícito recorta entregas e presença sem cair no histórico', () => {
+  const pessoas = [
+    pessoa({ id: 'ana', full_name: 'Ana', available: true }),
+    pessoa({ id: 'bruno', full_name: 'Bruno' }),
+  ];
+  const projetos = [
+    projeto({
+      id: 'a-ago', owner_id: 'ana', stage: 'concluido',
+      concluded_at: '2026-08-10T12:00:00.000Z',
+    }),
+    projeto({
+      id: 'b-set', owner_id: 'bruno', stage: 'concluido',
+      concluded_at: '2026-09-10T12:00:00.000Z',
+    }),
+  ];
+  const presencas: PresencaEncontro[] = [
+    { user_id: 'ana', scheduled_at: '2026-08-15T12:00:00.000Z', status: 'present' },
+    { user_id: 'ana', scheduled_at: '2026-08-22T12:00:00.000Z', status: 'pending' },
+    { user_id: 'bruno', scheduled_at: '2026-09-12T12:00:00.000Z', status: 'present' },
+  ];
+  const soAgosto = montarRankings(
+    pessoas, projetos, presencas,
+    datasDoPeriodo('2026-08-01', '2026-08-31', AGORA),
+    { fallbackHistorico: false },
+  );
+  assert.equal(soAgosto.entregasNaJanela, true);
+  assert.equal(soAgosto.entregas.length, 1);
+  assert.equal(soAgosto.entregas[0].id, 'ana');
+  assert.equal(soAgosto.corteDesde, '2026-08-01');
+  assert.equal(soAgosto.corteAte, '2026-08-31');
+  const ana = soAgosto.colaboradores.find((p) => p.id === 'ana');
+  assert.ok(ana);
+  assert.equal(ana!.valor, indiceColaboracao({
+    presentes3m: 1, convites3m: 2, available: true,
+    iniciativasAtivas: 0, ferramentas: 0, temBio: false, temContato: false,
+  }));
+  assert.ok(!soAgosto.colaboradores.some((p) => p.id === 'bruno' && p.valor >= ana!.valor));
+
+  const soOutubro = montarRankings(
+    pessoas, projetos, presencas,
+    datasDoPeriodo('2026-10-01', '2026-10-21', AGORA),
+    { fallbackHistorico: false },
+  );
+  assert.equal(soOutubro.entregasNaJanela, false);
+  assert.equal(soOutubro.entregas.length, 0);
+});
+
+caso('kpisDoScorecard soma entregas e aponta os campeões', () => {
+  const r = montarRankings(
+    [
+      pessoa({ id: 'ana', full_name: 'Ana', available: true, automations: ['n8n'] }),
+      pessoa({ id: 'bruno', full_name: 'Bruno' }),
+    ],
+    [
+      projeto({
+        id: 'a1', owner_id: 'ana', stage: 'concluido',
+        concluded_at: '2026-08-10T00:00:00.000Z',
+      }),
+      projeto({
+        id: 'a2', owner_id: 'ana', stage: 'showcase',
+        concluded_at: '2026-09-10T00:00:00.000Z',
+      }),
+    ],
+    [],
+    AGORA,
+  );
+  const k = kpisDoScorecard(r);
+  assert.equal(k.entregasNoPeriodo, 2);
+  assert.equal(k.campeaoEntregas?.id, 'ana');
+  assert.equal(k.campeaoEspecialista?.id, 'ana');
 });
 
 if (falhas) {
