@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useId, useMemo, useState, useTransition } from 'react';
+import { Fragment, useEffect, useId, useMemo, useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Avatar } from '@/components/Avatar';
 import { FiltroPeriodo } from '@/components/dashboard/FiltroPeriodo';
+import { AuditoriaRanking } from './AuditoriaRanking';
 import { clsx } from '@/lib/clsx';
 import { diaCurto, diaISO, nf } from '@/lib/format';
 import {
+  auditoriaPessoa,
   datasDoPeriodo,
   kpisDoScorecard,
   montarRankings,
@@ -90,6 +92,7 @@ export function Scorecard({
   const [aplicado, setAplicado] = useState({ de: deInicial || padrao.de, ate: ateInicial || padrao.ate });
   const [aba, setAba] = useState<RankingCategoria>('entregas');
   const [eco, setEco] = useState(false);
+  const [auditando, setAuditando] = useState<{ id: string; categoria: RankingCategoria } | null>(null);
   const [isPending, startTransition] = useTransition();
   const baseId = useId();
   const carregando = isPending || eco;
@@ -105,6 +108,16 @@ export function Scorecard({
 
   const kpis = useMemo(() => kpisDoScorecard(rankings), [rankings]);
   const vazio = ABAS.every((a) => rankings[a.id].length === 0);
+  const periodo = useMemo(
+    () => datasDoPeriodo(aplicado.de, aplicado.ate),
+    [aplicado.de, aplicado.ate],
+  );
+  const auditoria = useMemo(() => {
+    if (!auditando) return null;
+    return auditoriaPessoa(auditando.id, pessoas, projetos, presencas, periodo, {
+      fallbackHistorico: ehPadrao,
+    });
+  }, [auditando, pessoas, projetos, presencas, periodo, ehPadrao]);
 
   useEffect(() => {
     const sp = new URLSearchParams();
@@ -202,11 +215,17 @@ export function Scorecard({
             valor={kpis.campeaoEntregas ? kpis.campeaoEntregas.nome.split(' ')[0] : '—'}
             rotulo="Campeão de volume"
             nota={kpis.campeaoEntregas ? kpis.campeaoEntregas.detalhe : 'Sem entregas datadas'}
+            onAuditar={kpis.campeaoEntregas
+              ? () => setAuditando({ id: kpis.campeaoEntregas!.id, categoria: 'entregas' })
+              : undefined}
           />
           <KpiGlow
             valor={kpis.campeaoEspecialista ? kpis.campeaoEspecialista.nome.split(' ')[0] : '—'}
             rotulo="Top especialista"
             nota={kpis.campeaoEspecialista ? kpis.campeaoEspecialista.detalhe : 'Sem perfil técnico'}
+            onAuditar={kpis.campeaoEspecialista
+              ? () => setAuditando({ id: kpis.campeaoEspecialista!.id, categoria: 'especialistas' })
+              : undefined}
           />
           <KpiGlow
             valor={nf.format(kpis.indiceMedio)}
@@ -230,6 +249,7 @@ export function Scorecard({
               <h2 id={`${baseId}-titulo`} className="text-base font-semibold">Top 10 do time</h2>
               <p className="mt-1 max-w-2xl text-sm leading-relaxed text-g60">
                 Ranking em três categorias. Posto 1 leva o selo S; 2 e 3, A e B.
+                Clique no nome para auditar a pontuação.
                 {rankings.entregasNaJanela
                   ? ` Entregas e presença de ${diaCurto(rankings.corteDesde)} a ${diaCurto(rankings.corteAte)}.`
                   : ` Presença de ${diaCurto(rankings.corteDesde)} a ${diaCurto(rankings.corteAte)}. Volume pelo histórico.`}
@@ -288,26 +308,60 @@ export function Scorecard({
                     nota={notaDaAba(a.id, rankings, ehPadrao)}
                     pessoas={rankings[a.id]}
                     cor={a.cor}
+                    onAuditar={(p) => setAuditando({ id: p.id, categoria: a.id })}
                   />
                 </div>
               ))}
             </div>
 
-            <div className="hidden gap-4 lg:grid lg:grid-cols-3">
-              {ABAS.map((a) => (
-                <PainelRanking
-                  key={a.id}
-                  titulo={a.titulo}
-                  nota={notaDaAba(a.id, rankings, ehPadrao)}
-                  pessoas={rankings[a.id]}
-                  cor={a.cor}
-                />
+            <div className="hidden lg:grid lg:grid-cols-3 lg:gap-x-4 lg:gap-y-2.5">
+              {ABAS.map((a, col) => (
+                <Fragment key={a.id}>
+                  <h3
+                    className="text-sm font-semibold text-g90"
+                    style={{ gridColumn: col + 1, gridRow: 1 }}
+                  >
+                    {a.titulo}
+                  </h3>
+                  <p
+                    className="text-xs leading-relaxed text-g50"
+                    style={{ gridColumn: col + 1, gridRow: 2 }}
+                  >
+                    {notaDaAba(a.id, rankings, ehPadrao)}
+                  </p>
+                  {rankings[a.id].length === 0 ? (
+                    <p
+                      className="text-sm text-g50"
+                      style={{ gridColumn: col + 1, gridRow: 3 }}
+                    >
+                      Ninguém pontuou nesta categoria neste período.
+                    </p>
+                  ) : rankings[a.id].map((p, i) => (
+                    <LinhaRanking
+                      key={`${a.id}-${p.id}`}
+                      pessoa={p}
+                      posto={i + 1}
+                      max={Math.max(...rankings[a.id].map((x) => x.valor), 1)}
+                      cor={a.cor}
+                      style={{ gridColumn: col + 1, gridRow: i + 3 }}
+                      onAuditar={() => setAuditando({ id: p.id, categoria: a.id })}
+                    />
+                  ))}
+                </Fragment>
               ))}
             </div>
           </section>
         )}
         </div>
       </div>
+
+      {auditoria && auditando && (
+        <AuditoriaRanking
+          dados={auditoria}
+          categoria={auditando.categoria}
+          onFechar={() => setAuditando(null)}
+        />
+      )}
     </div>
   );
 }
@@ -337,18 +391,30 @@ function Atalho({
 }
 
 function KpiGlow({
-  valor, rotulo, nota, destaque = false,
+  valor, rotulo, nota, destaque = false, onAuditar,
 }: {
   valor: string;
   rotulo: string;
   nota: string;
   destaque?: boolean;
+  onAuditar?: () => void;
 }) {
   return (
     <div className={clsx('score-card p-4', destaque && 'score-card--gold')}>
-      <p className="num text-3xl font-semibold leading-none tracking-tight text-[var(--ink-strong)]">
-        {valor}
-      </p>
+      {onAuditar ? (
+        <button
+          type="button"
+          onClick={onAuditar}
+          className="num text-left text-3xl font-semibold leading-none tracking-tight text-[var(--ink-strong)] underline-offset-4 hover:underline"
+          aria-label={`Auditar ${valor}`}
+        >
+          {valor}
+        </button>
+      ) : (
+        <p className="num text-3xl font-semibold leading-none tracking-tight text-[var(--ink-strong)]">
+          {valor}
+        </p>
+      )}
       <p className="mt-2 text-sm font-medium text-g80">{rotulo}</p>
       <p className="mt-1 truncate text-xs leading-snug text-g50" title={nota}>{nota}</p>
     </div>
@@ -356,12 +422,13 @@ function KpiGlow({
 }
 
 function PainelRanking({
-  titulo, nota, pessoas, cor,
+  titulo, nota, pessoas, cor, onAuditar,
 }: {
   titulo: string;
   nota: string;
   pessoas: RankingPessoa[];
   cor: string;
+  onAuditar: (p: RankingPessoa) => void;
 }) {
   const max = Math.max(...pessoas.map((p) => p.valor), 1);
   return (
@@ -374,56 +441,17 @@ function PainelRanking({
         <p className="mt-4 text-sm text-g50">Ninguém pontuou nesta categoria neste período.</p>
       ) : (
         <ol className="mt-4 space-y-2.5">
-          {pessoas.map((p, i) => {
-            const posto = i + 1;
-            const largura = `${Math.max(8, (p.valor / max) * 100)}%`;
-            const { letra, rotulo } = selo(posto);
-            return (
-              <li
-                key={p.id}
-                className={clsx(
-                  'score-card grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-2 p-2',
-                  posto === 1 && 'score-card--gold',
-                )}
-              >
-                <span className="flex flex-col items-center gap-0.5">
-                  <span
-                    className={clsx(
-                      'num flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold',
-                      posto === 1 && 'bg-[var(--yellow)] text-[var(--navy-deep)]',
-                      posto === 2 && 'bg-g20 text-g80',
-                      posto === 3 && 'bg-[var(--orange)] text-white',
-                      posto > 3 && 'border border-g30 text-g50',
-                    )}
-                    title={`${posto}º · selo ${letra} (${rotulo})`}
-                  >
-                    {letra}
-                  </span>
-                  <span className="num text-[0.6rem] text-g50">{posto}</span>
-                </span>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Avatar src={p.avatar_url} nome={p.nome} size={24} />
-                    <span
-                      className="truncate text-sm font-medium text-g90"
-                      title={p.area_name ? `${p.nome} · ${p.area_name}` : p.nome}
-                    >
-                      {p.nome}
-                    </span>
-                  </div>
-                  <span className="score-bar mt-1.5" aria-hidden>
-                    <span style={{ width: largura, background: cor }} />
-                  </span>
-                  <p className="mt-0.5 truncate text-[0.7rem] leading-tight text-g50" title={p.detalhe}>
-                    {p.detalhe}
-                  </p>
-                </div>
-                <span className="num shrink-0 text-right text-sm font-semibold text-[var(--ink-strong)]" title={p.detalhe}>
-                  {nf.format(p.valor)}
-                </span>
-              </li>
-            );
-          })}
+          {pessoas.map((p, i) => (
+            <li key={p.id}>
+              <LinhaRanking
+                pessoa={p}
+                posto={i + 1}
+                max={max}
+                cor={cor}
+                onAuditar={() => onAuditar(p)}
+              />
+            </li>
+          ))}
         </ol>
       )}
       {pessoas.length > 0 && (
@@ -432,5 +460,65 @@ function PainelRanking({
         </p>
       )}
     </figure>
+  );
+}
+
+function LinhaRanking({
+  pessoa, posto, max, cor, onAuditar, style,
+}: {
+  pessoa: RankingPessoa;
+  posto: number;
+  max: number;
+  cor: string;
+  onAuditar: () => void;
+  style?: React.CSSProperties;
+}) {
+  const largura = `${Math.max(8, (pessoa.valor / max) * 100)}%`;
+  const { letra, rotulo } = selo(posto);
+  return (
+    <button
+      type="button"
+      style={style}
+      onClick={onAuditar}
+      aria-label={`Auditar ${pessoa.nome}, ${posto}º, ${pessoa.detalhe}`}
+      title={pessoa.area_name ? `${pessoa.nome} · ${pessoa.area_name}` : `Auditar ${pessoa.nome}`}
+      className={clsx(
+        'group score-card grid h-[4.75rem] w-full min-w-0 self-start grid-cols-[2.25rem_minmax(0,1fr)_3.25rem] items-center gap-2 p-2 text-left',
+        posto === 1 && 'score-card--gold',
+      )}
+    >
+      <span className="flex flex-col items-center gap-0.5">
+        <span
+          className={clsx(
+            'num flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold',
+            posto === 1 && 'bg-[var(--yellow)] text-[var(--navy-deep)]',
+            posto === 2 && 'bg-g20 text-g80',
+            posto === 3 && 'bg-[var(--orange)] text-white',
+            posto > 3 && 'border border-g30 text-g50',
+          )}
+          title={`${posto}º · selo ${letra} (${rotulo})`}
+        >
+          {letra}
+        </span>
+        <span className="num text-[0.6rem] text-g50">{posto}</span>
+      </span>
+      <span className="min-w-0">
+        <span className="flex items-center gap-2">
+          <Avatar src={pessoa.avatar_url} nome={pessoa.nome} size={24} />
+          <span className="truncate text-sm font-medium text-g90 underline-offset-2 group-hover:underline group-focus-visible:underline">
+            {pessoa.nome}
+          </span>
+        </span>
+        <span className="score-bar mt-1.5" aria-hidden>
+          <span style={{ width: largura, background: cor }} />
+        </span>
+        <span className="mt-0.5 block truncate text-[0.7rem] leading-tight text-g50">
+          {pessoa.detalhe}
+        </span>
+      </span>
+      <span className="num truncate text-right text-sm font-semibold text-[var(--ink-strong)]">
+        {nf.format(pessoa.valor)}
+      </span>
+    </button>
   );
 }
