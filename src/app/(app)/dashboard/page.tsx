@@ -3,12 +3,10 @@ import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
 import { Kpis } from '@/components/dashboard/Kpis';
 import { Acompanhamento } from '@/components/dashboard/Acompanhamento';
-import { RankingColaboradores } from '@/components/dashboard/RankingColaboradores';
 import { Empty } from '@/components/ui/Card';
 import { dataLonga } from '@/lib/format';
 import { nomeProprietario } from '@/lib/pessoas';
-import { montarRankings, type PessoaRanking, type PresencaRanking, type ProjetoRanking } from '@/lib/ranking';
-import type { DashboardRow, PortfolioKpis, AttendanceKpi, ExperienceLevel, Stage } from '@/lib/types';
+import type { DashboardRow, PortfolioKpis, AttendanceKpi } from '@/lib/types';
 
 export const metadata = { title: 'Acompanhamento — Pulso' };
 export const dynamic = 'force-dynamic';
@@ -28,8 +26,6 @@ export default async function DashboardPage({
     { data: kpis },
     { data: encontros },
     { data: donos },
-    { data: pessoasHub },
-    presencaRes,
   ] = await Promise.all([
     supabase.from('v_projects_dashboard').select('*').order('dias_sem_atualizacao', { ascending: false }),
     supabase.from('v_portfolio_kpis').select('*').single(),
@@ -37,10 +33,6 @@ export default async function DashboardPage({
     supabase.from('projects')
       .select('id, owner_id, created_at, stage, concluded_at, last_activity_at, is_legacy_import, tool_tags, hours_saved_month, profiles!owner_id(full_name)')
       .is('archived_at', null),
-    supabase.from('profiles')
-      .select('id, full_name, nickname, avatar_url, experience_level, languages, automations, available, bio, contact, areas(name)')
-      .eq('active', true),
-    supabase.from('v_presenca_recente').select('user_id, presentes_3m, convites_3m'),
   ]);
 
   const donoPorId = new Map(
@@ -71,42 +63,6 @@ export default async function DashboardPage({
   }) as PortfolioKpis;
   const ultimoEncontro = (encontros?.[0] ?? null) as AttendanceKpi | null;
 
-  const pessoasRank: PessoaRanking[] = (pessoasHub ?? []).map((p) => {
-    const area = p.areas as unknown as { name: string } | { name: string }[] | null;
-    const a = Array.isArray(area) ? area[0] : area;
-    return {
-      id: p.id as string,
-      full_name: (p.full_name as string | null) ?? null,
-      nickname: (p.nickname as string | null) ?? null,
-      avatar_url: (p.avatar_url as string | null) ?? null,
-      experience_level: (p.experience_level as ExperienceLevel | null) ?? null,
-      languages: (p.languages as string[] | null) ?? [],
-      automations: (p.automations as string[] | null) ?? [],
-      available: (p.available as boolean | null) ?? false,
-      bio: (p.bio as string | null) ?? null,
-      contact: (p.contact as string | null) ?? null,
-      area_name: a?.name ?? null,
-    };
-  });
-  const projetosRank: ProjetoRanking[] = (donos ?? []).map((d) => ({
-    id: d.id as string,
-    owner_id: (d.owner_id as string | null) ?? null,
-    stage: d.stage as Stage,
-    concluded_at: (d.concluded_at as string | null) ?? null,
-    last_activity_at: (d.last_activity_at as string) ?? new Date(0).toISOString(),
-    is_legacy_import: (d.is_legacy_import as boolean | null) ?? false,
-    tool_tags: (d.tool_tags as string[] | null) ?? [],
-    hours_saved_month: d.hours_saved_month == null ? null : Number(d.hours_saved_month),
-  }));
-  const presencasRank: PresencaRanking[] = presencaRes.error
-    ? []
-    : ((presencaRes.data ?? []) as PresencaRanking[]).map((p) => ({
-      user_id: p.user_id,
-      presentes_3m: Number(p.presentes_3m) || 0,
-      convites_3m: Number(p.convites_3m) || 0,
-    }));
-  const rankings = montarRankings(pessoasRank, projetosRank, presencasRank, new Date());
-
   return (
     <div className="space-y-6">
       <header>
@@ -131,8 +87,6 @@ export default async function DashboardPage({
       </noscript>
 
       <Kpis kpis={indicadores} frequencia={ultimoEncontro} />
-
-      <RankingColaboradores rankings={rankings} />
 
       {lista.length === 0 ? (
         <Empty titulo="Nenhuma iniciativa cadastrada ainda. Assim que a primeira entrar, o painel ganha vida." />
