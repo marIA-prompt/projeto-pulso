@@ -7,6 +7,7 @@ export function linksDaNav({
 }) {
   return [
     { href: '/dashboard', label: 'Acompanhamento' },
+    ...(isGerencial ? [{ href: '/rankings', label: 'Rankings' }] : []),
     { href: '/projetos', label: 'Iniciativas' },
     ...(isGerencial ? [{ href: '/lei-do-bem', label: 'Lei do Bem' }] : []),
     { href: '/comunidade', label: 'Comunidade' },

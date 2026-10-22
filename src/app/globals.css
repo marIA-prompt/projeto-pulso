@@ -38,6 +38,39 @@
   .field:disabled { background: var(--g20); color: var(--g60); }
   .label { font-size: 0.8rem; font-weight: 600; color: var(--g60); }
   .num { font-family: var(--fm); font-variant-numeric: tabular-nums; }
+
+  /* Placar / Rankings: brilho só com tokens da paleta. */
+  .score-card {
+    background: var(--white);
+    border: 1px solid var(--g30);
+    border-radius: var(--r-m);
+    box-shadow: var(--sh-1);
+    transition: box-shadow .2s ease, border-color .2s ease, transform .2s ease;
+  }
+  .score-card:hover, .score-card:focus-within {
+    border-color: color-mix(in srgb, var(--blue) 50%, var(--g30));
+    box-shadow: var(--sh-2), 0 0 28px color-mix(in srgb, var(--blue) 22%, transparent);
+  }
+  .score-card--gold:hover, .score-card--gold:focus-within {
+    border-color: color-mix(in srgb, var(--yellow) 55%, var(--g30));
+    box-shadow: var(--sh-2), 0 0 32px color-mix(in srgb, var(--yellow) 32%, transparent);
+  }
+  .score-bar {
+    display: block;
+    height: 0.55rem;
+    border-radius: 999px;
+    background: var(--g20);
+  }
+  .score-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    box-shadow: 0 0 10px color-mix(in srgb, var(--blue) 45%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .score-card { transition: none; }
 }
 
 /* Tipografia de leitura das páginas de conteúdo. Medida curta e escala

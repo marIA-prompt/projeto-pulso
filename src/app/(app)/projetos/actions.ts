@@ -78,6 +78,7 @@ function revalidar() {
   revalidatePath('/projetos');
   revalidatePath('/dashboard');
   revalidatePath('/lei-do-bem');
+  revalidatePath('/rankings');
 }
 
 function lerEscopoLeiDoBem(form: FormData) {

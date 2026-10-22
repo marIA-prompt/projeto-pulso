@@ -37,7 +37,7 @@ export async function updateSession(request: NextRequest) {
 
   // Camada 1 da defesa em camadas (D4). A camada 2 é a checagem de papel
   // por página; a camada 3 é a RLS no Postgres.
-  if (user && (path.startsWith('/admin') || path.startsWith('/lei-do-bem'))) {
+  if (user && (path.startsWith('/admin') || path.startsWith('/lei-do-bem') || path.startsWith('/rankings'))) {
     const { data: profile } = await supabase
       .from('profiles').select('role').eq('id', user.id).single();
     const papel = profile?.role;
