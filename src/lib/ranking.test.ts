@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {
+  auditoriaPessoa,
   complexidadeEntrega,
   corteMeses,
   dataEntrega,
@@ -10,6 +11,8 @@ import {
   montarRankings,
   nomeRanking,
   normalizarFerramenta,
+  partesColaboracao,
+  partesComplexidade,
   scoreEspecialista,
   volumeHabilidades,
   RANKING_TOP,
@@ -63,6 +66,7 @@ function projeto(parcial: Partial<ProjetoRanking> & { id: string; owner_id: stri
     score_final: null,
     dev_hours: null,
     ...parcial,
+    title: parcial.title ?? `Iniciativa ${parcial.id}`,
   };
 }
 
@@ -440,6 +444,61 @@ caso('kpisDoScorecard soma entregas e aponta os campeões', () => {
   assert.equal(k.entregasNoPeriodo, 2);
   assert.equal(k.campeaoEntregas?.id, 'ana');
   assert.equal(k.campeaoEspecialista?.id, 'ana');
+});
+
+caso('auditoriaPessoa lista entregas, habilidades e partes da pontuação', () => {
+  const pessoas = [
+    pessoa({
+      id: 'ana', full_name: 'Ana Silva',
+      languages: ['Python'], automations: ['n8n', 'Python'],
+      available: true, bio: 'Ajudo no hub', contact: 'ana@senff',
+      area_name: 'Fraudes',
+    }),
+  ];
+  const projetos = [
+    projeto({
+      id: 'bot', owner_id: 'ana', stage: 'concluido',
+      title: 'Bot de fraude',
+      concluded_at: '2026-08-10T00:00:00.000Z',
+      uses_ai: true, uses_n8n: true, hours_saved_month: 20,
+    }),
+    projeto({
+      id: 'ativa', owner_id: 'ana', stage: 'em_desenvolvimento',
+      title: 'Painel em curso',
+    }),
+  ];
+  const a = auditoriaPessoa(
+    'ana', pessoas, projetos,
+    [{ user_id: 'ana', presentes_3m: 4, convites_3m: 8 }],
+    AGORA,
+  );
+  assert.ok(a);
+  assert.equal(a!.nome, 'Ana Silva');
+  assert.equal(a!.volumeHabilidades, 2);
+  assert.deepEqual(a!.linguagens, ['Python']);
+  assert.deepEqual(a!.automacoes, ['n8n']);
+  assert.equal(a!.entregasQtd, 1);
+  assert.equal(a!.entregas[0].title, 'Bot de fraude');
+  assert.equal(a!.entregas[0].complexidade.total, complexidadeEntrega(projetos[0]));
+  assert.equal(a!.entregas[0].noPeriodo, true);
+  assert.equal(a!.ativas.length, 1);
+  assert.equal(a!.scoreEspecialista, scoreEspecialista(2, a!.complexidadeTotal));
+  const partes = partesColaboracao({
+    presentes3m: 4, convites3m: 8, available: true,
+    iniciativasAtivas: 1, ferramentas: 2, temBio: true, temContato: true,
+  });
+  assert.equal(a!.colaboracao.indice, partes.indice);
+  assert.equal(a!.colaboracao.presenca + a!.colaboracao.disponibilidade + a!.colaboracao.ativas + a!.colaboracao.perfil, partes.indice);
+  assert.equal(partesComplexidade(projetos[0]).total, complexidadeEntrega(projetos[0]));
+});
+
+caso('auditoriaPessoa não devolve excluídos nem ids inexistentes', () => {
+  const pessoas = [
+    pessoa({ id: 'everton', full_name: 'Everton Dzikovicz', automations: ['n8n'] }),
+    pessoa({ id: 'ana', full_name: 'Ana' }),
+  ];
+  assert.equal(auditoriaPessoa('everton', pessoas, [], [], AGORA), null);
+  assert.equal(auditoriaPessoa('fantasma', pessoas, [], [], AGORA), null);
 });
 
 if (falhas) {

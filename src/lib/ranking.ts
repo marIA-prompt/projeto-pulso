@@ -54,6 +54,7 @@ export type KpisScorecard = {
 
 export type ProjetoRanking = {
   id: string;
+  title: string | null;
   owner_id: string | null;
   stage: Stage;
   concluded_at: string | null;
@@ -86,6 +87,68 @@ export type PresencaRanking = {
   user_id: string;
   presentes_3m: number;
   convites_3m: number;
+};
+
+export type PartesComplexidade = {
+  base: number;
+  tags: number;
+  ia: number;
+  n8n: number;
+  horas: number;
+  dev: number;
+  matriz: number;
+  total: number;
+};
+
+export type PartesColaboracao = {
+  presenca: number;
+  disponibilidade: number;
+  ativas: number;
+  perfil: number;
+  indice: number;
+};
+
+export type AuditoriaIniciativa = {
+  id: string;
+  title: string;
+  stage: Stage;
+  data: string | null;
+  hours_saved_month: number | null;
+  complexidade: PartesComplexidade;
+  uses_ai: boolean;
+  uses_n8n: boolean;
+  uses_ai_generativa: boolean;
+  tool_tags: string[];
+  score_final: number | null;
+  dev_hours: number | null;
+  noPeriodo: boolean;
+};
+
+export type AuditoriaPessoa = {
+  id: string;
+  nome: string;
+  avatar_url: string | null;
+  area_name: string | null;
+  linguagens: string[];
+  automacoes: string[];
+  volumeHabilidades: number;
+  scoreEspecialista: number;
+  complexidadeTotal: number;
+  entregasQtd: number;
+  horasMes: number;
+  entregas: AuditoriaIniciativa[];
+  ativas: AuditoriaIniciativa[];
+  colaboracao: PartesColaboracao & {
+    presentes: number;
+    convites: number;
+    available: boolean;
+    iniciativasAtivas: number;
+    temBio: boolean;
+    temContato: boolean;
+  };
+  corteDesde: string;
+  corteAte: string;
+  entregasNaJanela: boolean;
 };
 
 const ESTAGIOS_ENTREGA: ReadonlySet<Stage> = new Set(['concluido', 'showcase']);
@@ -171,6 +234,26 @@ function ferramentasDe(p: PessoaRanking): string[] {
     .filter(Boolean);
 }
 
+function unicasOriginais(valores: string[] | null, seen: Set<string>): string[] {
+  const out: string[] = [];
+  for (const raw of valores ?? []) {
+    const n = normalizarFerramenta(raw);
+    if (!n || seen.has(n)) continue;
+    seen.add(n);
+    out.push(raw.trim());
+  }
+  return out;
+}
+
+/** Habilidades do Hub na grafia original, sem repetir. */
+export function habilidadesDoHub(p: PessoaRanking): { linguagens: string[]; automacoes: string[] } {
+  const seen = new Set<string>();
+  return {
+    linguagens: unicasOriginais(p.languages, seen),
+    automacoes: unicasOriginais(p.automations, seen),
+  };
+}
+
 /** Quantidade de habilidades únicas no Hub (linguagens + automações). */
 export function volumeHabilidades(p: PessoaRanking): number {
   return new Set(ferramentasDe(p)).size;
@@ -180,14 +263,22 @@ export function volumeHabilidades(p: PessoaRanking): number {
  * Complexidade de uma iniciativa: stack (IA / n8n / tags), esforço
  * (`dev_hours`), impacto em horas e score da matriz quando existe.
  */
-export function complexidadeEntrega(p: ProjetoRanking): number {
+export function partesComplexidade(p: ProjetoRanking): PartesComplexidade {
   const tags = [...new Set((p.tool_tags ?? []).map(normalizarFerramenta).filter(Boolean))].length;
   const ia = p.uses_ai_generativa ? 16 : p.uses_ai ? 10 : 0;
   const n8n = p.uses_n8n ? 8 : 0;
   const horas = Math.min(30, Math.round(Number(p.hours_saved_month) || 0));
   const dev = Math.min(20, Math.round((Number(p.dev_hours) || 0) / 4));
   const matriz = p.score_final == null ? 0 : Math.round(Number(p.score_final) * 6);
-  return 4 + tags * 5 + ia + n8n + horas + dev + matriz;
+  const base = 4;
+  return {
+    base, tags, ia, n8n, horas, dev, matriz,
+    total: base + tags * 5 + ia + n8n + horas + dev + matriz,
+  };
+}
+
+export function complexidadeEntrega(p: ProjetoRanking): number {
+  return partesComplexidade(p).total;
 }
 
 export function scoreEspecialista(volume: number, complexidade: number): number {
@@ -275,6 +366,32 @@ export function kpisDoScorecard(r: RankingsColaboradores): KpisScorecard {
  *   presença nos encontros (até 40) + disponibilidade (20)
  *   + iniciativas ativas (até 20) + perfil encontrável (até 20).
  */
+export function partesColaboracao(opts: {
+  presentes3m: number;
+  convites3m: number;
+  available: boolean;
+  iniciativasAtivas: number;
+  ferramentas: number;
+  temBio: boolean;
+  temContato: boolean;
+}): PartesColaboracao {
+  const taxa = opts.convites3m > 0 ? opts.presentes3m / opts.convites3m : 0;
+  const presenca = Math.round(40 * Math.min(1, taxa));
+  const disponibilidade = opts.available ? 20 : 0;
+  const ativas = Math.min(20, opts.iniciativasAtivas * 7);
+  const perfil = Math.min(
+    20,
+    opts.ferramentas * 3 + (opts.temBio ? 4 : 0) + (opts.temContato ? 4 : 0),
+  );
+  return {
+    presenca,
+    disponibilidade,
+    ativas,
+    perfil,
+    indice: Math.min(100, presenca + disponibilidade + ativas + perfil),
+  };
+}
+
 export function indiceColaboracao(opts: {
   presentes3m: number;
   convites3m: number;
@@ -284,15 +401,7 @@ export function indiceColaboracao(opts: {
   temBio: boolean;
   temContato: boolean;
 }): number {
-  const taxa = opts.convites3m > 0 ? opts.presentes3m / opts.convites3m : 0;
-  const presenca = Math.round(40 * Math.min(1, taxa));
-  const disponibilidade = opts.available ? 20 : 0;
-  const ativas = Math.min(20, opts.iniciativasAtivas * 7);
-  const perfil = Math.min(
-    20,
-    opts.ferramentas * 3 + (opts.temBio ? 4 : 0) + (opts.temContato ? 4 : 0),
-  );
-  return Math.min(100, presenca + disponibilidade + ativas + perfil);
+  return partesColaboracao(opts).indice;
 }
 
 export function montarRankings(
@@ -414,5 +523,109 @@ export function montarRankings(
     corteDesde,
     corteAte,
     entregasNaJanela,
+  };
+}
+
+function tituloProjeto(p: ProjetoRanking): string {
+  const t = p.title?.trim();
+  return t || 'Sem título';
+}
+
+function iniciativaAuditoria(
+  proj: ProjetoRanking,
+  desde: Date,
+  ate: Date,
+): AuditoriaIniciativa {
+  const entrega = dataEntrega(proj);
+  return {
+    id: proj.id,
+    title: tituloProjeto(proj),
+    stage: proj.stage,
+    data: entrega ? diaISO(entrega.toISOString()) : null,
+    hours_saved_month: proj.hours_saved_month == null ? null : Number(proj.hours_saved_month),
+    complexidade: partesComplexidade(proj),
+    uses_ai: proj.uses_ai === true,
+    uses_n8n: proj.uses_n8n === true,
+    uses_ai_generativa: proj.uses_ai_generativa === true,
+    tool_tags: [...new Set((proj.tool_tags ?? []).map((t) => t.trim()).filter(Boolean))],
+    score_final: proj.score_final == null ? null : Number(proj.score_final),
+    dev_hours: proj.dev_hours == null ? null : Number(proj.dev_hours),
+    noPeriodo: Boolean(entrega && noPeriodo(entrega, desde, ate)),
+  };
+}
+
+/** Detalhe da pontuação de uma pessoa para auditoria gerencial. */
+export function auditoriaPessoa(
+  id: string,
+  pessoas: PessoaRanking[],
+  projetos: ProjetoRanking[],
+  presencas: Array<PresencaRanking | PresencaEncontro>,
+  agoraOuPeriodo: Date | PeriodoRanking,
+  opts: { fallbackHistorico?: boolean } = {},
+): AuditoriaPessoa | null {
+  const pessoa = pessoas.find((p) => p.id === id);
+  if (!pessoa || excluidaDoRanking(pessoa)) return null;
+
+  const { desde, ate } = resolverPeriodo(agoraOuPeriodo);
+  const fallbackHistorico = opts.fallbackHistorico ?? agoraOuPeriodo instanceof Date;
+  const rankings = montarRankings(pessoas, projetos, presencas, agoraOuPeriodo, { fallbackHistorico });
+  const presencaPorId = agregarPresencas(presencas, desde, ate);
+  const pres = presencaPorId.get(id);
+  const hub = habilidadesDoHub(pessoa);
+  const volume = volumeHabilidades(pessoa);
+
+  const minhas = projetos.filter((proj) => proj.owner_id === id);
+  const entregasPeriodo = minhas
+    .map((proj) => iniciativaAuditoria(proj, desde, ate))
+    .filter((i) => ESTAGIOS_ENTREGA.has(i.stage) && i.noPeriodo);
+  const entregasHist = minhas
+    .map((proj) => iniciativaAuditoria(proj, desde, ate))
+    .filter((i) => ESTAGIOS_ENTREGA.has(i.stage));
+  const usarHistorico = !rankings.entregasNaJanela && fallbackHistorico;
+  const entregas = usarHistorico ? entregasHist : entregasPeriodo;
+  const ativas = minhas
+    .filter((proj) => ESTAGIOS_ATIVOS.has(proj.stage))
+    .map((proj) => iniciativaAuditoria(proj, desde, ate));
+
+  const horasMes = entregas.reduce((s, i) => s + (Number(i.hours_saved_month) || 0), 0);
+  const complexidadeTotal = entregas.reduce((s, i) => s + i.complexidade.total, 0);
+  const temBio = Boolean(pessoa.bio?.trim());
+  const temContato = Boolean(pessoa.contact?.trim());
+  const colaboracao = partesColaboracao({
+    presentes3m: pres?.presentes ?? 0,
+    convites3m: pres?.convites ?? 0,
+    available: pessoa.available === true,
+    iniciativasAtivas: ativas.length,
+    ferramentas: volume,
+    temBio,
+    temContato,
+  });
+
+  return {
+    id: pessoa.id,
+    nome: nomeRanking(pessoa),
+    avatar_url: pessoa.avatar_url,
+    area_name: pessoa.area_name,
+    linguagens: hub.linguagens,
+    automacoes: hub.automacoes,
+    volumeHabilidades: volume,
+    scoreEspecialista: scoreEspecialista(volume, complexidadeTotal),
+    complexidadeTotal,
+    entregasQtd: entregas.length,
+    horasMes,
+    entregas,
+    ativas,
+    colaboracao: {
+      ...colaboracao,
+      presentes: pres?.presentes ?? 0,
+      convites: pres?.convites ?? 0,
+      available: pessoa.available === true,
+      iniciativasAtivas: ativas.length,
+      temBio,
+      temContato,
+    },
+    corteDesde: rankings.corteDesde,
+    corteAte: rankings.corteAte,
+    entregasNaJanela: rankings.entregasNaJanela,
   };
 }
