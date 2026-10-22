@@ -1,13 +1,17 @@
 import assert from 'node:assert/strict';
 import {
+  complexidadeEntrega,
   corteMeses,
   dataEntrega,
   datasDoPeriodo,
+  excluidaDoRanking,
   indiceColaboracao,
   kpisDoScorecard,
   montarRankings,
   nomeRanking,
   normalizarFerramenta,
+  scoreEspecialista,
+  volumeHabilidades,
   RANKING_TOP,
   type PessoaRanking,
   type PresencaEncontro,
@@ -15,7 +19,7 @@ import {
   type ProjetoRanking,
 } from './ranking';
 import { diaISO } from './format';
-import type { ExperienceLevel, Stage } from './types';
+import type { Stage } from './types';
 
 let falhas = 0;
 function caso(nome: string, fn: () => void) {
@@ -53,6 +57,11 @@ function projeto(parcial: Partial<ProjetoRanking> & { id: string; owner_id: stri
     is_legacy_import: false,
     tool_tags: [],
     hours_saved_month: null,
+    uses_ai: false,
+    uses_n8n: false,
+    uses_ai_generativa: false,
+    score_final: null,
+    dev_hours: null,
     ...parcial,
   };
 }
@@ -172,7 +181,8 @@ caso('volume cai para o histórico quando a janela de 3 meses está vazia', () =
   assert.equal(r.entregas[0].valor, 2);
   assert.equal(r.entregas[1].id, 'ana');
   assert.equal(r.entregas[1].valor, 1);
-  assert.equal(r.especialistas.length, 0);
+  assert.ok(r.especialistas[0].id === 'legado');
+  assert.ok(r.especialistas[0].detalhe.includes('complexidade'));
 });
 
 caso('entrega na virada UTC entra pelo dia civil de São Paulo', () => {
@@ -191,36 +201,116 @@ caso('entrega na virada UTC entra pelo dia civil de São Paulo', () => {
   assert.equal(r.entregas[0].valor, 1);
 });
 
-caso('especialistas privilegiam domínio e cobertura das ferramentas do time', () => {
+caso('especialistas somam volume de habilidades e complexidade das entregas', () => {
   const pessoas = [
     pessoa({
       id: 'carla', full_name: 'Carla',
-      experience_level: 'especialista' as ExperienceLevel,
       automations: ['n8n', 'Power Automate'],
       languages: ['Python'],
     }),
     pessoa({
       id: 'diego', full_name: 'Diego',
-      experience_level: 'iniciante' as ExperienceLevel,
       automations: ['ferramenta-rara'],
     }),
     pessoa({
       id: 'eva', full_name: 'Eva',
-      experience_level: 'avancado' as ExperienceLevel,
+      languages: ['SQL'],
       automations: ['n8n'],
     }),
     pessoa({ id: 'zero', full_name: 'Zero' }),
   ];
   const projetos = [
-    projeto({ id: 't', owner_id: 'carla', stage: 'em_desenvolvimento', tool_tags: ['n8n', 'Python'] }),
+    projeto({
+      id: 't', owner_id: 'carla', stage: 'concluido',
+      concluded_at: '2026-08-10T00:00:00.000Z',
+      tool_tags: ['n8n', 'Python'],
+      uses_ai: true, uses_n8n: true, hours_saved_month: 20,
+    }),
   ];
   const r = montarRankings(pessoas, projetos, [], AGORA);
+  assert.equal(volumeHabilidades(pessoas[0]), 3);
+  assert.ok(complexidadeEntrega(projetos[0]) > 4);
   assert.equal(r.especialistas[0].id, 'carla');
-  assert.ok(r.especialistas[0].valor > r.especialistas.find((p) => p.id === 'eva')!.valor);
-  assert.ok(r.especialistas.find((p) => p.id === 'eva')!.valor > r.especialistas.find((p) => p.id === 'diego')!.valor);
+  assert.equal(
+    r.especialistas[0].valor,
+    scoreEspecialista(3, complexidadeEntrega(projetos[0])),
+  );
+  const eva = r.especialistas.find((p) => p.id === 'eva');
+  const diego = r.especialistas.find((p) => p.id === 'diego');
+  assert.ok(eva && diego);
+  assert.equal(eva.valor, scoreEspecialista(2, 0));
+  assert.equal(diego.valor, scoreEspecialista(1, 0));
+  assert.ok(r.especialistas[0].valor > eva.valor);
+  assert.ok(eva.valor > diego.valor);
   assert.ok(!r.especialistas.some((p) => p.id === 'zero'));
-  assert.ok(r.especialistas[0].detalhe.includes('Especialista'));
-  assert.ok(r.especialistas[0].detalhe.includes('2 de 2'));
+  assert.ok(r.especialistas[0].detalhe.includes('3 habilidades'));
+  assert.ok(r.especialistas[0].detalhe.includes('complexidade'));
+});
+
+caso('entrega com IA e n8n é mais complexa que entrega simples', () => {
+  const simples = complexidadeEntrega(projeto({
+    id: 's', owner_id: 'a', stage: 'concluido',
+  }));
+  const complexa = complexidadeEntrega(projeto({
+    id: 'c', owner_id: 'a', stage: 'concluido',
+    uses_ai: true, uses_ai_generativa: true, uses_n8n: true,
+    tool_tags: ['n8n', 'Python', 'Power BI'],
+    hours_saved_month: 40, dev_hours: 80, score_final: 4.2,
+  }));
+  assert.ok(complexa > simples);
+});
+
+caso('volumeHabilidades conta linguagens e automações sem repetir', () => {
+  assert.equal(volumeHabilidades(pessoa({
+    id: 'a', full_name: 'Ana',
+    languages: ['Python', 'SQL'],
+    automations: ['Python', 'Power BI', ''],
+  })), 3);
+});
+
+caso('Everton Dzikovicz e Maria Clara Morais não aparecem em nenhum ranking', () => {
+  assert.equal(excluidaDoRanking({ full_name: 'Everton Dzikovicz', nickname: null }), true);
+  assert.equal(excluidaDoRanking({ full_name: 'Maria Clara Morais', nickname: 'Maria' }), true);
+  assert.equal(excluidaDoRanking({ full_name: ' Éverton  Dzikovicz ', nickname: null }), true);
+  assert.equal(excluidaDoRanking({ full_name: 'Ana Silva', nickname: 'Maria Clara Morais' }), true);
+  assert.equal(excluidaDoRanking({ full_name: 'Maria Santos', nickname: 'Maria' }), false);
+  const r = montarRankings(
+    [
+      pessoa({
+        id: 'everton', full_name: 'Everton Dzikovicz',
+        automations: ['n8n', 'Python', 'SQL', 'Power BI'],
+        available: true, bio: 'x', contact: 'e@senff',
+      }),
+      pessoa({
+        id: 'maria', full_name: 'Maria Clara Morais',
+        languages: ['Python', 'SQL'], automations: ['n8n'],
+        available: true, bio: 'x', contact: 'm@senff',
+      }),
+      pessoa({ id: 'ana', full_name: 'Ana Silva', automations: ['n8n'], available: true }),
+    ],
+    [
+      projeto({
+        id: 'e1', owner_id: 'everton', stage: 'concluido',
+        concluded_at: '2026-08-10T00:00:00.000Z',
+        uses_ai: true, hours_saved_month: 80,
+      }),
+      projeto({
+        id: 'm1', owner_id: 'maria', stage: 'showcase',
+        concluded_at: '2026-09-10T00:00:00.000Z',
+        uses_n8n: true,
+      }),
+      projeto({
+        id: 'a1', owner_id: 'ana', stage: 'concluido',
+        concluded_at: '2026-08-10T00:00:00.000Z',
+      }),
+    ],
+    [{ user_id: 'everton', presentes_3m: 8, convites_3m: 8 }],
+    AGORA,
+  );
+  for (const lista of [r.entregas, r.especialistas, r.colaboradores]) {
+    assert.ok(!lista.some((p) => p.id === 'everton' || p.id === 'maria'));
+  }
+  assert.ok(r.entregas.some((p) => p.id === 'ana'));
 });
 
 caso('índice de colaboração soma presença, disponibilidade, ativas e perfil', () => {

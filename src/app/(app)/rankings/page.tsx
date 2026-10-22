@@ -22,7 +22,7 @@ export default async function RankingsPage({
       .select('id, full_name, nickname, avatar_url, experience_level, languages, automations, available, bio, contact, areas(name)')
       .eq('active', true),
     supabase.from('projects')
-      .select('id, owner_id, stage, concluded_at, last_activity_at, is_legacy_import, tool_tags, hours_saved_month')
+      .select('id, owner_id, stage, concluded_at, last_activity_at, is_legacy_import, tool_tags, hours_saved_month, uses_ai, uses_n8n, uses_ai_generativa, score_final, dev_hours')
       .is('archived_at', null),
     supabase.from('v_presenca_encontros').select('user_id, scheduled_at, status'),
   ]);
@@ -53,6 +53,11 @@ export default async function RankingsPage({
     is_legacy_import: (d.is_legacy_import as boolean | null) ?? false,
     tool_tags: (d.tool_tags as string[] | null) ?? [],
     hours_saved_month: d.hours_saved_month == null ? null : Number(d.hours_saved_month),
+    uses_ai: (d.uses_ai as boolean | null) ?? false,
+    uses_n8n: (d.uses_n8n as boolean | null) ?? false,
+    uses_ai_generativa: (d.uses_ai_generativa as boolean | null) ?? false,
+    score_final: d.score_final == null ? null : Number(d.score_final),
+    dev_hours: d.dev_hours == null ? null : Number(d.dev_hours),
   }));
 
   let presencas: Array<PresencaRanking | PresencaEncontro> = [];

@@ -39,7 +39,7 @@ const ABAS: {
     id: 'especialistas',
     rotulo: 'Especialistas',
     titulo: 'Especialistas (conhecimento técnico)',
-    nota: 'Nível de domínio no Hub e cobertura das ferramentas do time. O recorte de data não altera o perfil.',
+    nota: 'Volume de habilidades no Hub (linguagens e automações) e complexidade das iniciativas entregues no período — IA, n8n, ferramentas, horas e score.',
     cor: 'var(--cat-7)',
   },
   {
@@ -146,7 +146,8 @@ export function Scorecard({
           <div className="min-w-[16rem] flex-1">
             <h2 id={`${baseId}-filtro`} className="text-sm font-semibold">Período do placar</h2>
             <p className="mt-1 text-xs text-g50">
-              Entregas e presença acompanham o recorte. Especialistas usam o perfil atual do Hub.
+              Entregas, presença e complexidade das iniciativas acompanham o recorte.
+              O volume de habilidades vem do perfil atual no Hub.
             </p>
           </div>
           <div className="flex flex-wrap items-end gap-3">
