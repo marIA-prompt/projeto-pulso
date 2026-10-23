@@ -15,7 +15,7 @@ src/app/convite/[token] Aceite de convite (única porta de entrada)
 src/components/         Nav, formulários, componentes do dashboard
 src/lib/                Clientes Supabase, autorização, matriz de score, markdown
 supabase/migrations/    Schema, RLS, views e seed de conteúdo
-docs/                   PRD, DECISOES (ToT), metodologias, fluxograma
+docs/                   PRD, DECISOES (ToT), metodologias, fluxograma, QUESTIONAMENTOS
 ```
 
 ## Como rodar
