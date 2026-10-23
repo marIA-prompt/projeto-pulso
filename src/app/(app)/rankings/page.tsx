@@ -22,7 +22,7 @@ export default async function RankingsPage({
       .select('id, full_name, nickname, avatar_url, experience_level, languages, automations, available, bio, contact, areas(name)')
       .eq('active', true),
     supabase.from('projects')
-      .select('id, owner_id, stage, concluded_at, last_activity_at, is_legacy_import, tool_tags, hours_saved_month, uses_ai, uses_n8n, uses_ai_generativa, score_final, dev_hours')
+      .select('id, title, owner_id, stage, concluded_at, last_activity_at, is_legacy_import, tool_tags, hours_saved_month, uses_ai, uses_n8n, uses_ai_generativa, score_final, dev_hours')
       .is('archived_at', null),
     supabase.from('v_presenca_encontros').select('user_id, scheduled_at, status'),
   ]);
@@ -46,6 +46,7 @@ export default async function RankingsPage({
   });
   const projetos: ProjetoRanking[] = (donos ?? []).map((d) => ({
     id: d.id as string,
+    title: (d.title as string | null) ?? null,
     owner_id: (d.owner_id as string | null) ?? null,
     stage: d.stage as Stage,
     concluded_at: (d.concluded_at as string | null) ?? null,
