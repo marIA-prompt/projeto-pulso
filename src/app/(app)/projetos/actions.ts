@@ -20,7 +20,7 @@ const Projeto = z.object({
   stage: z.enum(STAGES),
   area_id: z.string().uuid().nullable().catch(null),
   owner_id: z.string().uuid().nullable().catch(null),
-  directorate: z.string().optional(),
+  directorate: z.string().trim().max(300).transform((s) => (s === '' ? null : s)),
   uses_ai_tradicional: z.coerce.boolean(),
   uses_ai_generativa: z.coerce.boolean(),
   uses_n8n: z.coerce.boolean(),
