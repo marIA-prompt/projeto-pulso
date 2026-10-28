@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
 import { hasRoleAtLeast } from '@/lib/types';
 import { ProjetoForm } from '@/components/ProjetoForm';
+import { nomesDiretoria } from '@/lib/diretorias-catalogo';
 import { criarProjeto } from '../actions';
 
 export const metadata = { title: 'Nova iniciativa — Pulso' };
@@ -14,9 +15,10 @@ export default async function NovoProjetoPage() {
   if (!hasRoleAtLeast(perfil.role, 'participante')) redirect('/projetos');
 
   const supabase = createClient();
-  const [{ data: areas }, { data: pessoas }] = await Promise.all([
+  const [{ data: areas }, { data: pessoas }, { data: diretorias }] = await Promise.all([
     supabase.from('areas').select('id, name').eq('is_real_area', true).order('name'),
     supabase.from('profiles').select('id, full_name').eq('active', true).order('full_name'),
+    supabase.from('diretorias').select('name').order('sort_order'),
   ]);
 
   return (
@@ -41,6 +43,7 @@ export default async function NovoProjetoPage() {
       <ProjetoForm
         action={criarProjeto}
         areas={areas ?? []}
+        diretorias={nomesDiretoria((diretorias ?? []).map((d) => d.name))}
         pessoas={pessoas ?? []}
         ownerPadrao={perfil.id}
         rotulo="Cadastrar iniciativa"

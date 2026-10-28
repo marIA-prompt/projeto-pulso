@@ -16,9 +16,9 @@
         0
       ],
       "parameters": {
-        "content": "W6 — e-mail mensal por diretoria\n\n1. Em Settings → Variables do n8n:\n   SUPABASE_URL = https://SEU-PROJETO.supabase.co\n   SUPABASE_SERVICE_ROLE_KEY = service role (só no n8n, nunca no cliente)\n   PULSO_SITE_URL = URL do Pulso\n   PULSO_EMAIL_FROM = remetente\n   N8N_WEBHOOK_SECRET = o mesmo segredo da aplicação\n\n2. No nó \"Enviar e-mail\", escolha a credencial SMTP.\n\n3. Grave o e-mail de cada diretor em /relatorios (admin) ou em diretorias.diretor_email.\n   Sem e-mail, a diretoria entra no ramo \"Sem e-mail\" e não é enviada.\n\n4. Ative o fluxo. Dia 1, 8h (America/Sao_Paulo), ele chama\n   POST /rest/v1/rpc/relatorio_mensal_envio\n   e manda um e-mail por diretor.\n\n5. A URL de produção do webhook \"Disparo manual\" vai em\n   N8N_WEBHOOK_W6_RELATORIO_MENSAL na Vercel.\n   O botão da tela manda o mês; o n8n relê o Supabase.\n\nJurídico e Compliance entram no e-mail de RH (Christian).\nSeguros vai para Bruna.",
-        "width": 460,
-        "height": 420,
+        "content": "W6 — e-mail mensal por diretoria\n\n1. Em Settings → Variables do n8n:\n   SUPABASE_URL = https://SEU-PROJETO.supabase.co\n   SUPABASE_SERVICE_ROLE_KEY = service role (só no n8n, nunca no cliente)\n   PULSO_SITE_URL = URL do Pulso\n   PULSO_EMAIL_FROM = remetente\n   N8N_WEBHOOK_SECRET = o mesmo segredo da aplicação\n\n2. Crie a credencial SMTP com o nome \"Zoho Mail\" e selecione-a no nó \"Enviar e-mail\":\n   Host: smtp.zoho.com\n   Porta: 465\n   SSL/TLS: ligado\n   Usuário: o e-mail completo da caixa Zoho\n   Senha: senha de aplicativo do Zoho (Conta → Segurança → Senhas de aplicativo)\n   PULSO_EMAIL_FROM tem de ser essa mesma caixa — o Zoho recusa outro remetente.\n   Se a conta estiver em outro data center, troque o host (smtp.zoho.eu, smtp.zoho.in, smtp.zoho.com.au).\n\n3. Grave o e-mail de cada diretor em /relatorios (admin) ou em diretorias.diretor_email.\n   Sem e-mail, a diretoria entra no ramo \"Sem e-mail\" e não é enviada.\n\n4. Ative o fluxo. Dia 1, 8h (America/Sao_Paulo), ele chama\n   POST /rest/v1/rpc/relatorio_mensal_envio\n   e manda um e-mail por diretor.\n\n5. A URL de produção do webhook \"Disparo manual\" vai em\n   N8N_WEBHOOK_W6_RELATORIO_MENSAL na Vercel.\n   O botão da tela manda o mês; o n8n relê o Supabase.\n\nJurídico e Compliance entram no e-mail de RH (Christian).\nSeguros vai para Bruna.",
+        "width": 520,
+        "height": 560,
         "color": 5
       }
     },
@@ -173,7 +173,15 @@
         "emailFormat": "text",
         "text": "={{ $json.texto }}",
         "options": {}
-      }
+      },
+      "credentials": {
+        "smtp": {
+          "id": "ZOHO_MAIL",
+          "name": "Zoho Mail"
+        }
+      },
+      "notes": "Zoho Mail via SMTP: smtp.zoho.com, porta 465, SSL. O remetente (PULSO_EMAIL_FROM) é a caixa autenticada.",
+      "notesInFlow": true
     },
     {
       "id": "noop-w6",

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
 import { ProjetoForm } from '@/components/ProjetoForm';
+import { nomesDiretoria } from '@/lib/diretorias-catalogo';
 import { ProjetoLeitura } from '@/components/ProjetoLeitura';
 import { atualizarProjeto } from '../actions';
 import { dataLonga } from '@/lib/format';
@@ -21,11 +22,12 @@ export default async function EditarProjetoPage({
   const perfil = await requireUser();
   const supabase = createClient();
 
-  const [{ data: projeto }, { data: areas }, { data: pessoas }, { data: leiDoBem }] = await Promise.all([
+  const [{ data: projeto }, { data: areas }, { data: pessoas }, { data: leiDoBem }, { data: diretorias }] = await Promise.all([
     supabase.from('projects').select('*').eq('id', params.id).maybeSingle(),
     supabase.from('areas').select('id, name').eq('is_real_area', true).order('name'),
     supabase.from('profiles').select('id, full_name').eq('active', true).order('full_name'),
     supabase.from('lei_do_bem_avaliacoes').select('*').eq('project_id', params.id).maybeSingle(),
+    supabase.from('diretorias').select('name').order('sort_order'),
   ]);
 
   if (!projeto) notFound();
@@ -72,6 +74,7 @@ export default async function EditarProjetoPage({
         <ProjetoForm
           action={acao}
           areas={areas ?? []}
+          diretorias={nomesDiretoria((diretorias ?? []).map((d) => d.name))}
           pessoas={pessoas ?? []}
           valores={projeto}
           leiDoBem={leiDoBem}
