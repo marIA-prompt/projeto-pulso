@@ -37,4 +37,6 @@ flowchart TD
     Y --> Y2[KPIs · semáforo por atualização · alerta > 14 dias · taxa de presença]
     Y2 --> Z[Report Executivo Quinzenal — n8n W4]
     Z --> Z2[Diretoria: saúde do portfólio, destaques, decisões pendentes]
+    Y2 --> RM[Relatório mensal por diretoria — n8n W6]
+    RM --> RM2[Criadas no mês · atualizadas no mês · métricas, ganhos e valor da área]
 ```

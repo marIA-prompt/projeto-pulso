@@ -31,22 +31,30 @@ caso('leitor, participante e editor não veem Rankings, Lei do Bem nem Admin', (
   }
 });
 
-caso('gerencial vê Rankings e Lei do Bem e não vê Admin', () => {
+caso('gerencial vê Rankings, Relatórios e Lei do Bem e não vê Admin', () => {
   const h = hrefs('gerencial');
   assert.ok(h.includes('/rankings'));
+  assert.ok(h.includes('/relatorios'));
   assert.ok(h.includes('/lei-do-bem'));
   assert.ok(!h.includes('/admin'));
   const iDash = h.indexOf('/dashboard');
   const iRank = h.indexOf('/rankings');
+  const iRel = h.indexOf('/relatorios');
   const iIniciativas = h.indexOf('/projetos');
   const iLei = h.indexOf('/lei-do-bem');
   const iComunidade = h.indexOf('/comunidade');
-  assert.ok(iDash < iRank && iRank < iIniciativas && iIniciativas < iLei && iLei < iComunidade);
+  assert.ok(iDash < iRank && iRank < iRel && iRel < iIniciativas && iIniciativas < iLei && iLei < iComunidade);
 });
 
-caso('administrador vê Rankings, Lei do Bem e Admin', () => {
+caso('leitor não vê Relatórios', () => {
+  assert.ok(!hrefs('leitor').includes('/relatorios'));
+  assert.ok(!hrefs('editor').includes('/relatorios'));
+});
+
+caso('administrador vê Rankings, Relatórios, Lei do Bem e Admin', () => {
   const h = hrefs('administrador');
   assert.ok(h.includes('/rankings'));
+  assert.ok(h.includes('/relatorios'));
   assert.ok(h.includes('/lei-do-bem'));
   assert.ok(h.includes('/admin'));
 });

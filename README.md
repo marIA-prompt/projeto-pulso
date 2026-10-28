@@ -102,8 +102,9 @@ Opcionais por definição — falha de webhook nunca derruba a operação princi
 | **W2** | encontro criado (agendar lembrete de 24h) | `{ meetingId, title, scheduledAt }` |
 | **W3** | cron de quinta no n8n | consulta `v_projects_dashboard` onde `alerta_14_dias` |
 | **W4** | cron quinzenal no n8n | consulta `v_portfolio_kpis` + `v_attendance_kpis` |
+| **W6** | cron mensal no n8n, dia 1 | `GET /api/cron/relatorio-mensal` com o header `X-Pulso-Secret`. Sem `mes`, devolve o mês anterior (America/Sao_Paulo). Cada diretoria sai com iniciativas criadas no mês, iniciativas atualizadas no mês, métricas, ganhos e valor. O disparo manual do admin usa `N8N_WEBHOOK_W6_RELATORIO_MENSAL`. |
 
-W3 e W4 são puxados pelo n8n, não empurrados pela aplicação: o relatório precisa sair mesmo que ninguém abra o sistema naquela semana.
+W3, W4 e W6 são puxados pelo n8n, não empurrados pela aplicação: o relatório precisa sair mesmo que ninguém abra o sistema naquela semana. W5 continua reservado à sincronização com o Bitrix. A tela `/relatorios` (perfil gerencial) mostra o mesmo recorte; o cron e o botão de envio entregam o JSON, com o campo `texto` pronto para o e-mail de cada diretoria.
 
 ## Pendências reais
 
