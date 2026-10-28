@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { ErroBox } from '@/components/ui/Card';
 import { clsx } from '@/lib/clsx';
 import type { EstadoProjeto } from '@/app/(app)/projetos/actions';
+import { opcoesDiretoria } from '@/lib/diretorias-catalogo';
 import {
   etapaAnteriorCadastro,
   etapasCadastroIniciativa,
@@ -57,11 +58,12 @@ function vBool(valores: Valores, k: string): boolean {
 }
 
 export function ProjetoForm({
-  action, areas, pessoas = [], valores = {}, rotulo = 'Salvar iniciativa',
+  action, areas, diretorias = [], pessoas = [], valores = {}, rotulo = 'Salvar iniciativa',
   cancelHref = '/projetos', ownerPadrao, leiDoBem = null,
 }: {
   action: (prev: EstadoProjeto, form: FormData) => Promise<EstadoProjeto>;
   areas: Area[];
+  diretorias?: string[];
   pessoas?: PessoaOpcao[];
   valores?: Valores;
   rotulo?: string;
@@ -104,6 +106,8 @@ export function ProjetoForm({
   const usaIaTradicional = vBool(valores, 'uses_ai_tradicional') || (
     vBool(valores, 'uses_ai') && !vBool(valores, 'uses_ai_generativa')
   );
+  const diretoriaAtual = vStr(valores, 'directorate');
+  const opcoesDeDiretoria = opcoesDiretoria(diretorias, diretoriaAtual);
 
   function irPara(id: EtapaCadastro) {
     const destino = destinoEtapaCadastro(
@@ -254,8 +258,13 @@ export function ProjetoForm({
           </div>
           <div>
             <label className="label" htmlFor="directorate">Diretoria</label>
-            <input id="directorate" name="directorate" className="field mt-1"
-                   defaultValue={(valores.directorate as string) ?? ''} />
+            <select id="directorate" name="directorate" className="field mt-1"
+                    defaultValue={diretoriaAtual}>
+              <option value="">Não informada</option>
+              {opcoesDeDiretoria.map((nome) => (
+                <option key={nome} value={nome}>{nome}</option>
+              ))}
+            </select>
           </div>
         </div>
 

@@ -1,0 +1,274 @@
+{
+  "name": "W6 — Relatório mensal por diretoria",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo"
+  },
+  "nodes": [
+    {
+      "id": "sticky-w6",
+      "name": "Como ligar",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "content": "W6 — e-mail mensal por diretoria\n\n1. Em Settings → Variables do n8n:\n   SUPABASE_URL = https://SEU-PROJETO.supabase.co\n   SUPABASE_SERVICE_ROLE_KEY = service role (só no n8n, nunca no cliente)\n   PULSO_SITE_URL = URL do Pulso\n   PULSO_EMAIL_FROM = remetente\n   N8N_WEBHOOK_SECRET = o mesmo segredo da aplicação\n\n2. Crie a credencial SMTP com o nome \"Zoho Mail\" e selecione-a no nó \"Enviar e-mail\":\n   Host: smtp.zoho.com\n   Porta: 465\n   SSL/TLS: ligado\n   Usuário: o e-mail completo da caixa Zoho\n   Senha: senha de aplicativo do Zoho (Conta → Segurança → Senhas de aplicativo)\n   PULSO_EMAIL_FROM tem de ser essa mesma caixa — o Zoho recusa outro remetente.\n   Se a conta estiver em outro data center, troque o host (smtp.zoho.eu, smtp.zoho.in, smtp.zoho.com.au).\n\n3. Grave o e-mail de cada diretor em /relatorios (admin) ou em diretorias.diretor_email.\n   Sem e-mail, a diretoria entra no ramo \"Sem e-mail\" e não é enviada.\n\n4. Ative o fluxo. Dia 1, 8h (America/Sao_Paulo), ele chama\n   POST /rest/v1/rpc/relatorio_mensal_envio\n   e manda um e-mail por diretor.\n\n5. A URL de produção do webhook \"Disparo manual\" vai em\n   N8N_WEBHOOK_W6_RELATORIO_MENSAL na Vercel.\n   O botão da tela manda o mês; o n8n relê o Supabase.\n\nJurídico e Compliance entram no e-mail de RH (Christian).\nSeguros vai para Bruna.",
+        "width": 520,
+        "height": 560,
+        "color": 5
+      }
+    },
+    {
+      "id": "schedule-w6",
+      "name": "Dia 1 às 8h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        520,
+        80
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "monthsInterval": 1,
+              "triggerAtDayOfMonth": 1,
+              "triggerAtHour": 8,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "webhook-w6",
+      "name": "Disparo manual",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        520,
+        320
+      ],
+      "webhookId": "pulso-w6-relatorio-mensal",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pulso-relatorio-mensal",
+        "responseMode": "onReceived",
+        "options": {}
+      }
+    },
+    {
+      "id": "if-secret-w6",
+      "name": "Segredo do webhook",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        780,
+        320
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.headers[\"x-pulso-secret\"] }}",
+              "operation": "equal",
+              "value2": "={{ $env.N8N_WEBHOOK_SECRET }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "http-w6",
+      "name": "Buscar no Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1060,
+        180
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/relatorio_mensal_envio",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_ano: $json.body?.ano ?? $json.ano ?? null, p_mes: $json.body?.mes ?? $json.mes ?? null }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "code-w6",
+      "name": "Montar e-mails",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        180
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const STAGE = {\n  ideia: 'Ideia',\n  backlog: 'Backlog',\n  priorizacao: 'Priorização',\n  em_desenvolvimento: 'Em Desenvolvimento',\n  em_teste: 'Em Teste',\n  concluido: 'Concluído',\n  showcase: 'Showcase',\n  cancelado: 'Cancelado',\n};\n\nfunction brl(n) {\n  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(Number(n) || 0);\n}\nfunction horas(n) {\n  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(Number(n) || 0) + ' h';\n}\nfunction dataCurta(iso) {\n  if (!iso) return '—';\n  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeZone: 'America/Sao_Paulo' }).format(new Date(iso));\n}\nfunction plural(n, um, muitos) {\n  const v = Number(n) || 0;\n  return v + ' ' + (v === 1 ? um : muitos);\n}\nfunction linha(item, quando) {\n  const ganho = item.hours_saved_month == null ? 'horas não informadas' : horas(item.hours_saved_month) + '/mês';\n  const valor = item.cost_saved_month == null ? 'valor não informado' : brl(item.cost_saved_month) + '/mês';\n  const area = item.area_name ? ' · ' + item.area_name : '';\n  return '- ' + item.title + ' — ' + (STAGE[item.stage] || item.stage) + area + ' — ' + item.owner_name + ' — ' + ganho + ' — ' + valor + ' — ' + quando;\n}\nfunction bloco(titulo, itens, vazio, quando) {\n  const lista = Array.isArray(itens) ? itens : [];\n  if (!lista.length) return titulo + '\\n' + vazio;\n  return [titulo].concat(lista.map((item) => linha(item, quando(item)))).join('\\n');\n}\nfunction texto(rel) {\n  const m = rel.metricas || {};\n  const g = rel.ganhos || {};\n  const v = rel.valor || {};\n  const linhas = [];\n  if (rel.diretor_nome) linhas.push('Olá, ' + rel.diretor_nome);\n  linhas.push(\n    'Relatório mensal — ' + rel.nome,\n    rel.diretor_nome ? 'Diretor: ' + rel.diretor_nome : null,\n    'Período: ' + rel.rotulo,\n    '',\n    'Métricas',\n    '- ' + plural(m.iniciativas, 'iniciativa no portfólio', 'iniciativas no portfólio') + ' (' + plural(m.ativas, 'ativa', 'ativas') + ', ' + plural(m.concluidas, 'concluída', 'concluídas') + ', ' + plural(m.canceladas, 'cancelada', 'canceladas') + ')',\n    '- ' + plural(m.criadas_no_mes, 'criada no mês', 'criadas no mês'),\n    '- ' + plural(m.atualizadas_no_mes, 'atualizada no mês', 'atualizadas no mês'),\n    '- ' + plural(m.concluidas_no_mes, 'concluída no mês', 'concluídas no mês'),\n    '- ' + plural(m.em_alerta, 'em alerta', 'em alerta') + ' (sem atualização há mais de 14 dias)',\n    '- ' + plural(m.com_ia, 'com uso de IA', 'com uso de IA'),\n    '',\n    'Ganhos',\n    '- ' + horas(g.horas_devolvidas_mes) + '/mês devolvidas (iniciativas concluídas)',\n    '- ' + horas(g.horas_concluidas_no_mes) + '/mês nas concluídas deste mês',\n    '- ' + horas(g.horas_criadas) + '/mês nas iniciativas criadas no mês',\n    '- ' + horas(g.horas_atualizadas) + '/mês nas iniciativas atualizadas no mês',\n    '- ' + horas(g.horas_portfolio) + '/mês no portfólio inteiro da área',\n    '- ' + (Number(m.com_horas) || 0) + ' de ' + (Number(m.iniciativas) || 0) + ' com horas informadas',\n    '',\n    'Valor para a área',\n    '- ' + brl(v.mensal_realizado) + '/mês realizados · ' + brl(v.anual_realizado) + '/ano',\n    '- ' + brl(v.mensal_concluidas_no_mes) + '/mês nas concluídas deste mês',\n    '- ' + brl(v.mensal_movimento) + '/mês associados ao movimento (' + brl(v.mensal_criadas) + ' nas criadas, ' + brl(v.mensal_atualizadas) + ' nas atualizadas)',\n    '- ' + (Number(m.com_valor) || 0) + ' de ' + (Number(m.iniciativas) || 0) + ' com valor em R$ informado',\n    '',\n    bloco('Iniciativas criadas no mês', rel.criadas, 'Nenhuma iniciativa criada neste mês.', (item) => 'criada em ' + dataCurta(item.created_at)),\n    '',\n    bloco('Iniciativas atualizadas no mês', rel.atualizadas, 'Nenhuma iniciativa atualizada neste mês.', (item) => 'atualizada em ' + dataCurta(item.last_activity_at)),\n    '',\n    'Criadas no mês não se repetem em atualizadas. A carga legada não entra como criação.',\n  );\n  let site = '';\n  try { site = String($env.PULSO_SITE_URL || '').replace(/\\/$/, ''); } catch (erro) { site = ''; }\n  if (site) linhas.push('', 'Painel: ' + site + '/dashboard');\n  return linhas.filter((linha) => linha != null).join('\\n');\n}\n\nconst linhas = [];\nfor (const item of $input.all()) {\n  const corpo = item.json;\n  if (Array.isArray(corpo)) linhas.push(...corpo);\n  else if (corpo && Array.isArray(corpo.data)) linhas.push(...corpo.data);\n  else if (corpo && corpo.slug) linhas.push(corpo);\n  else if (corpo && corpo.message && !corpo.slug) throw new Error(corpo.message);\n}\nreturn linhas.map((rel) => ({\n  json: {\n    ...rel,\n    assunto: 'Pulso — ' + rel.nome + ' — ' + rel.rotulo,\n    texto: texto(rel),\n  },\n}));\n"
+      }
+    },
+    {
+      "id": "if-email-w6",
+      "name": "Tem e-mail?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1580,
+        180
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.diretor_email }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "email-w6",
+      "name": "Enviar e-mail",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1840,
+        80
+      ],
+      "parameters": {
+        "fromEmail": "={{ $env.PULSO_EMAIL_FROM }}",
+        "toEmail": "={{ $json.diretor_email }}",
+        "subject": "={{ $json.assunto }}",
+        "emailFormat": "text",
+        "text": "={{ $json.texto }}",
+        "options": {}
+      },
+      "credentials": {
+        "smtp": {
+          "id": "ZOHO_MAIL",
+          "name": "Zoho Mail"
+        }
+      },
+      "notes": "Zoho Mail via SMTP: smtp.zoho.com, porta 465, SSL. O remetente (PULSO_EMAIL_FROM) é a caixa autenticada.",
+      "notesInFlow": true
+    },
+    {
+      "id": "noop-w6",
+      "name": "Sem e-mail",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        300
+      ],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "Dia 1 às 8h": {
+      "main": [
+        [
+          {
+            "node": "Buscar no Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disparo manual": {
+      "main": [
+        [
+          {
+            "node": "Segredo do webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Segredo do webhook": {
+      "main": [
+        [
+          {
+            "node": "Buscar no Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Buscar no Supabase": {
+      "main": [
+        [
+          {
+            "node": "Montar e-mails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar e-mails": {
+      "main": [
+        [
+          {
+            "node": "Tem e-mail?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem e-mail?": {
+      "main": [
+        [
+          {
+            "node": "Enviar e-mail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sem e-mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

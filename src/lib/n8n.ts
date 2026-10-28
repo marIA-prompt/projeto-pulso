@@ -2,7 +2,7 @@
  * Webhooks n8n. Opcionais por definição: falha aqui NUNCA derruba a
  * operação principal — o convite é criado mesmo que o e-mail não saia.
  */
-type Hook = 'W1_CONVITE' | 'W2_LEMBRETE_PRESENCA' | 'W3_LEMBRETE_ATUALIZACAO' | 'W4_REPORT_EXECUTIVO';
+type Hook = 'W1_CONVITE' | 'W2_LEMBRETE_PRESENCA' | 'W3_LEMBRETE_ATUALIZACAO' | 'W4_REPORT_EXECUTIVO' | 'W6_RELATORIO_MENSAL';
 
 export async function notificar(hook: Hook, payload: unknown): Promise<boolean> {
   const url = process.env[`N8N_WEBHOOK_${hook}`];

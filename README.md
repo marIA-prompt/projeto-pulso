@@ -102,8 +102,11 @@ Opcionais por definição — falha de webhook nunca derruba a operação princi
 | **W2** | encontro criado (agendar lembrete de 24h) | `{ meetingId, title, scheduledAt }` |
 | **W3** | cron de quinta no n8n | consulta `v_projects_dashboard` onde `alerta_14_dias` |
 | **W4** | cron quinzenal no n8n | consulta `v_portfolio_kpis` + `v_attendance_kpis` |
+| **W6** | cron mensal no n8n, dia 1 às 8h (São Paulo) | `POST /rest/v1/rpc/relatorio_mensal_envio` com a service role. Sem `p_ano`/`p_mes`, fecha o mês anterior. Um e-mail por diretor, com criadas, atualizadas, métricas, ganhos e valor. O disparo manual do admin usa `N8N_WEBHOOK_W6_RELATORIO_MENSAL`. |
 
-W3 e W4 são puxados pelo n8n, não empurrados pela aplicação: o relatório precisa sair mesmo que ninguém abra o sistema naquela semana.
+W3, W4 e W6 são puxados pelo n8n, não empurrados pela aplicação: o relatório precisa sair mesmo que ninguém abra o sistema naquela semana. W5 continua reservado à sincronização com o Bitrix.
+
+O W6 está em `n8n/w6-relatorio-mensal.json` (importar no n8n e ativar). No dia 1, às 8h de São Paulo, ele faz `POST /rest/v1/rpc/relatorio_mensal_envio` com a service role e envia um e-mail por diretor. Sem `p_ano`/`p_mes`, a função fecha o mês anterior. Diretoria sem `diretor_email` não é enviada — o endereço se grava em `/relatorios` (admin). Jurídico e Compliance entram no relatório de RH. Variáveis no n8n: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PULSO_SITE_URL`, `PULSO_EMAIL_FROM`, `N8N_WEBHOOK_SECRET`. A URL de produção do webhook do fluxo vai em `N8N_WEBHOOK_W6_RELATORIO_MENSAL`. O nó de e-mail usa a credencial SMTP **Zoho Mail** (`smtp.zoho.com`, porta 465, SSL). `PULSO_EMAIL_FROM` é o endereço dessa caixa.
 
 ## Pendências reais
 

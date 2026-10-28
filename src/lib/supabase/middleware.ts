@@ -2,7 +2,8 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { hasRoleAtLeast } from '@/lib/types';
 
-const PUBLIC = ['/login', '/cadastro', '/convite', '/auth'];
+// /api/cron não tem sessão. O segredo é conferido na própria rota.
+const PUBLIC = ['/login', '/cadastro', '/convite', '/auth', '/api/cron'];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -37,7 +38,7 @@ export async function updateSession(request: NextRequest) {
 
   // Camada 1 da defesa em camadas (D4). A camada 2 é a checagem de papel
   // por página; a camada 3 é a RLS no Postgres.
-  if (user && (path.startsWith('/admin') || path.startsWith('/lei-do-bem') || path.startsWith('/rankings'))) {
+  if (user && (path.startsWith('/admin') || path.startsWith('/lei-do-bem') || path.startsWith('/rankings') || path.startsWith('/relatorios'))) {
     const { data: profile } = await supabase
       .from('profiles').select('role').eq('id', user.id).single();
     const papel = profile?.role;

@@ -12,7 +12,9 @@
     "test:nav": "npx tsx src/lib/nav.test.ts",
     "test:cadastro": "npx tsx src/lib/cadastro-iniciativa.test.ts",
     "test:projeto": "npx tsx src/lib/projeto-erro.test.ts",
-    "test:ranking": "npx tsx src/lib/ranking.test.ts"
+    "test:ranking": "npx tsx src/lib/ranking.test.ts",
+    "test:relatorio": "npx tsx src/lib/relatorio-mensal.test.ts",
+    "test:diretorias": "npx tsx src/lib/diretorias-catalogo.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
