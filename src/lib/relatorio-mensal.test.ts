@@ -461,6 +461,11 @@ caso('o fluxo n8n busca o Supabase e envia um e-mail por diretor', () => {
   assert.match(code, /Iniciativas atualizadas no mês/);
   assert.match(code, /Olá, /);
   assert.equal(wf.active, false);
+  const email = wf.nodes.find((n: { name: string }) => n.name === 'Enviar e-mail');
+  assert.equal(email.credentials.smtp.name, 'Zoho Mail');
+  const sticky = wf.nodes.find((n: { name: string }) => n.name === 'Como ligar');
+  assert.match(sticky.parameters.content, /smtp\.zoho\.com/);
+  assert.match(sticky.parameters.content, /465/);
 });
 
 caso('segredo do cron exige o mesmo tamanho e o mesmo conteúdo', () => {
