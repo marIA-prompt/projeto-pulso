@@ -343,6 +343,45 @@ caso('o texto declara a amostra de horas e de valor', () => {
   assert.match(rel.texto, /Métricas/);
 });
 
+caso('área de rh e área de tesouraria normalizam sem o "de"', () => {
+  assert.equal(normalizarDiretoria('Área de RH'), 'rh');
+  assert.equal(normalizarDiretoria('RH'), 'rh');
+  assert.equal(normalizarDiretoria('Área de Tesouraria e Captação'), 'tesouraria e captacao');
+  assert.equal(normalizarDiretoria('Área Tesouraria e Captação'), 'tesouraria e captacao');
+});
+
+caso('alias de recursos humanos cai em RH e o diretor entra no texto', () => {
+  const pacote = montarRelatorioMensal({
+    ano: 2026,
+    mes: 10,
+    agora: AGORA,
+    diretorias: [{
+      id: 'rh',
+      slug: 'recursos-humanos',
+      nome: 'Área de RH',
+      ordem: 140,
+      diretor_nome: 'Christian',
+      diretor_email: 'christian@senff.com.br',
+      aliases: ['Recursos Humanos', 'RH'],
+    }],
+    iniciativas: [
+      ini({
+        id: 'jur',
+        title: 'Parecer trabalhista',
+        diretoria_id: null,
+        directorate: 'Recursos Humanos',
+        area_name: 'Jurídico',
+        created_at: '2026-10-08T15:00:00.000Z',
+        last_activity_at: '2026-10-08T15:00:00.000Z',
+      }),
+    ],
+  });
+  const rel = pacote.relatorios.find((r) => r.slug === 'recursos-humanos')!;
+  assert.deepEqual(rel.criadas.map((i) => i.title), ['Parecer trabalhista']);
+  assert.equal(rel.diretor_nome, 'Christian');
+  assert.match(rel.texto, /Diretor: Christian/);
+});
+
 caso('a migration semeia as 14 coleções e não chama o fluxo de W5', () => {
   const sql = readFileSync(new URL('../../supabase/migrations/0017_relatorio_mensal.sql', import.meta.url), 'utf8');
   for (const nome of COLECOES) assert.ok(sql.includes(`'${nome}'`), nome);
@@ -376,6 +415,52 @@ caso('linha do banco coerente com IA em qualquer modalidade e área vinculada', 
   assert.equal(item.diretoria_id, 'cred');
   assert.equal(item.area_name, 'Crédito PF');
   assert.equal(item.owner_name, 'João');
+});
+
+caso('os diretores e o vínculo de RH e Seguros estão na migration do envio', () => {
+  const sql = readFileSync(new URL('../../supabase/migrations/0018_diretores_relatorio_mensal.sql', import.meta.url), 'utf8');
+  const pares = [
+    ['Adriele', 'vendas-varejo-expansao'],
+    ['Alexandro Lima', 'dados-infraestrutura'],
+    ['Bruno', 'operacoes-atendimento'],
+    ['Cristiano', 'consignado'],
+    ['Everton', 'tecnologia-informacao'],
+    ['Fernanda', 'pos-vendas-private-label'],
+    ['Jacqueline', 'controladoria'],
+    ['Genaro', 'credito-cobranca'],
+    ['Marcelino', 'comercial-pj'],
+    ['Marco Senff', 'adquirencia-marketplace'],
+    ['Mauricio Rodrigues', 'tesouraria-captacao'],
+    ['Pollyana', 'processos'],
+    ['Bruna', 'seguros'],
+    ['Christian', 'recursos-humanos'],
+  ];
+  for (const [diretor, slug] of pares) {
+    assert.ok(sql.includes(`'${diretor}'`), diretor);
+    assert.ok(sql.includes(`'${slug}'`), slug);
+  }
+  assert.ok(sql.includes("'Jurídico'"));
+  assert.ok(sql.includes("'Compliance'"));
+  assert.ok(sql.includes('Área de Seguros'));
+  assert.ok(sql.includes('Área de RH'));
+  assert.match(sql, /delete from public\.diretorias where slug = 'diretora-vendas-varejo-expansao'/);
+  assert.ok(sql.includes('relatorio_mensal_envio'));
+});
+
+caso('o fluxo n8n busca o Supabase e envia um e-mail por diretor', () => {
+  const wf = JSON.parse(readFileSync(new URL('../../n8n/w6-relatorio-mensal.json', import.meta.url), 'utf8'));
+  const tipos = wf.nodes.map((n: { type: string }) => n.type);
+  assert.ok(tipos.includes('n8n-nodes-base.scheduleTrigger'));
+  assert.ok(tipos.includes('n8n-nodes-base.httpRequest'));
+  assert.ok(tipos.includes('n8n-nodes-base.emailSend'));
+  const http = wf.nodes.find((n: { name: string }) => n.name === 'Buscar no Supabase');
+  assert.match(http.parameters.url, /relatorio_mensal_envio/);
+  assert.equal(wf.settings.timezone, 'America/Sao_Paulo');
+  const code = wf.nodes.find((n: { name: string }) => n.name === 'Montar e-mails').parameters.jsCode as string;
+  assert.match(code, /Iniciativas criadas no mês/);
+  assert.match(code, /Iniciativas atualizadas no mês/);
+  assert.match(code, /Olá, /);
+  assert.equal(wf.active, false);
 });
 
 caso('segredo do cron exige o mesmo tamanho e o mesmo conteúdo', () => {

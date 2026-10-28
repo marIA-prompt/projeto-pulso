@@ -88,6 +88,12 @@ function RelatorioDaDiretoria({ rel }: { rel: RelatorioDiretoria }) {
     <div className="space-y-8">
       <header>
         <h2 className="text-xl font-bold tracking-tight">{rel.nome}</h2>
+        {rel.slug !== 'sem-diretoria' && (
+          <p className="mt-1 text-sm text-g80">
+            {rel.diretor_nome ? `Diretor: ${rel.diretor_nome}` : 'Diretor não informado.'}
+            {rel.diretor_email ? ` · ${rel.diretor_email}` : ' · e-mail ainda não cadastrado'}
+          </p>
+        )}
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-g60">
           {plural(m.criadas_no_mes, 'iniciativa criada', 'iniciativas criadas')} e{' '}
           {plural(m.atualizadas_no_mes, 'atualizada', 'atualizadas')} neste mês.
@@ -176,8 +182,10 @@ const ENVIO: Record<string, { tom: 'ok' | 'aviso'; texto: string }> = {
   ok: { tom: 'ok', texto: 'Relatórios do mês enviados ao fluxo n8n (W6).' },
   'sem-webhook': {
     tom: 'aviso',
-    texto: 'O webhook W6 não está configurado. O relatório continua nesta tela e na rota de cron.',
+    texto: 'O webhook W6 não está configurado. Importe o fluxo n8n/w6-relatorio-mensal.json e grave a URL em N8N_WEBHOOK_W6_RELATORIO_MENSAL.',
   },
+  'email-ok': { tom: 'ok', texto: 'E-mail do diretor salvo. O envio mensal usa esse endereço.' },
+  'email-invalido': { tom: 'aviso', texto: 'E-mail do diretor inválido.' },
   invalido: { tom: 'aviso', texto: 'Mês inválido. Use o formato AAAA-MM.' },
   erro: { tom: 'aviso', texto: 'Não foi possível montar o relatório para envio.' },
 };
@@ -253,7 +261,7 @@ export function RelatorioView({
 
       {pacote.relatorios.length === 0 || !rel ? (
         <p className="card p-8 text-center text-sm text-g60">
-          Nenhuma diretoria cadastrada. Aplique a migration 0017_relatorio_mensal.
+          Nenhuma diretoria cadastrada. Aplique as migrations 0017 e 0018.
         </p>
       ) : (
         <div className="grid items-start gap-6 lg:grid-cols-[18rem_1fr]">

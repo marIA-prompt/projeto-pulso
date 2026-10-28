@@ -14,7 +14,15 @@ export type CargaRelatorio =
   | { ok: false; erro: string; detalhe?: string };
 
 type AreaRow = { id: string; name: string; diretoria_id: string | null };
-type DiretoriaRow = { id: string; slug: string; name: string; sort_order: number };
+type DiretoriaRow = {
+  id: string;
+  slug: string;
+  name: string;
+  sort_order: number;
+  diretor_nome: string | null;
+  diretor_email: string | null;
+  aliases: string[] | null;
+};
 type PerfilJoin = { full_name: string | null } | { full_name: string | null }[] | null;
 
 type ProjetoRow = {
@@ -70,7 +78,7 @@ export async function carregarRelatorioMensal(
   opts?: { agora?: Date; dashboardUrl?: string | null },
 ): Promise<CargaRelatorio> {
   const [dirs, areas, projetos] = await Promise.all([
-    supabase.from('diretorias').select('id, slug, name, sort_order').order('sort_order'),
+    supabase.from('diretorias').select('id, slug, name, sort_order, diretor_nome, diretor_email, aliases').order('sort_order'),
     supabase.from('areas').select('id, name, diretoria_id'),
     supabase
       .from('projects')
@@ -86,7 +94,7 @@ export async function carregarRelatorioMensal(
     return {
       ok: false,
       erro: faltaTabela
-        ? 'Não foi possível ler as diretorias. Confira se a migration 0017_relatorio_mensal está aplicada.'
+        ? 'Não foi possível ler as diretorias. Aplique as migrations 0017 e 0018.'
         : 'Não foi possível ler as diretorias.',
       detalhe: dirs.error.message,
     };
@@ -105,6 +113,9 @@ export async function carregarRelatorioMensal(
     slug: d.slug,
     nome: d.name,
     ordem: d.sort_order,
+    diretor_nome: d.diretor_nome,
+    diretor_email: d.diretor_email,
+    aliases: d.aliases ?? [],
   }));
   const iniciativas = ((projetos.data ?? []) as unknown as ProjetoRow[]).map((row) => (
     paraIniciativa(row, row.area_id ? porArea.get(row.area_id) : undefined)

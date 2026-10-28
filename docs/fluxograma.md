@@ -38,5 +38,6 @@ flowchart TD
     Y2 --> Z[Report Executivo Quinzenal — n8n W4]
     Z --> Z2[Diretoria: saúde do portfólio, destaques, decisões pendentes]
     Y2 --> RM[Relatório mensal por diretoria — n8n W6]
-    RM --> RM2[Criadas no mês · atualizadas no mês · métricas, ganhos e valor da área]
+    RM --> RM2[Supabase: criadas no mês · atualizadas no mês · métricas, ganhos e valor]
+    RM2 --> RM3[E-mail ao diretor da área]
 ```

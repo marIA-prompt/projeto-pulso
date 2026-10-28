@@ -5,7 +5,7 @@ import { ErroBox } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { carregarRelatorioMensal } from '@/lib/relatorio-mensal-dados';
 import { chaveMes, mesAtual, mesPedido } from '@/lib/relatorio-mensal';
-import { enviarRelatorioMensal } from './actions';
+import { enviarRelatorioMensal, salvarEmailDiretor } from './actions';
 import { RelatorioView } from './RelatorioView';
 
 export const metadata = { title: 'Relatório mensal — Pulso' };
@@ -56,6 +56,8 @@ export default async function RelatoriosPage({
     : (carga.pacote.relatorios[0]?.slug ?? '');
 
   const podeEnviar = perfil.role === 'administrador';
+  const rel = carga.pacote.relatorios.find((r) => r.slug === selecionada) ?? carga.pacote.relatorios[0];
+  const mesChave = chaveMes(pedido.ano, pedido.mes);
 
   return (
     <div className="space-y-6">
@@ -64,13 +66,34 @@ export default async function RelatoriosPage({
         selecionada={selecionada}
         envio={searchParams.envio}
       />
+      {podeEnviar && rel && rel.slug !== 'sem-diretoria' && (
+        <form action={salvarEmailDiretor} className="card flex flex-wrap items-end gap-3 p-4">
+          <div className="min-w-[16rem] flex-1">
+            <label className="label" htmlFor="email-diretor">
+              E-mail de {rel.diretor_nome ?? rel.nome}
+            </label>
+            <input
+              id="email-diretor"
+              name="email"
+              type="email"
+              className="field mt-1"
+              placeholder="diretor@senff.com.br"
+              defaultValue={rel.diretor_email ?? ''}
+            />
+          </div>
+          <input type="hidden" name="slug" value={rel.slug} />
+          <input type="hidden" name="mes" value={mesChave} />
+          <input type="hidden" name="diretoria" value={rel.slug} />
+          <Button type="submit" variant="ghost">Salvar e-mail</Button>
+        </form>
+      )}
       {podeEnviar && (
         <form action={enviarRelatorioMensal} className="card flex flex-wrap items-center justify-between gap-3 p-4">
           <p className="max-w-xl text-sm text-g60">
-            Dispara o mesmo pacote que o cron do dia 1 entrega ao n8n: um relatório
-            por diretoria, com métricas, ganhos e valor.
+            Dispara o fluxo n8n deste mês. O n8n relê o Supabase e manda um e-mail
+            para cada diretor com endereço cadastrado.
           </p>
-          <input type="hidden" name="mes" value={chaveMes(pedido.ano, pedido.mes)} />
+          <input type="hidden" name="mes" value={mesChave} />
           <input type="hidden" name="diretoria" value={selecionada} />
           <Button type="submit">Enviar relatórios do mês</Button>
         </form>

@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { z } from 'zod';
 import { requireAdmin } from '@/lib/auth';
 import { notificar } from '@/lib/n8n';
 import { createClient } from '@/lib/supabase/server';
@@ -30,4 +31,22 @@ export async function enviarRelatorioMensal(form: FormData) {
 
   const enviado = await notificar('W6_RELATORIO_MENSAL', carga.pacote);
   redirect(destino(chaveMes(pedido.ano, pedido.mes), diretoria, enviado ? 'ok' : 'sem-webhook'));
+}
+
+const EmailDiretor = z.string().email('Informe um e-mail válido.');
+
+export async function salvarEmailDiretor(form: FormData) {
+  await requireAdmin();
+  const slug = String(form.get('slug') ?? '');
+  const mes = String(form.get('mes') ?? '');
+  const bruto = String(form.get('email') ?? '').trim().toLowerCase();
+  if (!slug || slug === 'sem-diretoria') redirect(destino(mes, slug, 'erro'));
+  if (bruto && !EmailDiretor.safeParse(bruto).success) redirect(destino(mes, slug, 'email-invalido'));
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('diretorias')
+    .update({ diretor_email: bruto || null })
+    .eq('slug', slug);
+  redirect(destino(mes, slug, error ? 'erro' : 'email-ok'));
 }

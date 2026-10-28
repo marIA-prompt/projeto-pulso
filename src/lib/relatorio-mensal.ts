@@ -31,6 +31,10 @@ export type DiretoriaCatalogo = {
   slug: string;
   nome: string;
   ordem: number;
+  diretor_nome?: string | null;
+  diretor_email?: string | null;
+  /** Nomes extras que também caem nesta coleção (ex.: "Recursos Humanos" → RH). */
+  aliases?: string[];
 };
 
 export type IniciativaRelatorio = {
@@ -104,6 +108,8 @@ export type RelatorioDiretoria = {
   slug: string;
   nome: string;
   ordem: number;
+  diretor_nome: string | null;
+  diretor_email: string | null;
   metricas: MetricasArea;
   ganhos: GanhosArea;
   valor: ValorArea;
@@ -204,7 +210,8 @@ export function normalizarDiretoria(nome: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
-    .replace(/^area\s+/, '');
+    .replace(/^area\s+/, '')
+    .replace(/^de\s+/, '');
 }
 
 export function numeroOuNulo(v: unknown): number | null {
@@ -301,6 +308,7 @@ export function textoRelatorio(
 
   const linhas = [
     `Relatório mensal — ${rel.nome}`,
+    ...(rel.diretor_nome ? [`Diretor: ${rel.diretor_nome}`] : []),
     `Período: ${ctx.rotulo}`,
     '',
     'Métricas',
@@ -361,7 +369,14 @@ export function montarRelatorioMensal(input: {
 
   const catalogo = [...input.diretorias].sort((a, b) => a.ordem - b.ordem || a.nome.localeCompare(b.nome, 'pt-BR'));
   const porId = new Map(catalogo.map((d) => [d.id, d]));
-  const porChave = new Map(catalogo.map((d) => [normalizarDiretoria(d.nome), d]));
+  const porChave = new Map<string, DiretoriaCatalogo>();
+  for (const d of catalogo) porChave.set(normalizarDiretoria(d.nome), d);
+  for (const d of catalogo) {
+    for (const alias of d.aliases ?? []) {
+      const chave = normalizarDiretoria(alias);
+      if (chave && !porChave.has(chave)) porChave.set(chave, d);
+    }
+  }
 
   const grupos = new Map<string, IniciativaRelatorio[]>();
   for (const d of catalogo) grupos.set(d.id, []);
@@ -422,6 +437,8 @@ export function montarRelatorioMensal(input: {
       slug: dir.slug,
       nome: dir.nome,
       ordem: dir.ordem,
+      diretor_nome: dir.diretor_nome ?? null,
+      diretor_email: dir.diretor_email ?? null,
       metricas,
       ganhos,
       valor,
