@@ -9,6 +9,7 @@ import { nf, nf1, moeda, dataCurta, diaISO } from '@/lib/format';
 import { Donut, Barras, Ecg } from './charts';
 import { Button } from '@/components/ui/Button';
 import { FiltroPeriodo } from './FiltroPeriodo';
+import { diretoriaExibida } from '@/lib/diretorias';
 
 const POR_PAGINA = 20;
 
@@ -116,6 +117,10 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [f, setF] = useState<Filtros>(() => lerFiltros(new URLSearchParams(searchParams.toString())));
+  const portfolio = useMemo(
+    () => rows.map((r) => ({ ...r, directorate: diretoriaExibida(r.area_name, r.directorate) })),
+    [rows],
+  );
 
   // Persistência do estado dos filtros na URL: o link compartilhado leva
   // a outra pessoa exatamente à mesma visão.
@@ -152,8 +157,8 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
 
   const filtradas = useMemo(() => {
     const q = f.q.trim().toLowerCase();
-    return rows.filter((r) => {
-      if (q && !`${r.title} ${r.area_name ?? ''} ${r.theme ?? ''} ${r.owner_name ?? ''}`.toLowerCase().includes(q)) return false;
+    return portfolio.filter((r) => {
+      if (q && !`${r.title} ${r.area_name ?? ''} ${r.directorate ?? ''} ${r.theme ?? ''} ${r.owner_name ?? ''}`.toLowerCase().includes(q)) return false;
       if (f.tema && r.theme !== f.tema) return false;
       if (f.area && r.area_name !== f.area) return false;
       if (f.dir && r.directorate !== f.dir) return false;
@@ -165,7 +170,7 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
       if (!noPeriodo(r.created_at, f.criada_de, f.criada_ate)) return false;
       return true;
     });
-  }, [rows, f]);
+  }, [portfolio, f]);
 
   // Padrão: atualização mais recente. Cabeçalhos de Horas, Impacto e Sinal
   // trocam a ordem; empate continua pela atualização.
@@ -252,13 +257,13 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
     URL.revokeObjectURL(url);
   }, [ordenadas, f.thOk, f.thCrit]);
 
-  const temas = unicos(rows, 'theme');
-  const areas = unicos(rows, 'area_name');
-  const dirs = unicos(rows, 'directorate');
-  const potenciais = unicos(rows, 'legacy_priority');
+  const temas = unicos(portfolio, 'theme');
+  const areas = unicos(portfolio, 'area_name');
+  const dirs = unicos(portfolio, 'directorate');
+  const potenciais = unicos(portfolio, 'legacy_priority');
   const proprietarios = Array.from(
     new Map(
-      rows
+      portfolio
         .filter((r) => r.owner_id)
         .map((r) => [r.owner_id as string, r.owner_name || 'Sem nome']),
     ).entries(),
@@ -281,7 +286,7 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
             <label className="label" htmlFor="fq">Buscar</label>
             <input
               id="fq" type="search" className="field mt-1" value={f.q}
-              placeholder="Nome da iniciativa, área, tema ou proprietário"
+              placeholder="Nome da iniciativa, área, diretoria, tema ou proprietário"
               onChange={(e) => set('q', e.target.value)}
             />
           </div>
@@ -327,7 +332,7 @@ export function Acompanhamento({ rows }: { rows: DashboardRow[] }) {
 
         <p aria-live="polite" className="mt-3 text-sm text-g60">
           Mostrando <strong className="num text-g90">{nf.format(filtradas.length)}</strong> de{' '}
-          <span className="num">{nf.format(rows.length)}</span> iniciativas.
+          <span className="num">{nf.format(portfolio.length)}</span> iniciativas.
         </p>
       </section>
 

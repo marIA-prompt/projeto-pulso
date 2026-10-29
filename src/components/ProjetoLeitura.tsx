@@ -1,4 +1,5 @@
 import { STAGE_LABEL, type Stage } from '@/lib/types';
+import { diretoriaExibida } from '@/lib/diretorias';
 import { diaCurto, nf1 } from '@/lib/format';
 import { GRUPO1_CAMPOS_ESCOPO } from '@/lib/lei-do-bem';
 
@@ -56,7 +57,7 @@ export function ProjetoLeitura({
           <Linha rotulo="Estágio no pipeline" valor={STAGE_LABEL[projeto.stage]} />
           <Linha rotulo="Área" valor={areaNome} />
           <Linha rotulo="Criado / proprietário" valor={ownerNome} />
-          <Linha rotulo="Diretoria" valor={projeto.directorate} />
+          <Linha rotulo="Diretoria" valor={diretoriaExibida(areaNome, projeto.directorate) ?? projeto.directorate} />
           <Linha
             rotulo="Horas economizadas por mês"
             valor={projeto.hours_saved_month == null ? null : `${nf1.format(projeto.hours_saved_month)} h`}
