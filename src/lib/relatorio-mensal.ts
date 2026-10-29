@@ -33,6 +33,8 @@ export type DiretoriaCatalogo = {
   ordem: number;
   diretor_nome?: string | null;
   diretor_email?: string | null;
+  /** Cópias (CC) do e-mail mensal. Vazio = ninguém em cópia. */
+  emails_copia?: string[];
   /** Nomes extras que também caem nesta coleção (ex.: "Recursos Humanos" → RH). */
   aliases?: string[];
 };
@@ -110,6 +112,7 @@ export type RelatorioDiretoria = {
   ordem: number;
   diretor_nome: string | null;
   diretor_email: string | null;
+  emails_copia: string[];
   metricas: MetricasArea;
   ganhos: GanhosArea;
   valor: ValorArea;
@@ -439,6 +442,7 @@ export function montarRelatorioMensal(input: {
       ordem: dir.ordem,
       diretor_nome: dir.diretor_nome ?? null,
       diretor_email: dir.diretor_email ?? null,
+      emails_copia: (dir.emails_copia ?? []).filter((email) => email.trim()),
       metricas,
       ganhos,
       valor,

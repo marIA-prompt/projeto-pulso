@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { carregarRelatorioMensal } from '@/lib/relatorio-mensal-dados';
 import { chaveMes, mesAtual, mesPedido } from '@/lib/relatorio-mensal';
 import { enviarRelatorioMensal, salvarEmailDiretor } from './actions';
+import { PreviaEmail } from './PreviaEmail';
 import { RelatorioView } from './RelatorioView';
 
 export const metadata = { title: 'Relatório mensal — Pulso' };
@@ -66,8 +67,8 @@ export default async function RelatoriosPage({
         envio={searchParams.envio}
       />
       {rel && rel.slug !== 'sem-diretoria' && (
-        <form action={salvarEmailDiretor} className="card flex flex-col gap-3 p-4 sm:flex-row sm:flex-wrap sm:items-end">
-          <div className="min-w-0 w-full sm:min-w-[16rem] sm:flex-1">
+        <form action={salvarEmailDiretor} className="card space-y-4 p-4">
+          <div className="min-w-0">
             <label className="label" htmlFor="email-diretor">
               E-mail de {rel.diretor_nome ?? rel.nome}
             </label>
@@ -80,23 +81,45 @@ export default async function RelatoriosPage({
               defaultValue={rel.diretor_email ?? ''}
             />
           </div>
+          <div className="min-w-0">
+            <label className="label" htmlFor="emails-copia">
+              E-mails em cópia (opcional)
+            </label>
+            <textarea
+              id="emails-copia"
+              name="copia"
+              rows={3}
+              className="field mt-1"
+              placeholder="pessoa@senff.com.br, outra@senff.com.br"
+              defaultValue={rel.emails_copia.join(', ')}
+            />
+            <p className="mt-1 text-xs leading-relaxed text-g50">
+              Separe por vírgula. Estas pessoas recebem o mesmo relatório, no envio manual e no dia 1.
+            </p>
+          </div>
           <input type="hidden" name="slug" value={rel.slug} />
           <input type="hidden" name="mes" value={mesChave} />
           <input type="hidden" name="diretoria" value={rel.slug} />
-          <Button type="submit" variant="ghost">Salvar e-mail</Button>
+          <Button type="submit" variant="ghost">Salvar e-mails</Button>
         </form>
       )}
-      {(
-        <form action={enviarRelatorioMensal} className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="min-w-0 text-sm leading-relaxed text-g60">
-            Dispara o fluxo n8n deste mês. O n8n relê o Supabase e manda um e-mail
-            para cada diretor com endereço cadastrado.
-          </p>
-          <input type="hidden" name="mes" value={mesChave} />
-          <input type="hidden" name="diretoria" value={selecionada} />
-          <Button type="submit">Enviar relatórios do mês</Button>
-        </form>
+      {rel && (
+        <PreviaEmail
+          rel={rel}
+          rotulo={carga.pacote.rotulo}
+          dashboardUrl={carga.pacote.dashboard_url}
+        />
       )}
+      <form action={enviarRelatorioMensal} className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="min-w-0 text-sm leading-relaxed text-g60">
+          Dispara o fluxo n8n deste mês. O n8n relê o Supabase e manda um e-mail
+          para cada diretor com endereço, com as cópias salvas na coleção.
+          A prévia acima é a coleção selecionada.
+        </p>
+        <input type="hidden" name="mes" value={mesChave} />
+        <input type="hidden" name="diretoria" value={selecionada} />
+        <Button type="submit">Enviar relatórios do mês</Button>
+      </form>
     </div>
   );
 }

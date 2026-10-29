@@ -135,6 +135,7 @@ function RelatorioDaDiretoria({ rel }: { rel: RelatorioDiretoria }) {
           <p className="mt-1 text-sm text-g80">
             {rel.diretor_nome ? `Diretor: ${rel.diretor_nome}` : 'Diretor não informado.'}
             {rel.diretor_email ? ` · ${rel.diretor_email}` : ' · e-mail ainda não cadastrado'}
+            {rel.emails_copia.length > 0 ? ` · cópia: ${rel.emails_copia.join(', ')}` : ''}
           </p>
         )}
         <p className="mt-2 text-sm leading-relaxed text-g60">
@@ -221,8 +222,8 @@ const ENVIO: Record<string, { tom: 'ok' | 'aviso'; texto: string }> = {
     tom: 'aviso',
     texto: 'O webhook W6 não está configurado. Importe o fluxo n8n/w6-relatorio-mensal.json e grave a URL em N8N_WEBHOOK_W6_RELATORIO_MENSAL.',
   },
-  'email-ok': { tom: 'ok', texto: 'E-mail do diretor salvo. O envio mensal usa esse endereço.' },
-  'email-invalido': { tom: 'aviso', texto: 'E-mail do diretor inválido.' },
+  'email-ok': { tom: 'ok', texto: 'E-mails salvos. O envio mensal usa o endereço do diretor e as cópias.' },
+  'email-invalido': { tom: 'aviso', texto: 'Algum e-mail está inválido. Use nome@dominio e separe as cópias por vírgula.' },
   invalido: { tom: 'aviso', texto: 'Mês inválido. Use o formato AAAA-MM.' },
   erro: { tom: 'aviso', texto: 'Não foi possível montar o relatório para envio.' },
 };
@@ -298,7 +299,7 @@ export function RelatorioView({
 
       {pacote.relatorios.length === 0 || !rel ? (
         <p className="card p-8 text-center text-sm text-g60">
-          Nenhuma diretoria cadastrada. Aplique as migrations 0017, 0018 e 0019.
+          Nenhuma diretoria cadastrada. Aplique as migrations 0017, 0018, 0019 e 0020.
         </p>
       ) : (
         <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">

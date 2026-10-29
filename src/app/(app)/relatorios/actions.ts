@@ -6,6 +6,7 @@ import { requireAdmin } from '@/lib/auth';
 import { notificar } from '@/lib/n8n';
 import { createClient } from '@/lib/supabase/server';
 import { carregarRelatorioMensal } from '@/lib/relatorio-mensal-dados';
+import { copiaVisivel, separarEmailsCopia } from '@/lib/emails-copia';
 import { chaveMes, parseMes } from '@/lib/relatorio-mensal';
 
 function destino(mes: string, diretoria: string, envio: string) {
@@ -40,13 +41,18 @@ export async function salvarEmailDiretor(form: FormData) {
   const slug = String(form.get('slug') ?? '');
   const mes = String(form.get('mes') ?? '');
   const bruto = String(form.get('email') ?? '').trim().toLowerCase();
+  const copias = separarEmailsCopia(String(form.get('copia') ?? ''));
   if (!slug || slug === 'sem-diretoria') redirect(destino(mes, slug, 'erro'));
   if (bruto && !EmailDiretor.safeParse(bruto).success) redirect(destino(mes, slug, 'email-invalido'));
+  if (!copias.ok) redirect(destino(mes, slug, 'email-invalido'));
 
   const supabase = createClient();
   const { error } = await supabase
     .from('diretorias')
-    .update({ diretor_email: bruto || null })
+    .update({
+      diretor_email: bruto || null,
+      emails_copia: copiaVisivel(copias.emails, bruto || null),
+    })
     .eq('slug', slug);
   redirect(destino(mes, slug, error ? 'erro' : 'email-ok'));
 }

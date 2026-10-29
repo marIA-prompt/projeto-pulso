@@ -21,6 +21,7 @@ type DiretoriaRow = {
   sort_order: number;
   diretor_nome: string | null;
   diretor_email: string | null;
+  emails_copia: string[] | null;
   aliases: string[] | null;
 };
 type PerfilJoin = { full_name: string | null } | { full_name: string | null }[] | null;
@@ -78,7 +79,7 @@ export async function carregarRelatorioMensal(
   opts?: { agora?: Date; dashboardUrl?: string | null },
 ): Promise<CargaRelatorio> {
   const [dirs, areas, projetos] = await Promise.all([
-    supabase.from('diretorias').select('id, slug, name, sort_order, diretor_nome, diretor_email, aliases').order('sort_order'),
+    supabase.from('diretorias').select('id, slug, name, sort_order, diretor_nome, diretor_email, emails_copia, aliases').order('sort_order'),
     supabase.from('areas').select('id, name, diretoria_id'),
     supabase
       .from('projects')
@@ -88,14 +89,17 @@ export async function carregarRelatorioMensal(
 
   if (dirs.error) {
     const bruto = dirs.error.message.toLowerCase();
+    const faltaCopia = bruto.includes('emails_copia');
     const faltaTabela = bruto.includes('does not exist')
       || bruto.includes('schema cache')
       || bruto.includes('could not find the table');
     return {
       ok: false,
-      erro: faltaTabela
-        ? 'Não foi possível ler as diretorias. Aplique as migrations 0017 e 0018.'
-        : 'Não foi possível ler as diretorias.',
+      erro: faltaCopia
+        ? 'Não foi possível ler as cópias. Aplique a migration 0020.'
+        : faltaTabela
+          ? 'Não foi possível ler as diretorias. Aplique as migrations 0017 e 0018.'
+          : 'Não foi possível ler as diretorias.',
       detalhe: dirs.error.message,
     };
   }
@@ -115,6 +119,7 @@ export async function carregarRelatorioMensal(
     ordem: d.sort_order,
     diretor_nome: d.diretor_nome,
     diretor_email: d.diretor_email,
+    emails_copia: d.emails_copia ?? [],
     aliases: d.aliases ?? [],
   }));
   const iniciativas = ((projetos.data ?? []) as unknown as ProjetoRow[]).map((row) => (
