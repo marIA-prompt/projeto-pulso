@@ -58,12 +58,10 @@ function estagio(stage: string) {
 }
 
 function kpi(valor: string, rotulo: string, nota?: string) {
-  const detalhe = nota
-    ? `<div style="margin-top:6px;font-size:12px;line-height:1.45;color:#8A9199;">${esc(nota)}</div>`
-    : '';
-  return `<td width="50%" valign="top" style="padding:6px;">`
-    + `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FFFFFF;border:1px solid #DADFE5;border-radius:14px;">`
-    + `<tr><td style="padding:16px 16px 14px;">`
+  const detalhe = `<div style="margin-top:6px;min-height:4.4em;font-size:12px;line-height:1.45;color:#8A9199;">${nota ? esc(nota) : '&nbsp;'}</div>`;
+  return `<td width="50%" valign="top" style="width:50%;height:100%;padding:6px;">`
+    + `<table role="presentation" width="100%" height="100%" cellpadding="0" cellspacing="0" style="width:100%;height:100%;background:#FFFFFF;border:1px solid #DADFE5;border-radius:14px;">`
+    + `<tr><td valign="top" height="100%" style="height:100%;padding:16px 16px 14px;">`
     + `<div style="font-family:'IBM Plex Mono',Consolas,monospace;font-size:22px;line-height:1;font-weight:600;color:#0F2467;">${esc(valor)}</div>`
     + `<div style="margin-top:8px;font-size:14px;line-height:1.35;font-weight:500;color:#4C5156;">${esc(rotulo)}</div>`
     + detalhe
@@ -74,10 +72,10 @@ function grade(itens: Array<[string, string, string?]>) {
   const linhas: string[] = [];
   for (let i = 0; i < itens.length; i += 2) {
     const par = itens.slice(i, i + 2).map((item) => kpi(item[0], item[1], item[2])).join('');
-    const completa = itens[i + 1] ? par : `${par}<td width="50%" style="padding:6px;"></td>`;
+    const completa = itens[i + 1] ? par : `${par}<td width="50%" style="width:50%;padding:6px;"></td>`;
     linhas.push(`<tr>${completa}</tr>`);
   }
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 -6px 8px;">${linhas.join('')}</table>`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;margin:0 -6px 8px;table-layout:fixed;">${linhas.join('')}</table>`;
 }
 
 function secao(titulo: string) {

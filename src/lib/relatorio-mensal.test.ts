@@ -471,6 +471,8 @@ caso('o fluxo n8n busca o Supabase e envia um e-mail por diretor', () => {
   assert.equal(email.parameters.options.ccEmail, '={{ $json.copia }}');
   assert.match(code, /function listaCopia/);
   assert.match(code, /emails_copia/);
+  assert.match(code, /table-layout:fixed/);
+  assert.match(code, /min-height:4\.4em/);
   const sticky = wf.nodes.find((n: { name: string }) => n.name === 'Como ligar');
   assert.match(sticky.parameters.content, /emails_copia/);
   assert.match(sticky.parameters.content, /smtp\.zoho\.com/);
@@ -571,6 +573,9 @@ caso('a prévia do e-mail traz o texto corrido, a tabela e o assunto', () => {
   assert.match(html, /Iniciativas criadas no mês/);
   assert.match(html, /Fechamento &lt;mensal&gt;/);
   assert.match(html, /https:\/\/pulso\.exemplo\/dashboard/);
+  assert.match(html, /table-layout:fixed/);
+  assert.match(html, /height:100%/);
+  assert.match(html, /min-height:4\.4em/);
 });
 
 caso('segredo do cron exige o mesmo tamanho e o mesmo conteúdo', () => {
