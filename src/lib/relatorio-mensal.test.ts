@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { copiaVisivel, separarEmailsCopia } from './emails-copia';
+import { assuntoEmail, htmlEmailRelatorio } from './relatorio-email-html';
 import { paraIniciativa } from './relatorio-mensal-dados';
 import {
   calendarioSP,
@@ -380,6 +382,7 @@ caso('alias de recursos humanos cai em RH e o diretor entra no texto', () => {
   assert.deepEqual(rel.criadas.map((i) => i.title), ['Parecer trabalhista']);
   assert.equal(rel.diretor_nome, 'Christian');
   assert.match(rel.texto, /Diretor: Christian/);
+  assert.deepEqual(rel.emails_copia, []);
 });
 
 caso('a migration semeia as 14 coleções e não chama o fluxo de W5', () => {
@@ -465,7 +468,11 @@ caso('o fluxo n8n busca o Supabase e envia um e-mail por diretor', () => {
   assert.equal(email.credentials.smtp.name, 'Zoho Mail');
   assert.equal(email.parameters.emailFormat, 'html');
   assert.match(email.parameters.html, /\$json\.html/);
+  assert.equal(email.parameters.options.ccEmail, '={{ $json.copia }}');
+  assert.match(code, /function listaCopia/);
+  assert.match(code, /emails_copia/);
   const sticky = wf.nodes.find((n: { name: string }) => n.name === 'Como ligar');
+  assert.match(sticky.parameters.content, /emails_copia/);
   assert.match(sticky.parameters.content, /smtp\.zoho\.com/);
   assert.match(sticky.parameters.content, /465/);
   assert.match(code, /<table/);
@@ -501,6 +508,69 @@ caso('a migration 0019 corrige as áreas e grava o e-mail de cada diretor', () =
   assert.ok(sql.includes('p.pereira@senff.com.br'));
   assert.ok(sql.includes('bruno.capobianco@senff.com.br'));
   assert.equal(sql.includes('senff.com.brr'), false);
+});
+
+caso('a migration 0020 devolve a cópia no pacote do n8n', () => {
+  const sql = readFileSync(new URL('../../supabase/migrations/0020_emails_copia_relatorio.sql', import.meta.url), 'utf8');
+  assert.match(sql, /emails_copia text\[\] not null default '\{\}'/);
+  assert.match(sql, /grant update \(emails_copia\) on public\.diretorias to authenticated/);
+  assert.ok(sql.includes("'emails_copia'"));
+  assert.ok(sql.includes("'copia'"));
+  assert.match(sql, /array_to_string\(d\.emails_copia, ', '\)/);
+  assert.match(sql, /group by d\.id, d\.slug, d\.name, d\.sort_order, d\.diretor_nome, d\.diretor_email, d\.emails_copia/);
+});
+
+caso('cópias aceitam lista separada e tiram o e-mail do diretor', () => {
+  const ok = separarEmailsCopia(' Ana@Senff.com.br, ana@senff.com.br\njuridico@senff.com.br; ');
+  assert.equal(ok.ok, true);
+  if (!ok.ok) return;
+  assert.deepEqual(ok.emails, ['ana@senff.com.br', 'juridico@senff.com.br']);
+  assert.deepEqual(copiaVisivel(ok.emails, 'ANA@senff.com.br'), ['juridico@senff.com.br']);
+  assert.equal(separarEmailsCopia('sem-arroba').ok, false);
+  assert.equal(separarEmailsCopia('').ok, true);
+});
+
+caso('a prévia do e-mail traz o texto corrido, a tabela e o assunto', () => {
+  const pacote = montarRelatorioMensal({
+    ano: 2026,
+    mes: 10,
+    agora: AGORA,
+    dashboardUrl: 'https://pulso.exemplo/dashboard',
+    diretorias: [{
+      id: 'ctrl',
+      slug: 'controladoria',
+      nome: 'Área Controladoria',
+      ordem: 70,
+      diretor_nome: 'Jacqueline',
+      diretor_email: 'j.pereira@senff.com.br',
+      emails_copia: ['j.pereira@senff.com.br', 'financeiro@senff.com.br'],
+    }],
+    iniciativas: [
+      ini({
+        id: 'c1',
+        title: 'Fechamento <mensal>',
+        diretoria_id: 'ctrl',
+        area_name: 'Controladoria',
+        owner_name: 'Ana',
+        stage: 'concluido',
+        hours_saved_month: 4,
+        cost_saved_month: 800,
+        created_at: '2026-10-04T15:00:00.000Z',
+        last_activity_at: '2026-10-04T15:00:00.000Z',
+      }),
+    ],
+  });
+  const rel = pacote.relatorios.find((r) => r.slug === 'controladoria')!;
+  assert.deepEqual(rel.emails_copia, ['j.pereira@senff.com.br', 'financeiro@senff.com.br']);
+  assert.deepEqual(copiaVisivel(rel.emails_copia, rel.diretor_email), ['financeiro@senff.com.br']);
+  assert.equal(assuntoEmail(rel.nome, pacote.rotulo), 'Pulso — Área Controladoria — outubro de 2026');
+  const html = htmlEmailRelatorio(rel, { rotulo: pacote.rotulo, dashboardUrl: pacote.dashboard_url });
+  assert.match(html, /Olá, Jacqueline/);
+  assert.match(html, /A carga legada não entra como criação\./);
+  assert.match(html, /<table/);
+  assert.match(html, /Iniciativas criadas no mês/);
+  assert.match(html, /Fechamento &lt;mensal&gt;/);
+  assert.match(html, /https:\/\/pulso\.exemplo\/dashboard/);
 });
 
 caso('segredo do cron exige o mesmo tamanho e o mesmo conteúdo', () => {
