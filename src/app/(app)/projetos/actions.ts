@@ -13,6 +13,7 @@ import {
   mensagemErroSalvarProjeto,
 } from '@/lib/projeto-erro';
 import { diretoriaParaGravar } from '@/lib/diretorias';
+import { mesParaData } from '@/lib/datas-iniciativa';
 
 const Projeto = z.object({
   title: z.string().min(3, 'O título precisa de pelo menos 3 caracteres.'),
@@ -28,6 +29,7 @@ const Projeto = z.object({
   uses_outros: z.coerce.boolean(),
   hours_saved_month: z.coerce.number().min(0).nullable().catch(null),
   dev_hours: z.coerce.number().min(0).nullable().catch(null),
+  start_date: z.string().optional(),
   target_date: z.string().optional(),
   links: z.string().optional(),
 });
@@ -54,6 +56,7 @@ function ler(form: FormData) {
     uses_outros: form.get('uses_outros') === 'on',
     hours_saved_month: vazio(form.get('hours_saved_month')),
     dev_hours: vazio(form.get('dev_hours')),
+    start_date: form.get('start_date') ?? '',
     target_date: form.get('target_date') ?? '',
     links: form.get('links') ?? '',
   });
@@ -158,6 +161,7 @@ export async function criarProjeto(_prev: EstadoProjeto, form: FormData): Promis
     ...parsed.data,
     directorate: diretoria.directorate,
     uses_ai: parsed.data.uses_ai_tradicional || parsed.data.uses_ai_generativa,
+    start_date: mesParaData(parsed.data.start_date),
     target_date: parsed.data.target_date || null,
     owner_id: parsed.data.owner_id ?? perfil.id,
   }).select('id').single();
@@ -191,6 +195,7 @@ export async function atualizarProjeto(
       ...parsed.data,
       directorate: diretoria.directorate,
       uses_ai: parsed.data.uses_ai_tradicional || parsed.data.uses_ai_generativa,
+      start_date: mesParaData(parsed.data.start_date),
       target_date: parsed.data.target_date || null,
     }, { count: 'exact' })
     .eq('id', id);
