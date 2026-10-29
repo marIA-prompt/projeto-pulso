@@ -1,5 +1,7 @@
 import { STAGE_LABEL, type Stage } from '@/lib/types';
+import { diretoriaExibida } from '@/lib/diretorias';
 import { diaCurto, nf1 } from '@/lib/format';
+import { rotuloMesInicio } from '@/lib/datas-iniciativa';
 import { GRUPO1_CAMPOS_ESCOPO } from '@/lib/lei-do-bem';
 
 type Projeto = {
@@ -10,6 +12,7 @@ type Projeto = {
   directorate?: string | null;
   hours_saved_month?: number | null;
   dev_hours?: number | null;
+  start_date?: string | null;
   target_date?: string | null;
   links?: string | null;
   uses_ai_tradicional?: boolean | null;
@@ -56,7 +59,7 @@ export function ProjetoLeitura({
           <Linha rotulo="Estágio no pipeline" valor={STAGE_LABEL[projeto.stage]} />
           <Linha rotulo="Área" valor={areaNome} />
           <Linha rotulo="Criado / proprietário" valor={ownerNome} />
-          <Linha rotulo="Diretoria" valor={projeto.directorate} />
+          <Linha rotulo="Diretoria" valor={diretoriaExibida(areaNome, projeto.directorate) ?? projeto.directorate} />
           <Linha
             rotulo="Horas economizadas por mês"
             valor={projeto.hours_saved_month == null ? null : `${nf1.format(projeto.hours_saved_month)} h`}
@@ -65,7 +68,8 @@ export function ProjetoLeitura({
             rotulo="Estimativa de tempo do desenvolvimento"
             valor={projeto.dev_hours == null ? null : `${nf1.format(projeto.dev_hours)} h`}
           />
-          <Linha rotulo="Data alvo" valor={projeto.target_date ? diaCurto(projeto.target_date) : null} />
+          <Linha rotulo="Mês do início do projeto" valor={rotuloMesInicio(projeto.start_date)} />
+          <Linha rotulo="Data de conclusão (prevista)" valor={projeto.target_date ? diaCurto(projeto.target_date) : null} />
           <Linha rotulo="Ferramentas" valor={ferramentas || null} />
           <Linha rotulo="Links" valor={projeto.links} />
         </dl>

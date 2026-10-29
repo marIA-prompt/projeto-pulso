@@ -10,6 +10,8 @@ import { ErroBox } from '@/components/ui/Card';
 import { clsx } from '@/lib/clsx';
 import type { EstadoProjeto } from '@/app/(app)/projetos/actions';
 import { opcoesDiretoria } from '@/lib/diretorias-catalogo';
+import { diretoriaDaArea } from '@/lib/diretorias';
+import { dataParaMes } from '@/lib/datas-iniciativa';
 import {
   etapaAnteriorCadastro,
   etapasCadastroIniciativa,
@@ -72,6 +74,7 @@ export function ProjetoForm({
   leiDoBem?: Valores | null;
 }) {
   const [estado, formAction] = useFormState(action, {} as EstadoProjeto);
+  const [areaId, setAreaId] = useState(() => vStr(valores, 'area_id'));
   const jaOptou = !!leiDoBem;
   const [opta, setOpta] = useState<OptaLeiDoBem>(jaOptou ? 'sim' : '');
   const [etapa, setEtapa] = useState<EtapaCadastro>('dados');
@@ -107,7 +110,13 @@ export function ProjetoForm({
     vBool(valores, 'uses_ai') && !vBool(valores, 'uses_ai_generativa')
   );
   const diretoriaAtual = vStr(valores, 'directorate');
-  const opcoesDeDiretoria = opcoesDiretoria(diretorias, diretoriaAtual);
+  const [diretoriaManual, setDiretoriaManual] = useState(
+    () => diretoriaDaArea(areas.find((a) => a.id === vStr(valores, 'area_id'))?.name) ?? diretoriaAtual,
+  );
+  const nomeArea = areas.find((a) => a.id === areaId)?.name ?? null;
+  const diretoriaDaAreaAtual = diretoriaDaArea(nomeArea);
+  const valorDiretoria = diretoriaDaAreaAtual ?? diretoriaManual;
+  const opcoesDeDiretoria = opcoesDiretoria(diretorias, valorDiretoria);
 
   function irPara(id: EtapaCadastro) {
     const destino = destinoEtapaCadastro(
@@ -237,8 +246,18 @@ export function ProjetoForm({
           </div>
           <div>
             <label className="label" htmlFor="area_id">Área</label>
-            <select id="area_id" name="area_id" className="field mt-1"
-                    defaultValue={(valores.area_id as string) ?? ''}>
+            <select
+              id="area_id"
+              name="area_id"
+              className="field mt-1"
+              value={areaId}
+              onChange={(e) => {
+                const id = e.target.value;
+                setAreaId(id);
+                const d = diretoriaDaArea(areas.find((a) => a.id === id)?.name);
+                if (d) setDiretoriaManual(d);
+              }}
+            >
               <option value="">Não informada</option>
               {areas.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
@@ -258,13 +277,27 @@ export function ProjetoForm({
           </div>
           <div>
             <label className="label" htmlFor="directorate">Diretoria</label>
-            <select id="directorate" name="directorate" className="field mt-1"
-                    defaultValue={diretoriaAtual}>
+            {diretoriaDaAreaAtual && (
+              <input type="hidden" name="directorate" value={diretoriaDaAreaAtual} />
+            )}
+            <select
+              id="directorate"
+              name={diretoriaDaAreaAtual ? undefined : 'directorate'}
+              className="field mt-1"
+              value={valorDiretoria}
+              disabled={!!diretoriaDaAreaAtual}
+              onChange={(e) => setDiretoriaManual(e.target.value)}
+            >
               <option value="">Não informada</option>
               {opcoesDeDiretoria.map((nome) => (
                 <option key={nome} value={nome}>{nome}</option>
               ))}
             </select>
+            <p className="mt-1 text-xs text-g50">
+              {diretoriaDaAreaAtual
+                ? 'Definida pela área da iniciativa.'
+                : 'Escolha a diretoria quando a área ainda não tem equivalência.'}
+            </p>
           </div>
         </div>
 
@@ -282,7 +315,12 @@ export function ProjetoForm({
             <p id="ajuda_dev_hours" className="mt-1 text-xs text-g50">Horas previstas até a entrega.</p>
           </div>
           <div>
-            <label className="label" htmlFor="target_date">Data alvo</label>
+            <label className="label" htmlFor="start_date">Mês do início do projeto</label>
+            <input id="start_date" name="start_date" type="month" className="field mt-1"
+                   defaultValue={dataParaMes(valores.start_date as string)} />
+          </div>
+          <div>
+            <label className="label" htmlFor="target_date">Data de conclusão (prevista)</label>
             <input id="target_date" name="target_date" type="date" className="field mt-1"
                    defaultValue={(valores.target_date as string) ?? ''} />
           </div>

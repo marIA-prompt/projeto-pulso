@@ -10,6 +10,7 @@ import { ErroBox } from '@/components/ui/Card';
 import { clsx } from '@/lib/clsx';
 import { dataCurta, nf } from '@/lib/format';
 import { rotuloPessoa, type PessoaOpcao } from '@/lib/pessoas';
+import { diretoriaExibida } from '@/lib/diretorias';
 import {
   AVISO_TRIAGEM,
   AVALIACAO_CRITERIO_LABEL,
@@ -159,14 +160,21 @@ export function LeiDoBemQuadro({
   const [f, setF] = useState<Filtros>(PADRAO);
   const [kanban, setKanban] = useState(false);
   const [selecionada, setSelecionada] = useState<LinhaLeiDoBem | null>(null);
-  const [cards, setCards] = useState(linhas);
+  const base = useMemo(
+    () => linhas.map((l) => ({
+      ...l,
+      directorate: diretoriaExibida(l.area_name, l.directorate) ?? l.directorate,
+    })),
+    [linhas],
+  );
+  const [cards, setCards] = useState(base);
 
-  useEffect(() => { setCards(linhas); }, [linhas]);
+  useEffect(() => { setCards(base); }, [base]);
   useEffect(() => {
     if (!selecionada) return;
-    const atual = linhas.find((l) => l.id === selecionada.id);
+    const atual = base.find((l) => l.id === selecionada.id);
     if (atual) setSelecionada(atual);
-  }, [linhas, selecionada]);
+  }, [base, selecionada]);
 
   const filtradas = useMemo(() => {
     const q = f.q.trim().toLowerCase();

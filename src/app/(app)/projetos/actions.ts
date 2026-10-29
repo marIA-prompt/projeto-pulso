@@ -12,6 +12,8 @@ import {
   mensagemErroMoverEstagio,
   mensagemErroSalvarProjeto,
 } from '@/lib/projeto-erro';
+import { diretoriaParaGravar } from '@/lib/diretorias';
+import { mesParaData } from '@/lib/datas-iniciativa';
 
 const Projeto = z.object({
   title: z.string().min(3, 'O título precisa de pelo menos 3 caracteres.'),
@@ -27,6 +29,7 @@ const Projeto = z.object({
   uses_outros: z.coerce.boolean(),
   hours_saved_month: z.coerce.number().min(0).nullable().catch(null),
   dev_hours: z.coerce.number().min(0).nullable().catch(null),
+  start_date: z.string().optional(),
   target_date: z.string().optional(),
   links: z.string().optional(),
 });
@@ -53,6 +56,7 @@ function ler(form: FormData) {
     uses_outros: form.get('uses_outros') === 'on',
     hours_saved_month: vazio(form.get('hours_saved_month')),
     dev_hours: vazio(form.get('dev_hours')),
+    start_date: form.get('start_date') ?? '',
     target_date: form.get('target_date') ?? '',
     links: form.get('links') ?? '',
   });
@@ -74,11 +78,26 @@ function lerTriagem(form: FormData) {
   return campos;
 }
 
+async function resolverDiretoria(
+  supabase: ReturnType<typeof createClient>,
+  areaId: string | null,
+  informado: string | null,
+): Promise<{ directorate: string | null } | { erro: string }> {
+  let areaNome: string | null = null;
+  if (areaId) {
+    const { data, error } = await supabase.from('areas').select('name').eq('id', areaId).maybeSingle();
+    if (error) return { erro: 'Não foi possível ler a área para definir a diretoria.' };
+    areaNome = data?.name ?? null;
+  }
+  return { directorate: diretoriaParaGravar(areaNome, informado) };
+}
+
 function revalidar() {
   revalidatePath('/projetos');
   revalidatePath('/dashboard');
   revalidatePath('/lei-do-bem');
   revalidatePath('/rankings');
+  revalidatePath('/relatorios');
 }
 
 function lerEscopoLeiDoBem(form: FormData) {
@@ -136,9 +155,13 @@ export async function criarProjeto(_prev: EstadoProjeto, form: FormData): Promis
   }
 
   const supabase = createClient();
+  const diretoria = await resolverDiretoria(supabase, parsed.data.area_id, parsed.data.directorate);
+  if ('erro' in diretoria) return { erro: diretoria.erro };
   const { data, error } = await supabase.from('projects').insert({
     ...parsed.data,
+    directorate: diretoria.directorate,
     uses_ai: parsed.data.uses_ai_tradicional || parsed.data.uses_ai_generativa,
+    start_date: mesParaData(parsed.data.start_date),
     target_date: parsed.data.target_date || null,
     owner_id: parsed.data.owner_id ?? perfil.id,
   }).select('id').single();
@@ -164,11 +187,15 @@ export async function atualizarProjeto(
   }
 
   const supabase = createClient();
+  const diretoria = await resolverDiretoria(supabase, parsed.data.area_id, parsed.data.directorate);
+  if ('erro' in diretoria) return { erro: diretoria.erro };
   const { error, count } = await supabase
     .from('projects')
     .update({
       ...parsed.data,
+      directorate: diretoria.directorate,
       uses_ai: parsed.data.uses_ai_tradicional || parsed.data.uses_ai_generativa,
+      start_date: mesParaData(parsed.data.start_date),
       target_date: parsed.data.target_date || null,
     }, { count: 'exact' })
     .eq('id', id);
