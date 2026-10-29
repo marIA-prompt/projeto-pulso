@@ -8,7 +8,7 @@ export function linksDaNav({
   return [
     { href: '/dashboard', label: 'Acompanhamento' },
     ...(isGerencial ? [{ href: '/rankings', label: 'Rankings' }] : []),
-    ...(isGerencial ? [{ href: '/relatorios', label: 'Relatórios' }] : []),
+    ...(isAdmin ? [{ href: '/relatorios', label: 'Relatórios' }] : []),
     { href: '/projetos', label: 'Iniciativas' },
     ...(isGerencial ? [{ href: '/lei-do-bem', label: 'Lei do Bem' }] : []),
     { href: '/comunidade', label: 'Comunidade' },

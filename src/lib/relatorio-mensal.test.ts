@@ -463,9 +463,44 @@ caso('o fluxo n8n busca o Supabase e envia um e-mail por diretor', () => {
   assert.equal(wf.active, false);
   const email = wf.nodes.find((n: { name: string }) => n.name === 'Enviar e-mail');
   assert.equal(email.credentials.smtp.name, 'Zoho Mail');
+  assert.equal(email.parameters.emailFormat, 'html');
+  assert.match(email.parameters.html, /\$json\.html/);
   const sticky = wf.nodes.find((n: { name: string }) => n.name === 'Como ligar');
   assert.match(sticky.parameters.content, /smtp\.zoho\.com/);
   assert.match(sticky.parameters.content, /465/);
+  assert.match(code, /<table/);
+  assert.match(code, /Métricas/);
+  assert.match(code, /Iniciativas criadas no mês/);
+  assert.match(code, /Iniciativas atualizadas no mês/);
+  assert.match(code, /Olá, /);
+});
+
+caso('a migration 0019 corrige as áreas e grava o e-mail de cada diretor', () => {
+  const sql = readFileSync(new URL('../../supabase/migrations/0019_areas_emails_diretoria.sql', import.meta.url), 'utf8');
+  const pares: Array<[string, string, string]> = [
+    ['Comercial PF', 'adquirencia-marketplace', 'a.moura@senff.com.br'],
+    ['Fraudes', 'tecnologia-informacao', 'e.dzikovicz@senff.com.br'],
+    ['Crédito PF', 'credito-cobranca', 'j.genaro@senff.com.br'],
+    ['Private Label', 'vendas-varejo-expansao', 'a.moura@senff.com.br'],
+    ['Jurídico', 'recursos-humanos', 'dpo@senff.com.br'],
+    ['Compliance', 'recursos-humanos', 'dpo@senff.com.br'],
+    ['Compras, Manutenção e Zeladoria', 'recursos-humanos', 'dpo@senff.com.br'],
+    ['Frota', 'recursos-humanos', 'dpo@senff.com.br'],
+    ['Pós Vendas - Private Label', 'pos-vendas-private-label', 'f.silva@senff.com.br'],
+    ['Financeiro / Contas a Receber', 'controladoria', 'j.pereira@senff.com.br'],
+    ['Produtos Financeiros', 'tesouraria-captacao', 'm.rodrigues@senff.com.br'],
+    ['Marketing', 'adquirencia-marketplace', 'marco@senff.com.br'],
+    ['Seguros', 'seguros', 'b.camargo@senff.com.br'],
+    ['Portfólio Projetos Estratégicos', 'tecnologia-informacao', 'e.dzikovicz@senff.com.br'],
+  ];
+  for (const [area, slug, email] of pares) {
+    assert.ok(sql.includes(`'${area}'`), area);
+    assert.ok(sql.includes(`'${slug}'`), slug);
+    assert.ok(sql.includes(`'${email}'`), email);
+  }
+  assert.ok(sql.includes('p.pereira@senff.com.br'));
+  assert.ok(sql.includes('bruno.capobianco@senff.com.br'));
+  assert.equal(sql.includes('senff.com.brr'), false);
 });
 
 caso('segredo do cron exige o mesmo tamanho e o mesmo conteúdo', () => {

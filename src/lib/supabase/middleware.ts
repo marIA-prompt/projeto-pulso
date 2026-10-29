@@ -42,7 +42,7 @@ export async function updateSession(request: NextRequest) {
     const { data: profile } = await supabase
       .from('profiles').select('role').eq('id', user.id).single();
     const papel = profile?.role;
-    const permitido = path.startsWith('/admin')
+    const permitido = path.startsWith('/admin') || path.startsWith('/relatorios')
       ? papel === 'administrador'
       : hasRoleAtLeast(papel, 'gerencial');
     if (!permitido) {

@@ -31,24 +31,24 @@ caso('leitor, participante e editor não veem Rankings, Lei do Bem nem Admin', (
   }
 });
 
-caso('gerencial vê Rankings, Relatórios e Lei do Bem e não vê Admin', () => {
+caso('gerencial vê Rankings e Lei do Bem e não vê Relatórios nem Admin', () => {
   const h = hrefs('gerencial');
   assert.ok(h.includes('/rankings'));
-  assert.ok(h.includes('/relatorios'));
+  assert.ok(!h.includes('/relatorios'));
   assert.ok(h.includes('/lei-do-bem'));
   assert.ok(!h.includes('/admin'));
   const iDash = h.indexOf('/dashboard');
   const iRank = h.indexOf('/rankings');
-  const iRel = h.indexOf('/relatorios');
   const iIniciativas = h.indexOf('/projetos');
   const iLei = h.indexOf('/lei-do-bem');
   const iComunidade = h.indexOf('/comunidade');
-  assert.ok(iDash < iRank && iRank < iRel && iRel < iIniciativas && iIniciativas < iLei && iLei < iComunidade);
+  assert.ok(iDash < iRank && iRank < iIniciativas && iIniciativas < iLei && iLei < iComunidade);
 });
 
-caso('leitor não vê Relatórios', () => {
-  assert.ok(!hrefs('leitor').includes('/relatorios'));
-  assert.ok(!hrefs('editor').includes('/relatorios'));
+caso('leitor, participante, editor e gerencial não veem Relatórios', () => {
+  for (const papel of ['leitor', 'participante', 'editor', 'gerencial'] as const) {
+    assert.ok(!hrefs(papel).includes('/relatorios'), papel);
+  }
 });
 
 caso('administrador vê Rankings, Relatórios, Lei do Bem e Admin', () => {
@@ -57,6 +57,10 @@ caso('administrador vê Rankings, Relatórios, Lei do Bem e Admin', () => {
   assert.ok(h.includes('/relatorios'));
   assert.ok(h.includes('/lei-do-bem'));
   assert.ok(h.includes('/admin'));
+  const iRank = h.indexOf('/rankings');
+  const iRel = h.indexOf('/relatorios');
+  const iIniciativas = h.indexOf('/projetos');
+  assert.ok(iRank < iRel && iRel < iIniciativas);
 });
 
 caso('os cinco papéis cobrem o gate gerencial+', () => {

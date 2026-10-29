@@ -43,9 +43,51 @@ function Tabela({
     );
   }
 
+  const linhas = (
+    <ul className="space-y-3 md:hidden">
+      {itens.map((item) => (
+        <li key={item.id} className="card space-y-2 p-4">
+          <p className="font-medium leading-snug">
+            <Link href={`/projetos/${item.id}`} className="text-[var(--ink-strong)] hover:underline">
+              {item.title}
+            </Link>
+          </p>
+          <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+            <div>
+              <dt className="text-xs text-g50">Estágio</dt>
+              <dd>{STAGE_LABEL[item.stage]}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-g50">Área</dt>
+              <dd className="break-words">{item.area_name ?? '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-g50">Proprietário</dt>
+              <dd className="break-words">{item.owner_name}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-g50">Horas/mês</dt>
+              <dd className="num">{item.hours_saved_month == null ? '—' : `${nf1.format(item.hours_saved_month)} h`}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-g50">Valor/mês</dt>
+              <dd className="num">{item.cost_saved_month == null ? '—' : moeda(item.cost_saved_month)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-g50">{quando === 'criacao' ? 'Criada em' : 'Atualizada em'}</dt>
+              <dd className="num">{dataCurta(quando === 'criacao' ? item.created_at : item.last_activity_at)}</dd>
+            </div>
+          </dl>
+        </li>
+      ))}
+    </ul>
+  );
+
   return (
-    <div className="card overflow-x-auto">
-      <table className="w-full min-w-[46rem] text-left text-sm">
+    <>
+      {linhas}
+      <div className="card hidden min-w-0 overflow-x-auto md:block">
+      <table className="w-full min-w-[40rem] text-left text-sm">
         <caption className="sr-only">{rotulo}</caption>
         <thead>
           <tr className="border-b border-g30 text-xs uppercase tracking-wide text-g50">
@@ -78,7 +120,8 @@ function Tabela({
           ))}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -94,7 +137,7 @@ function RelatorioDaDiretoria({ rel }: { rel: RelatorioDiretoria }) {
             {rel.diretor_email ? ` · ${rel.diretor_email}` : ' · e-mail ainda não cadastrado'}
           </p>
         )}
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-g60">
+        <p className="mt-2 text-sm leading-relaxed text-g60">
           {plural(m.criadas_no_mes, 'iniciativa criada', 'iniciativas criadas')} e{' '}
           {plural(m.atualizadas_no_mes, 'atualizada', 'atualizadas')} neste mês.
           Criadas não se repetem na segunda lista. A carga legada não entra como criação.
@@ -103,7 +146,7 @@ function RelatorioDaDiretoria({ rel }: { rel: RelatorioDiretoria }) {
 
       <section aria-labelledby="metricas-titulo" className="space-y-3">
         <h3 id="metricas-titulo" className="text-sm font-semibold uppercase tracking-widest text-g50">Métricas</h3>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
           <Kpi valor={nf.format(m.iniciativas)} rotulo="Iniciativas da área" nota={`${nf.format(m.ativas)} ativas · ${nf.format(m.concluidas)} concluídas`} />
           <Kpi valor={nf.format(m.criadas_no_mes)} rotulo="Criadas no mês" />
           <Kpi valor={nf.format(m.atualizadas_no_mes)} rotulo="Atualizadas no mês" />
@@ -121,7 +164,7 @@ function RelatorioDaDiretoria({ rel }: { rel: RelatorioDiretoria }) {
 
       <section aria-labelledby="ganhos-titulo" className="space-y-3">
         <h3 id="ganhos-titulo" className="text-sm font-semibold uppercase tracking-widest text-g50">Ganhos</h3>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
           <Kpi
             valor={horas(g.horas_devolvidas_mes)}
             rotulo="Horas devolvidas por mês"
@@ -139,7 +182,7 @@ function RelatorioDaDiretoria({ rel }: { rel: RelatorioDiretoria }) {
 
       <section aria-labelledby="valor-titulo" className="space-y-3">
         <h3 id="valor-titulo" className="text-sm font-semibold uppercase tracking-widest text-g50">Valor para a área</h3>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
           <Kpi
             valor={moeda(v.mensal_realizado)}
             rotulo="Realizado por mês"
@@ -168,12 +211,6 @@ function RelatorioDaDiretoria({ rel }: { rel: RelatorioDiretoria }) {
         <Tabela itens={rel.atualizadas} quando="atualizacao" rotulo="Iniciativas atualizadas no mês" />
       </section>
 
-      <details className="card p-4">
-        <summary className="cursor-pointer text-sm font-semibold text-[var(--ink-strong)]">
-          Texto do e-mail desta diretoria
-        </summary>
-        <pre className="mt-3 whitespace-pre-wrap font-sans text-sm leading-relaxed text-g80">{rel.texto}</pre>
-      </details>
     </div>
   );
 }
@@ -209,26 +246,26 @@ export function RelatorioView({
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
+      <header className="space-y-4">
+        <div className="min-w-0">
           <p className="num text-[0.65rem] uppercase tracking-[0.2em] text-g50">Relatório mensal</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight">Por diretoria</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-g60">
+          <p className="mt-2 text-sm leading-relaxed text-g60">
             Posição de {pacote.rotulo}. Cada coleção recebe as iniciativas criadas no mês
             e, em separado, as que já existiam e foram atualizadas. O envio automático
             do dia 1 fecha o mês anterior.
           </p>
         </div>
-        <form method="get" action="/relatorios" className="flex flex-wrap items-end gap-2">
+        <form method="get" action="/relatorios" className="flex w-full flex-wrap items-end gap-2">
           {rel && <input type="hidden" name="diretoria" value={rel.slug} />}
-          <div className="w-44">
+          <div className="min-w-0 w-full sm:w-44">
             <label className="label" htmlFor="mes">Mês</label>
             <input
               id="mes"
               name="mes"
               type="month"
               required
-              className="field mt-1"
+              className="field mt-1 w-full"
               defaultValue={chaveMes(pacote.ano, pacote.mes)}
             />
           </div>
@@ -261,11 +298,28 @@ export function RelatorioView({
 
       {pacote.relatorios.length === 0 || !rel ? (
         <p className="card p-8 text-center text-sm text-g60">
-          Nenhuma diretoria cadastrada. Aplique as migrations 0017 e 0018.
+          Nenhuma diretoria cadastrada. Aplique as migrations 0017, 0018 e 0019.
         </p>
       ) : (
-        <div className="grid items-start gap-6 lg:grid-cols-[18rem_1fr]">
-          <nav aria-label="Diretorias" className="card overflow-hidden">
+        <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
+          <form method="get" action="/relatorios" className="lg:hidden">
+            <label className="label" htmlFor="diretoria-movel">Diretoria</label>
+            <div className="mt-1 flex gap-2">
+              <select
+                id="diretoria-movel"
+                name="diretoria"
+                className="field min-w-0 flex-1"
+                defaultValue={rel.slug}
+              >
+                {pacote.relatorios.map((item) => (
+                  <option key={item.slug} value={item.slug}>{item.nome}</option>
+                ))}
+              </select>
+              <input type="hidden" name="mes" value={chaveMes(pacote.ano, pacote.mes)} />
+              <Button type="submit" variant="ghost">Ver</Button>
+            </div>
+          </form>
+          <nav aria-label="Diretorias" className="card hidden min-w-0 overflow-hidden lg:sticky lg:top-20 lg:block lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
             <p className="border-b border-g30 px-3 py-2 text-xs font-semibold uppercase tracking-widest text-g50">
               Coleções
             </p>
@@ -300,7 +354,9 @@ export function RelatorioView({
             </ul>
           </nav>
 
-          <RelatorioDaDiretoria rel={rel} />
+          <div className="min-w-0">
+            <RelatorioDaDiretoria rel={rel} />
+          </div>
         </div>
       )}
     </div>
