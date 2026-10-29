@@ -4,9 +4,19 @@
  */
 type Hook = 'W1_CONVITE' | 'W2_LEMBRETE_PRESENCA' | 'W3_LEMBRETE_ATUALIZACAO' | 'W4_REPORT_EXECUTIVO' | 'W6_RELATORIO_MENSAL';
 
+export type ResultadoEnvio = 'ok' | 'sem-url' | 'falha';
+
 export async function notificar(hook: Hook, payload: unknown): Promise<boolean> {
+  return (await notificarComStatus(hook, payload)) === 'ok';
+}
+
+/**
+ * Igual a `notificar`, mas diz por que não foi: variável ausente na
+ * Vercel ('sem-url') é diferente de o n8n não responder ou recusar ('falha').
+ */
+export async function notificarComStatus(hook: Hook, payload: unknown): Promise<ResultadoEnvio> {
   const url = process.env[`N8N_WEBHOOK_${hook}`];
-  if (!url) return false;
+  if (!url) return 'sem-url';
   try {
     const res = await fetch(url, {
       method: 'POST',
@@ -19,8 +29,8 @@ export async function notificar(hook: Hook, payload: unknown): Promise<boolean> 
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(5000),
     });
-    return res.ok;
+    return res.ok ? 'ok' : 'falha';
   } catch {
-    return false;
+    return 'falha';
   }
 }

@@ -467,3 +467,40 @@ export function montarRelatorioMensal(input: {
     relatorios,
   };
 }
+
+/** Corpo do webhook W6 no disparo manual: uma diretoria, já com destinatários. */
+export type CargaDisparoManual = {
+  origem: 'manual';
+  ano: number;
+  mes: number;
+  diretoria: string;
+  diretoria_nome: string;
+  diretor_nome: string | null;
+  diretor_email: string;
+  emails_copia: string[];
+};
+
+export function cargaDisparoManual(
+  pedido: { ano: number; mes: number },
+  rel: Pick<RelatorioDiretoria, 'slug' | 'nome' | 'diretor_nome' | 'diretor_email' | 'emails_copia'>,
+): CargaDisparoManual {
+  const para = (rel.diretor_email ?? '').trim().toLowerCase();
+  const vistos = new Set<string>();
+  const copia: string[] = [];
+  for (const item of rel.emails_copia ?? []) {
+    const email = String(item ?? '').trim().toLowerCase();
+    if (!email || email === para || vistos.has(email)) continue;
+    vistos.add(email);
+    copia.push(email);
+  }
+  return {
+    origem: 'manual',
+    ano: pedido.ano,
+    mes: pedido.mes,
+    diretoria: rel.slug,
+    diretoria_nome: rel.nome,
+    diretor_nome: rel.diretor_nome,
+    diretor_email: para,
+    emails_copia: copia,
+  };
+}
