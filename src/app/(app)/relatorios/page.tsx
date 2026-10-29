@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { requireGerencial } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { ErroBox } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { carregarRelatorioMensal } from '@/lib/relatorio-mensal-dados';
@@ -21,7 +21,7 @@ export default async function RelatoriosPage({
 }: {
   searchParams: { mes?: string; diretoria?: string; envio?: string };
 }) {
-  const perfil = await requireGerencial();
+  await requireAdmin();
   const pedido = mesPedido({ mes: searchParams.mes }, mesAtual());
 
   if ('erro' in pedido) {
@@ -55,7 +55,6 @@ export default async function RelatoriosPage({
     ? searchParams.diretoria
     : (carga.pacote.relatorios[0]?.slug ?? '');
 
-  const podeEnviar = perfil.role === 'administrador';
   const rel = carga.pacote.relatorios.find((r) => r.slug === selecionada) ?? carga.pacote.relatorios[0];
   const mesChave = chaveMes(pedido.ano, pedido.mes);
 
@@ -66,9 +65,9 @@ export default async function RelatoriosPage({
         selecionada={selecionada}
         envio={searchParams.envio}
       />
-      {podeEnviar && rel && rel.slug !== 'sem-diretoria' && (
-        <form action={salvarEmailDiretor} className="card flex flex-wrap items-end gap-3 p-4">
-          <div className="min-w-[16rem] flex-1">
+      {rel && rel.slug !== 'sem-diretoria' && (
+        <form action={salvarEmailDiretor} className="card flex flex-col gap-3 p-4 sm:flex-row sm:flex-wrap sm:items-end">
+          <div className="min-w-0 w-full sm:min-w-[16rem] sm:flex-1">
             <label className="label" htmlFor="email-diretor">
               E-mail de {rel.diretor_nome ?? rel.nome}
             </label>
@@ -87,9 +86,9 @@ export default async function RelatoriosPage({
           <Button type="submit" variant="ghost">Salvar e-mail</Button>
         </form>
       )}
-      {podeEnviar && (
-        <form action={enviarRelatorioMensal} className="card flex flex-wrap items-center justify-between gap-3 p-4">
-          <p className="max-w-xl text-sm text-g60">
+      {(
+        <form action={enviarRelatorioMensal} className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="min-w-0 text-sm leading-relaxed text-g60">
             Dispara o fluxo n8n deste mês. O n8n relê o Supabase e manda um e-mail
             para cada diretor com endereço cadastrado.
           </p>
