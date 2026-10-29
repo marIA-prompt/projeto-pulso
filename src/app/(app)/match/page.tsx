@@ -2,8 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth';
 import { hasRoleAtLeast, STAGE_LABEL, type Stage } from '@/lib/types';
-import { nomeProprietario } from '@/lib/pessoas';
-import { dataLonga } from '@/lib/format';
+import { dataCurta, dataLonga } from '@/lib/format';
 import { Button } from '@/components/ui/Button';
 import { ErroBox } from '@/components/ui/Card';
 import {
@@ -13,95 +12,92 @@ import {
   TEXTO_CONSULTA_CURTA,
   TEXTO_DUVIDAS,
   TEXTO_SEM_MATCH,
-  consultaCurta,
   hrefCadastrarDoMatch,
-  problemaNormalizado,
-  textoVarredura,
-  varrerIniciativas,
-  type IniciativaParaMatch,
+  resultadoDoRegistro,
+  type MatchGravado,
   type ResultadoVarredura,
 } from '@/lib/match-solucoes';
+import { varrerPulsenff } from './actions';
 
 export const metadata = { title: 'Match de soluções — Pulso' };
 export const dynamic = 'force-dynamic';
 
-type Linha = {
-  id: string;
-  title: string;
-  description: string | null;
-  objetivo_contexto: string | null;
-  theme: string | null;
-  tools: string | null;
-  notes: string | null;
-  stage: string;
-  directorate: string | null;
-  areas: { name: string } | { name: string }[] | null;
-  profiles: { full_name: string | null } | { full_name: string | null }[] | null;
-  owner_id: string | null;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const ERRO: Record<string, string> = {
+  varredura: 'Não consegui ler a base de iniciativas agora. Tente de novo em instantes.',
+  gravacao: 'A varredura não foi gravada. Confira a tabela pulsenff_consultas no Supabase.',
+  sumiu: 'Essa varredura não está disponível para o seu perfil.',
 };
 
-function um<T>(valor: T | T[] | null): T | null {
-  if (!valor) return null;
-  return Array.isArray(valor) ? (valor[0] ?? null) : valor;
-}
+const RESULTADO_LABEL: Record<string, string> = {
+  curto: 'Consulta curta',
+  sem_match: 'Sem iniciativa parecida',
+  com_match: 'Com iniciativa parecida',
+};
+
+type Consulta = {
+  id: string;
+  problema: string;
+  resultado: 'curto' | 'sem_match' | 'com_match';
+  varridas: number;
+  encontrados: number;
+  matches: MatchGravado[];
+  previa: string;
+  created_at: string;
+};
 
 function rotuloEstagio(stage: string): string {
   return stage in STAGE_LABEL ? STAGE_LABEL[stage as Stage] : stage;
 }
 
+function comoRegistro(row: Consulta): ResultadoVarredura {
+  return resultadoDoRegistro({
+    resultado: row.resultado,
+    varridas: row.varridas,
+    matches: Array.isArray(row.matches) ? row.matches : [],
+  });
+}
+
 export default async function MatchPage({
   searchParams,
-}: { searchParams: { q?: string | string[] } }) {
+}: { searchParams: { id?: string; erro?: string } }) {
   const perfil = await requireUser();
-  const q = problemaNormalizado(searchParams.q);
   const podeCadastrar = hasRoleAtLeast(perfil.role, 'participante');
+  const supabase = createClient();
+  const id = UUID.test(searchParams.id ?? '') ? searchParams.id! : '';
 
-  let resultado: ResultadoVarredura | null = null;
-  let falha = false;
-  let proximo: { title: string; scheduled_at: string } | null = null;
+  const [{ data: recente }, consultaResp, encontrosResp] = await Promise.all([
+    supabase
+      .from('pulsenff_consultas')
+      .select('id, problema, resultado, previa, created_at')
+      .eq('user_id', perfil.id)
+      .order('created_at', { ascending: false })
+      .limit(5),
+    id
+      ? supabase
+        .from('pulsenff_consultas')
+        .select('id, problema, resultado, varridas, encontrados, matches, previa, created_at')
+        .eq('id', id)
+        .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    supabase
+      .from('meetings')
+      .select('title, scheduled_at')
+      .gte('scheduled_at', new Date().toISOString())
+      .order('scheduled_at', { ascending: true })
+      .limit(1),
+  ]);
 
-  if (q && consultaCurta(q)) {
-    resultado = { tipo: 'curto' };
-  } else if (q) {
-    const supabase = createClient();
-    const agora = new Date().toISOString();
-    const [{ data, error }, { data: encontros }] = await Promise.all([
-      supabase
-        .from('projects')
-        .select('id, title, description, objetivo_contexto, theme, tools, notes, stage, directorate, owner_id, areas(name), profiles!owner_id(full_name)')
-        .is('archived_at', null),
-      supabase
-        .from('meetings')
-        .select('title, scheduled_at')
-        .gte('scheduled_at', agora)
-        .order('scheduled_at', { ascending: true })
-        .limit(1),
-    ]);
-
-    if (error) {
-      falha = true;
-    } else {
-      const iniciativas: IniciativaParaMatch[] = ((data ?? []) as unknown as Linha[]).map((p) => {
-        const area = um(p.areas);
-        const dono = um(p.profiles);
-        return {
-          id: p.id,
-          title: p.title,
-          stage: p.stage,
-          theme: p.theme,
-          area_name: area?.name ?? null,
-          directorate: p.directorate,
-          description: p.description,
-          objetivo_contexto: p.objetivo_contexto,
-          tools: p.tools,
-          notes: p.notes,
-          owner_name: nomeProprietario(p.owner_id, dono),
-        };
-      });
-      resultado = varrerIniciativas(q, iniciativas);
-    }
-    proximo = (encontros?.[0] as { title: string; scheduled_at: string } | undefined) ?? null;
-  }
+  const consulta = (consultaResp.data ?? null) as Consulta | null;
+  const sumiu = Boolean(id) && !consultaResp.error && !consulta;
+  const resultado = consulta ? comoRegistro(consulta) : null;
+  const q = consulta?.problema ?? '';
+  const proximo = (encontrosResp.data?.[0] as { title: string; scheduled_at: string } | undefined) ?? null;
+  const erro = ERRO[searchParams.erro ?? '']
+    || (consultaResp.error ? ERRO.gravacao : '')
+    || (sumiu ? ERRO.sumiu : '');
+  const historico = (recente ?? []) as { id: string; problema: string; resultado: string; previa: string; created_at: string }[];
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -109,12 +105,13 @@ export default async function MatchPage({
         <p className="num text-[0.65rem] uppercase tracking-[0.2em] text-g50">{PULSENFF}</p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight">Match de soluções</h1>
         <p className="mt-2 text-sm leading-relaxed text-g60">
-          Descreva o problema. O {PULSENFF} varre as iniciativas do Pulso e diz se já existe
-          algo parecido. Ele não tira outras dúvidas — essas ficam com a Gerência de IA.
+          Descreva o problema. O {PULSENFF} compara o texto com as iniciativas, no código,
+          e grava a prévia na tabela <span className="num">pulsenff_consultas</span>.
+          Ele não tira outras dúvidas — essas ficam com a Gerência de IA.
         </p>
       </header>
 
-      <form method="get" action="/match" className="card space-y-3 p-4" role="search">
+      <form action={varrerPulsenff} className="card space-y-3 p-4" role="search">
         <div>
           <label className="label" htmlFor="q">Qual problema você quer resolver?</label>
           <textarea
@@ -130,33 +127,32 @@ export default async function MatchPage({
           />
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs text-g50">A varredura usa título, contexto, descrição, área e ferramentas.</p>
+          <p className="text-xs text-g50">A comparação usa título, contexto, descrição, área e ferramentas.</p>
           <Button type="submit">Varrer a base</Button>
         </div>
       </form>
 
-      {falha && (
-        <ErroBox mensagem="Não consegui varrer a base agora. Tente de novo em instantes." />
-      )}
+      {erro && <ErroBox mensagem={erro} />}
 
-      {resultado && (
+      {resultado && consulta && (
         <section aria-live="polite" aria-labelledby="resultado-pulsenff" className="space-y-4">
           <div className="card space-y-3 border-l-4 border-l-[var(--blue)] p-5">
             <div>
               <p className="num text-[0.65rem] uppercase tracking-[0.2em] text-g50">{PULSENFF}</p>
-              <h2 id="resultado-pulsenff" className="mt-1 text-base font-semibold">
-                {resultado.tipo === 'curto'
-                  ? TEXTO_CONSULTA_CURTA
-                  : textoVarredura(
-                    resultado.varridas,
-                    resultado.tipo === 'com_match' ? resultado.itens.length : 0,
-                  )}
-              </h2>
+              <h2 id="resultado-pulsenff" className="mt-1 text-base font-semibold">{consulta.previa}</h2>
+              {resultado.tipo !== 'curto' && (
+                <p className="mt-1 text-xs text-g50">
+                  {resultado.varridas === 1 ? '1 iniciativa varrida' : `${resultado.varridas} iniciativas varridas`}
+                  {' · '}gravado em <span className="num">{dataCurta(consulta.created_at)}</span>
+                </p>
+              )}
             </div>
 
             {resultado.tipo === 'sem_match' && (
               <div className="space-y-3">
-                <p className="text-sm leading-relaxed text-g80">{TEXTO_SEM_MATCH}</p>
+                {consulta.previa !== TEXTO_SEM_MATCH && (
+                  <p className="text-sm leading-relaxed text-g80">{TEXTO_SEM_MATCH}</p>
+                )}
                 {proximo && (
                   <p className="text-sm text-g80">
                     Próxima reunião: <span className="font-medium text-g90">{proximo.title}</span>
@@ -178,6 +174,10 @@ export default async function MatchPage({
               </div>
             )}
 
+            {resultado.tipo === 'curto' && consulta.previa !== TEXTO_CONSULTA_CURTA && (
+              <p className="text-sm leading-relaxed text-g80">{TEXTO_CONSULTA_CURTA}</p>
+            )}
+
             {resultado.tipo !== 'com_match' && (
               <p className="text-sm text-g60">{TEXTO_DUVIDAS}</p>
             )}
@@ -193,7 +193,7 @@ export default async function MatchPage({
                         {item.title}
                       </Link>
                       <p className="mt-0.5 text-xs text-g50">
-                        {item.area_name ?? item.directorate ?? 'Área não informada'}
+                        {item.area_name ?? 'Área não informada'}
                         {item.theme ? ` · ${item.theme}` : ''}
                         {` · ${item.owner_name ?? 'Sem proprietário'}`}
                       </p>
@@ -208,9 +208,7 @@ export default async function MatchPage({
                     </div>
                   </div>
                   {item.resumo && <p className="text-sm leading-relaxed text-g60">{item.resumo}</p>}
-                  <p className="text-xs text-g50">
-                    Em comum: {item.termos.join(', ')}
-                  </p>
+                  <p className="text-xs text-g50">Em comum: {item.termos.join(', ')}</p>
                 </li>
               ))}
             </ul>
@@ -233,6 +231,26 @@ export default async function MatchPage({
               <p className="text-sm text-g60">{TEXTO_DUVIDAS}</p>
             </div>
           )}
+        </section>
+      )}
+
+      {historico.length > 0 && (
+        <section aria-labelledby="historico-pulsenff" className="space-y-3">
+          <h2 id="historico-pulsenff" className="text-base font-semibold">Suas últimas varreduras</h2>
+          <ul className="grid gap-2">
+            {historico.map((item) => (
+              <li key={item.id}>
+                <Link href={`/match?id=${item.id}`} className="card block p-3 hover:bg-g20">
+                  <p className="text-sm text-g90">{item.previa}</p>
+                  <p className="mt-1 text-xs text-g50">
+                    {RESULTADO_LABEL[item.resultado] ?? item.resultado}
+                    {' · '}
+                    <span className="num">{dataCurta(item.created_at)}</span>
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
     </div>

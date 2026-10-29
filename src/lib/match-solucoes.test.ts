@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import {
+  TEXTO_CONSULTA_CURTA,
   TEXTO_DUVIDAS,
   TEXTO_SEM_MATCH,
   consultaCurta,
   hrefCadastrarDoMatch,
+  registroPulsenff,
+  resultadoDoRegistro,
   problemaNormalizado,
   resumoIniciativa,
   textoVarredura,
@@ -128,6 +131,14 @@ caso('um termo forte no título basta quando o resto é genérico', () => {
   assert.deepEqual(r.itens.map((i) => i.id), ['cob']);
 });
 
+caso('controle sozinho não puxa a frota para um problema de catraca', () => {
+  const r = varrerIniciativas(
+    'Precisamos de um controle de acesso físico nas catracas do prédio',
+    [cobranca, fornecedor, frota],
+  );
+  assert.equal(r.tipo, 'sem_match');
+});
+
 caso('termos fracos não casam com uma iniciativa qualquer', () => {
   const r = varrerIniciativas(
     'O processo interno do sistema e da rotina manual precisa melhorar',
@@ -190,6 +201,38 @@ caso('textos do Pulsenff ficam estáveis', () => {
   assert.equal(textoVarredura(1, 0), 'Varri 1 iniciativa e não encontrei nada parecido.');
   assert.equal(textoVarredura(12, 1), 'Varri 12 iniciativas e encontrei 1 parecida.');
   assert.equal(textoVarredura(12, 3), 'Varri 12 iniciativas e encontrei 3 parecidas.');
+});
+
+caso('a prévia gravada é o que o Supabase mostra na tabela', () => {
+  const com = registroPulsenff(
+    'Precisamos automatizar a cobrança das faturas atrasadas do financeiro',
+    varrerIniciativas(
+      'Precisamos automatizar a cobrança das faturas atrasadas do financeiro',
+      [fornecedor, cobranca, frota],
+    ),
+  );
+  assert.equal(com.resultado, 'com_match');
+  assert.equal(com.encontrados, 1);
+  assert.equal(com.matches[0].project_id, 'cob');
+  assert.match(com.previa, /^Cobrança automática de faturas \(\d+%\)$/);
+  const deVolta = resultadoDoRegistro(com);
+  assert.equal(deVolta.tipo, 'com_match');
+  if (deVolta.tipo !== 'com_match') return;
+  assert.equal(deVolta.itens[0].id, 'cob');
+  assert.equal(deVolta.itens[0].title, com.matches[0].title);
+
+  const sem = registroPulsenff(
+    'Precisamos de um controle de acesso físico nas catracas do prédio',
+    { tipo: 'sem_match', varridas: 3 },
+  );
+  assert.equal(sem.resultado, 'sem_match');
+  assert.equal(sem.previa, TEXTO_SEM_MATCH);
+  assert.deepEqual(sem.matches, []);
+
+  const curto = registroPulsenff('ajuda', { tipo: 'curto' });
+  assert.equal(curto.resultado, 'curto');
+  assert.equal(curto.varridas, 0);
+  assert.equal(curto.previa, TEXTO_CONSULTA_CURTA);
 });
 
 caso('o cadastro leva o problema descrito, sem estourar o tamanho', () => {

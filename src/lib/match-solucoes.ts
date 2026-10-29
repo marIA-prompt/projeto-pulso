@@ -46,7 +46,7 @@ const STOP = new Set([
 
 /** Termos genéricos demais para sustentar um match sozinhos. */
 const FRACO = new Set([
-  'processo', 'sistema', 'rotina', 'manual', 'trabalho', 'atividade', 'melhoria',
+  'processo', 'sistema', 'rotina', 'manual', 'trabalho', 'atividade', 'melhoria', 'controle',
   'projeto', 'gestao', 'informacao', 'dado', 'pessoa', 'pessoas', 'colaborador',
   'setor', 'area', 'time', 'equipe', 'atual', 'novo', 'nova', 'novos', 'novas',
   'abrir', 'criar', 'interno', 'interna', 'internos', 'internas', 'geral',
@@ -211,6 +211,92 @@ export function textoVarredura(varridas: number, encontradas: number): string {
   if (encontradas === 0) return `${base} e não encontrei nada parecido.`;
   if (encontradas === 1) return `${base} e encontrei 1 parecida.`;
   return `${base} e encontrei ${encontradas} parecidas.`;
+}
+
+export type MatchGravado = {
+  project_id: string;
+  title: string;
+  stage: string;
+  theme: string | null;
+  area_name: string | null;
+  owner_name: string | null;
+  resumo: string;
+  afinidade: number;
+  termos: string[];
+};
+
+/** Linha de pulsenff_consultas. O que a tela mostra é esta linha, não um cálculo solto. */
+export type RegistroPulsenff = {
+  problema: string;
+  resultado: 'curto' | 'sem_match' | 'com_match';
+  varridas: number;
+  encontrados: number;
+  matches: MatchGravado[];
+  previa: string;
+};
+
+export function registroPulsenff(problema: string, resultado: ResultadoVarredura): RegistroPulsenff {
+  const texto = problemaNormalizado(problema);
+  if (resultado.tipo === 'curto') {
+    return {
+      problema: texto,
+      resultado: 'curto',
+      varridas: 0,
+      encontrados: 0,
+      matches: [],
+      previa: TEXTO_CONSULTA_CURTA,
+    };
+  }
+  if (resultado.tipo === 'sem_match') {
+    return {
+      problema: texto,
+      resultado: 'sem_match',
+      varridas: resultado.varridas,
+      encontrados: 0,
+      matches: [],
+      previa: TEXTO_SEM_MATCH,
+    };
+  }
+  const matches = resultado.itens.map((item) => ({
+    project_id: item.id,
+    title: item.title,
+    stage: item.stage,
+    theme: item.theme,
+    area_name: item.area_name,
+    owner_name: item.owner_name,
+    resumo: item.resumo,
+    afinidade: item.afinidade,
+    termos: item.termos,
+  }));
+  return {
+    problema: texto,
+    resultado: 'com_match',
+    varridas: resultado.varridas,
+    encontrados: matches.length,
+    matches,
+    previa: matches.map((m) => `${m.title} (${m.afinidade}%)`).join('; '),
+  };
+}
+
+export function resultadoDoRegistro(registro: Pick<RegistroPulsenff, 'resultado' | 'varridas' | 'matches'>): ResultadoVarredura {
+  if (registro.resultado === 'curto') return { tipo: 'curto' };
+  if (registro.resultado === 'sem_match') return { tipo: 'sem_match', varridas: registro.varridas };
+  return {
+    tipo: 'com_match',
+    varridas: registro.varridas,
+    itens: registro.matches.map((m) => ({
+      id: m.project_id,
+      title: m.title,
+      stage: m.stage,
+      theme: m.theme,
+      area_name: m.area_name,
+      directorate: null,
+      owner_name: m.owner_name,
+      resumo: m.resumo,
+      termos: m.termos,
+      afinidade: m.afinidade,
+    })),
+  };
 }
 
 export function hrefCadastrarDoMatch(problema: string): string {
