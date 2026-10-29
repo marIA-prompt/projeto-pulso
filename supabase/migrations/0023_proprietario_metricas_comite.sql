@@ -3,8 +3,10 @@
 -- comitê de IA (planilha de tasks).
 --
 -- Cada iniciativa é localizada pelo título (acentos e pontuação ignorados).
--- "Automatizar as operações de crédito consignado" existe em duas áreas;
--- essa carga pega a da área de Riscos.
+-- Quando o mesmo título existe mais de uma vez, fica a cópia da área
+-- esperada e, entre essas, as que estão em Atenção. "Crédito consignado"
+-- usa a área de Riscos; desbloqueio de lojas, Operações; integração de
+-- colaboradores, DHO; provisão de risco, Riscos.
 --
 -- O usuário da planilha vira owner_id quando existe um único perfil com
 -- esse nome. Horas economizadas por mês, redução de custo, tempo de
@@ -81,7 +83,7 @@ begin
 ('Automatizar o envio de processo fechamento', null, array['Jessica'], 8.00, null, null, true, false, false, false, false, true, false, true, array['Python', 'Totvs'], 'Python, Totvs'),
 ('Automatizar o envio do controle de banco de horas', null, array['Jessica'], 8.00, 0.00, null, true, true, false, false, false, true, false, true, array['Python', 'Totvs'], 'Python, Totvs'),
 ('Centralizar o canal de dúvidas dos colaboradores via robô no Bitrix (RH)', null, array['Jessica'], null, null, null, false, false, false, false, true, true, false, true, array['ChatGPT', 'Bitrix', 'Python'], 'ChatGPT, Bitrix, Python'),
-('Automatizar a provisão de risco de crédito', null, array['Gabriel Caetano'], null, null, null, false, false, false, false, false, true, false, true, array['Python'], 'Python'),
+('Automatizar a provisão de risco de crédito', 'riscos', array['Gabriel Caetano'], null, null, null, false, false, false, false, false, true, false, true, array['Python'], 'Python'),
 ('Automatizar a validação da análise documental de clientes PJ', null, array['Guilherme Vinicius'], null, null, null, false, false, false, false, false, true, false, true, array['Python'], 'Python'),
 ('Automatizar as validações de compliance', null, array['Patrícia Reis'], null, null, null, false, false, false, false, false, true, false, true, array['Sales Force'], 'Sales Force'),
 ('Automatizar a aprovação por alçada', null, array['Patrícia Reis'], null, null, null, false, false, false, false, false, true, false, true, array['Sales Force'], 'Sales Force'),
@@ -113,42 +115,72 @@ begin
 ('Centralizar em painel gerencial a carteira em runoff', null, array['Jeane Correia'], 0.00, null, 12.00, true, false, true, false, false, true, false, true, array['Power BI'], 'Power BI'),
 ('Centralizar em painel gerencial as comissões', null, array['Jeane Correia'], 0.00, null, 12.00, true, false, true, false, false, true, false, true, array['Power BI'], 'Power BI'),
 ('Análise Transacional', null, array['Alan Gabriel Moreira'], null, null, 80.00, false, false, true, true, true, true, false, true, array['Gpt Codex', 'Python', 'SQL', 'ML flow'], 'Gpt Codex, Python, SQL, ML flow'),
-('Agilizar o desbloqueio de lojas', null, array['Clayton Humamoto'], 40.00, null, 20.00, true, false, true, false, true, true, true, false, array['Gemini 2.5 flash'], 'Gemini 2.5 flash'),
+('Agilizar o desbloqueio de lojas', 'operacoes', array['Clayton Humamoto'], 40.00, null, 20.00, true, false, true, false, true, true, true, false, array['Gemini 2.5 flash'], 'Gemini 2.5 flash'),
 ('Automatizar o cadastro do credenciamento de lojistas', null, array['Eder Melo'], 20.00, 1800.00, 12.00, true, true, true, false, true, true, false, true, array['Chat Gpt', 'Deepseek', 'Bitrix24', 'BrasilAPI', 'Google Maps API', 'ViaCEP'], 'Chat Gpt, Deepseek, Bitrix24, BrasilAPI, Google Maps API, ViaCEP'),
-('Automatizar a integração e engajamento de novos colaboradores', null, array['Gabriel Benato'], 3.00, null, 20.00, true, false, true, false, true, true, true, false, array['Gemini'], 'Gemini'),
+('Automatizar a integração e engajamento de novos colaboradores', 'dho', array['Gabriel Benato'], 3.00, null, 20.00, true, false, true, false, true, true, true, false, array['Gemini'], 'Gemini'),
 ('Monitorar automaticamente a atualização cadastral', null, array['Solange Dutra', 'João Marcelo Souza'], null, null, null, false, false, false, false, false, true, false, true, array['SQL', 'Python'], 'SQL, Python'),
 ('Automatizar a consulta dos processos jurídicos', null, array['João Victor Sezanosky Dalla Valle'], 160.00, null, null, true, false, false, false, true, true, false, true, array['OpenAI(GPT)', 'Python', 'Bitrix'], 'OpenAI(GPT), Python, Bitrix');
 
-  create temporary table alvo_comite on commit drop as
-  select c.titulo, m.id as project_id
+  create temporary table candidatos_comite on commit drop as
+  select
+    c.titulo,
+    p.id as project_id,
+    (
+      c.area_trecho is not null
+      and public.pulso_norm_txt(coalesce(a.name, '')) like '%' || public.pulso_norm_txt(c.area_trecho) || '%'
+    ) as area_ok,
+    (
+      p.stage not in ('concluido', 'cancelado')
+      and (current_date - p.last_activity_at::date) > 30
+      and (current_date - p.last_activity_at::date) <= 90
+    ) as em_atencao
   from carga_comite c
-  join lateral (
-    select p.id
-    from public.projects p
-    left join public.areas a on a.id = p.area_id
-    where p.archived_at is null
-      and public.pulso_norm_txt(p.title) = public.pulso_norm_txt(c.titulo)
-      and (
-        c.area_trecho is null
-        or public.pulso_norm_txt(coalesce(a.name, '')) like '%' || public.pulso_norm_txt(c.area_trecho) || '%'
-      )
-  ) m on true;
+  join public.projects p
+    on p.archived_at is null
+   and public.pulso_norm_txt(p.title) = public.pulso_norm_txt(c.titulo)
+  left join public.areas a on a.id = p.area_id;
+
+  create temporary table com_area_comite on commit drop as
+  select c.*
+  from candidatos_comite c
+  where c.area_ok
+     or not exists (
+       select 1 from candidatos_comite o
+       where o.titulo = c.titulo and o.area_ok
+     );
+
+  create temporary table alvo_comite on commit drop as
+  select c.titulo, c.project_id
+  from com_area_comite c
+  where (
+    c.em_atencao
+    and exists (
+      select 1 from com_area_comite o
+      where o.titulo = c.titulo and o.em_atencao
+    )
+    and (select count(*) from com_area_comite o where o.titulo = c.titulo) > 1
+  ) or (
+    (select count(*) from com_area_comite o where o.titulo = c.titulo) = 1
+  );
 
   select string_agg(msg, '; ' order by msg)
   into faltando
   from (
     select case
-      when count(a.project_id) = 0 and c.area_trecho is null then
+      when count(distinct k.project_id) = 0 then
         format('sem iniciativa com o título "%s"', c.titulo)
-      when count(a.project_id) = 0 then
-        format('sem iniciativa com o título "%s" na área "%s"', c.titulo, c.area_trecho)
       else
-        format('título "%s" encontrou %s iniciativas', c.titulo, count(a.project_id))
+        format(
+          'título "%s" tem %s cópias e nenhuma única em Atenção',
+          c.titulo,
+          count(distinct k.project_id)
+        )
     end as msg
     from carga_comite c
+    left join candidatos_comite k on k.titulo = c.titulo
     left join alvo_comite a on a.titulo = c.titulo
-    group by c.titulo, c.area_trecho
-    having count(a.project_id) <> 1
+    where a.titulo is null
+    group by c.titulo
   ) s;
 
   if faltando is not null then
@@ -220,8 +252,9 @@ begin
   where p.id = a.project_id;
 
   get diagnostics atualizadas = row_count;
-  if atualizadas <> 41 then
-    raise exception 'A carga alterou % iniciativas; o esperado é 41.', atualizadas;
+  if (select count(distinct titulo) from alvo_comite) <> 41 or atualizadas < 41 then
+    raise exception 'A carga alterou % linhas em % títulos; o esperado é os 41 títulos.',
+      atualizadas, (select count(distinct titulo) from alvo_comite);
   end if;
 
   if avisos <> '' then
