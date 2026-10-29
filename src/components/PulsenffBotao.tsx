@@ -96,9 +96,9 @@ export function PulsenffBotao() {
         aria-expanded={aberto}
         aria-controls={painelId}
         onClick={() => setAberto((v) => !v)}
-        className="h-[4.75rem] w-[4.75rem] overflow-hidden rounded-l border border-g30 bg-g10 shadow-2 transition-transform motion-safe:hover:scale-105 motion-safe:focus-visible:scale-105"
+        className="h-24 w-24 bg-transparent p-0 transition-transform motion-safe:hover:scale-105 motion-safe:focus-visible:scale-105"
       >
-        <img src="/pulsenff.jpg" alt="" className="h-full w-full object-cover" />
+        <img src="/pulsenff.png" alt="" className="h-full w-full object-contain" />
       </button>
     </div>
   );
