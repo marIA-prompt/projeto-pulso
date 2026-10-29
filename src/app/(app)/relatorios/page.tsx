@@ -110,16 +110,25 @@ export default async function RelatoriosPage({
           dashboardUrl={carga.pacote.dashboard_url}
         />
       )}
-      <form action={enviarRelatorioMensal} className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="min-w-0 text-sm leading-relaxed text-g60">
-          Dispara o fluxo n8n deste mês. O n8n relê o Supabase e manda um e-mail
-          para cada diretor com endereço, com as cópias salvas na coleção.
-          A prévia acima é a coleção selecionada.
-        </p>
-        <input type="hidden" name="mes" value={mesChave} />
-        <input type="hidden" name="diretoria" value={selecionada} />
-        <Button type="submit">Enviar relatórios do mês</Button>
-      </form>
+      {rel && rel.slug !== 'sem-diretoria' && (
+        <form action={enviarRelatorioMensal} className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="min-w-0 text-sm leading-relaxed text-g60">
+            {rel.diretor_email ? (
+              <>
+                Envia agora o relatório de <strong>{rel.nome}</strong> deste mês para{' '}
+                <strong>{rel.diretor_email}</strong>
+                {rel.emails_copia.length > 0 && <>, com cópia para {rel.emails_copia.join(', ')}</>}.
+                {' '}Só esta diretoria. As demais saem no envio automático do dia 1.
+              </>
+            ) : (
+              <>Salve o e-mail do diretor de <strong>{rel.nome}</strong> para liberar o envio.</>
+            )}
+          </p>
+          <input type="hidden" name="mes" value={mesChave} />
+          <input type="hidden" name="diretoria" value={rel.slug} />
+          <Button type="submit" disabled={!rel.diretor_email}>Enviar relatório desta diretoria</Button>
+        </form>
+      )}
     </div>
   );
 }

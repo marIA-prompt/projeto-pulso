@@ -217,11 +217,16 @@ function RelatorioDaDiretoria({ rel }: { rel: RelatorioDiretoria }) {
 }
 
 const ENVIO: Record<string, { tom: 'ok' | 'aviso'; texto: string }> = {
-  ok: { tom: 'ok', texto: 'Relatórios do mês enviados ao fluxo n8n (W6).' },
+  ok: { tom: 'ok', texto: 'Relatório desta diretoria enviado ao fluxo n8n (W6). O e-mail sai em instantes.' },
   'sem-webhook': {
     tom: 'aviso',
-    texto: 'O webhook W6 não está configurado. Importe o fluxo n8n/w6-relatorio-mensal.json e grave a URL em N8N_WEBHOOK_W6_RELATORIO_MENSAL.',
+    texto: 'O webhook W6 não está configurado. Grave a Production URL do fluxo n8n em N8N_WEBHOOK_W6_RELATORIO_MENSAL na Vercel e faça um novo deploy.',
   },
+  'falha-webhook': {
+    tom: 'aviso',
+    texto: 'O n8n não confirmou o envio. Verifique se o fluxo W6 está ativo, se a URL é acessível pela internet e se N8N_WEBHOOK_SECRET é o mesmo da credencial Header Auth.',
+  },
+  'sem-email': { tom: 'aviso', texto: 'Esta diretoria não tem e-mail de diretor. Salve o e-mail antes de enviar.' },
   'email-ok': { tom: 'ok', texto: 'E-mails salvos. O envio mensal usa o endereço do diretor e as cópias.' },
   'email-invalido': { tom: 'aviso', texto: 'Algum e-mail está inválido. Use nome@dominio e separe as cópias por vírgula.' },
   invalido: { tom: 'aviso', texto: 'Mês inválido. Use o formato AAAA-MM.' },

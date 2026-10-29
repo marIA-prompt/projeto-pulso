@@ -4,6 +4,7 @@ import { copiaVisivel, separarEmailsCopia } from './emails-copia';
 import { assuntoEmail, htmlEmailRelatorio } from './relatorio-email-html';
 import { paraIniciativa } from './relatorio-mensal-dados';
 import {
+  cargaDisparoManual,
   calendarioSP,
   chaveMes,
   intervaloMes,
@@ -465,18 +466,31 @@ caso('o fluxo n8n busca o Supabase e envia um e-mail por diretor', () => {
   assert.match(code, /Olá, /);
   assert.equal(wf.active, false);
   const email = wf.nodes.find((n: { name: string }) => n.name === 'Enviar e-mail');
-  assert.equal(email.credentials.smtp.name, 'Zoho Mail');
+  assert.equal(email.credentials.smtp.name, 'smtp-ia-zoho-usr-maria-morais');
   assert.equal(email.parameters.emailFormat, 'html');
   assert.match(email.parameters.html, /\$json\.html/);
   assert.equal(email.parameters.options.ccEmail, '={{ $json.copia }}');
+  assert.equal(email.parameters.options.appendAttribution, false);
   assert.match(code, /function listaCopia/);
   assert.match(code, /emails_copia/);
   assert.match(code, /table-layout:fixed/);
   assert.match(code, /min-height:4\.4em/);
   const sticky = wf.nodes.find((n: { name: string }) => n.name === 'Como ligar');
   assert.match(sticky.parameters.content, /emails_copia/);
-  assert.match(sticky.parameters.content, /smtp\.zoho\.com/);
+  assert.match(sticky.parameters.content, /smtppro\.zoho\.com/);
   assert.match(sticky.parameters.content, /465/);
+  const semNotas = wf.nodes.filter((n: { type: string }) => n.type !== 'n8n-nodes-base.stickyNote');
+  assert.equal(JSON.stringify(semNotas).includes('$env'), false);
+  assert.equal(http.parameters.nodeCredentialType, 'supabaseApi');
+  const gancho = wf.nodes.find((n: { name: string }) => n.name === 'Disparo manual');
+  assert.equal(gancho.parameters.authentication, 'headerAuth');
+  assert.equal(wf.connections['Dia 1 às 8h'].main[0][0].node, 'Pedido');
+  assert.equal(wf.connections['Disparo manual'].main[0][0].node, 'Pedido');
+  assert.equal(wf.connections.Pedido.main[0][0].node, 'Buscar no Supabase');
+  const pedido = wf.nodes.find((n: { name: string }) => n.name === 'Pedido').parameters.jsCode as string;
+  assert.match(pedido, /origem: 'manual'/);
+  assert.match(pedido, /diretoria/);
+  assert.match(code, /rel\.slug === pedido\.diretoria/);
   assert.match(code, /<table/);
   assert.match(code, /Métricas/);
   assert.match(code, /Iniciativas criadas no mês/);
@@ -576,6 +590,26 @@ caso('a prévia do e-mail traz o texto corrido, a tabela e o assunto', () => {
   assert.match(html, /table-layout:fixed/);
   assert.match(html, /height:100%/);
   assert.match(html, /min-height:4\.4em/);
+});
+
+caso('o disparo manual manda uma diretoria com destinatários limpos', () => {
+  const carga = cargaDisparoManual({ ano: 2026, mes: 10 }, {
+    slug: 'tecnologia-informacao',
+    nome: 'Área Tecnologia da Informação',
+    diretor_nome: 'Everton',
+    diretor_email: ' E.Dzikovicz@senff.com.br ',
+    emails_copia: ['maria.morais@senff.com.br', 'e.dzikovicz@senff.com.br', 'MARIA.MORAIS@senff.com.br', ''],
+  });
+  assert.deepEqual(carga, {
+    origem: 'manual',
+    ano: 2026,
+    mes: 10,
+    diretoria: 'tecnologia-informacao',
+    diretoria_nome: 'Área Tecnologia da Informação',
+    diretor_nome: 'Everton',
+    diretor_email: 'e.dzikovicz@senff.com.br',
+    emails_copia: ['maria.morais@senff.com.br'],
+  });
 });
 
 caso('segredo do cron exige o mesmo tamanho e o mesmo conteúdo', () => {

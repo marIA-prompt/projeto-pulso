@@ -1,111 +1,87 @@
 {
-  "name": "W6 — Relatório mensal por diretoria",
-  "active": false,
-  "settings": {
-    "executionOrder": "v1",
-    "timezone": "America/Sao_Paulo"
-  },
+  "name": "[IA] Pulso - Relatório mensal por diretoria",
   "nodes": [
     {
-      "id": "sticky-w6",
+      "parameters": {
+        "content": "W6 — e-mail mensal por diretoria\n\nDois jeitos de disparar:\n• Automático: dia 1, 8h (America/Sao_Paulo). Todas as diretorias com e-mail de diretor, mês anterior.\n• Manual: botão \"Enviar relatório desta diretoria\" em /relatorios no Pulso. Chega pelo webhook com\n  { ano, mes, diretoria, diretor_email, emails_copia } e envia só aquela diretoria.\nO nó Pedido une os dois formatos; Montar e-mails filtra pela diretoria no manual.\n\nCredenciais (selecione de novo após importar):\n• Disparo manual → Header Auth: header-auth-ia-pulso-prd-usr-maria-morais\n  Name: x-pulso-secret · Value: o mesmo N8N_WEBHOOK_SECRET da Vercel\n• Buscar no Supabase → Supabase API: supabase-ia-pulso-prd-usr-maria-morais\n• Enviar e-mail → SMTP: smtp-ia-zoho-usr-maria-morais\n  Zoho Mail: smtppro.zoho.com, porta 465, SSL. Remetente = a caixa autenticada.\n\nEste n8n bloqueia $env: nada aqui depende de variáveis de ambiente.\nURL do painel: constante PULSO_SITE_URL no topo de Montar e-mails.\n\nVercel: Production URL do webhook em N8N_WEBHOOK_W6_RELATORIO_MENSAL.\nCópias: diretorias.emails_copia → CC. Sem e-mail de diretor → ramo \"Sem e-mail\".\n\nJurídico e Compliance entram no e-mail de RH (Christian).\nSeguros vai para Bruna.",
+        "height": 680,
+        "width": 520,
+        "color": 5
+      },
+      "id": "e92370ba-a264-45e9-aeb6-e3bcf6a4afc5",
       "name": "Como ligar",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        0,
-        0
-      ],
-      "parameters": {
-        "content": "W6 — e-mail mensal por diretoria\n\n1. Em Settings → Variables do n8n:\n   SUPABASE_URL = https://SEU-PROJETO.supabase.co\n   SUPABASE_SERVICE_ROLE_KEY = service role (só no n8n, nunca no cliente)\n   PULSO_SITE_URL = URL do Pulso\n   PULSO_EMAIL_FROM = remetente\n   N8N_WEBHOOK_SECRET = o mesmo segredo da aplicação\n\n2. Crie a credencial SMTP com o nome \"Zoho Mail\" e selecione-a no nó \"Enviar e-mail\":\n   Host: smtp.zoho.com\n   Porta: 465\n   SSL/TLS: ligado\n   Usuário: o e-mail completo da caixa Zoho\n   Senha: senha de aplicativo do Zoho (Conta → Segurança → Senhas de aplicativo)\n   PULSO_EMAIL_FROM tem de ser essa mesma caixa — o Zoho recusa outro remetente.\n   Se a conta estiver em outro data center, troque o host (smtp.zoho.eu, smtp.zoho.in, smtp.zoho.com.au).\n\n3. Grave o e-mail de cada diretor e, se quiser, as cópias em /relatorios (admin).\n   As cópias ficam em diretorias.emails_copia (migration 0020). Sem e-mail do diretor, a diretoria entra no ramo \"Sem e-mail\" e não é enviada.\n   A cópia vai no CC do Zoho. Lista vazia não adiciona ninguém.\n\n4. Ative o fluxo. Dia 1, 8h (America/Sao_Paulo), ele chama\n   POST /rest/v1/rpc/relatorio_mensal_envio\n   e manda um e-mail HTML por diretor, com as métricas em cartões e as iniciativas em tabela.\n\n5. A URL de produção do webhook \"Disparo manual\" vai em\n   N8N_WEBHOOK_W6_RELATORIO_MENSAL na Vercel.\n   O botão da tela manda o mês; o n8n relê o Supabase.\n\nJurídico e Compliance entram no e-mail de RH (Christian).\nSeguros vai para Bruna.",
-        "width": 520,
-        "height": 640,
-        "color": 5
-      }
+        1808,
+        -300
+      ]
     },
     {
-      "id": "schedule-w6",
-      "name": "Dia 1 às 8h",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.2,
-      "position": [
-        520,
-        80
-      ],
       "parameters": {
         "rule": {
           "interval": [
             {
               "field": "months",
-              "monthsInterval": 1,
               "triggerAtDayOfMonth": 1,
               "triggerAtHour": 8,
               "triggerAtMinute": 0
             }
           ]
         }
-      }
+      },
+      "id": "e42adbfa-ddc9-4177-b416-f9fda6318e97",
+      "name": "Dia 1 às 8h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        2432,
+        -144
+      ]
     },
     {
-      "id": "webhook-w6",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pulso-relatorio-mensal",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "id": "16ee9497-5184-4070-81e4-a9f2c70d6c92",
       "name": "Disparo manual",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        520,
-        320
+        2432,
+        96
       ],
       "webhookId": "pulso-w6-relatorio-mensal",
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "pulso-relatorio-mensal",
-        "responseMode": "onReceived",
-        "options": {}
-      }
-    },
-    {
-      "id": "if-secret-w6",
-      "name": "Segredo do webhook",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        780,
-        320
-      ],
-      "parameters": {
-        "conditions": {
-          "string": [
-            {
-              "value1": "={{ $json.headers[\"x-pulso-secret\"] }}",
-              "operation": "equal",
-              "value2": "={{ $env.N8N_WEBHOOK_SECRET }}"
-            }
-          ]
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "header-auth-ia-pulso-prd-usr-maria-morais"
         }
       }
     },
     {
-      "id": "http-w6",
-      "name": "Buscar no Supabase",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "parameters": {
+        "jsCode": "// Une os dois gatilhos num formato só.\n// Agendamento (dia 1): todas as diretorias, mês anterior.\n// Webhook (botão do Pulso): uma diretoria, com ano/mês e destinatários.\nconst entrada = $input.first().json;\nconst manual = Boolean(entrada.headers || entrada.body);\n\nif (!manual) {\n  return [{ json: { origem: 'automatico', ano: null, mes: null, diretoria: null, diretor_email: null, emails_copia: null } }];\n}\n\nconst b = entrada.body || {};\nconst inteiro = (v) => {\n  const n = Number(v);\n  return Number.isInteger(n) ? n : null;\n};\nconst diretoria = String(b.diretoria || '').trim();\nif (!diretoria) {\n  throw new Error('Disparo manual sem diretoria. O botão do Pulso envia o campo \"diretoria\".');\n}\nreturn [{\n  json: {\n    origem: 'manual',\n    ano: inteiro(b.ano),\n    mes: inteiro(b.mes),\n    diretoria,\n    diretor_email: String(b.diretor_email || '').trim().toLowerCase() || null,\n    emails_copia: Array.isArray(b.emails_copia) ? b.emails_copia : null,\n  },\n}];\n"
+      },
+      "id": "7b1f3c52-6a0e-4d7e-9a43-3f2c9b8e5d10",
+      "name": "Pedido",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        1060,
-        180
-      ],
+        2688,
+        -32
+      ]
+    },
+    {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/relatorio_mensal_envio",
+        "url": "https://shrgnulprzsjpeomhmpt.supabase.co/rest/v1/rpc/relatorio_mensal_envio",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {
-              "name": "apikey",
-              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
-            },
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
-            },
             {
               "name": "Content-Type",
               "value": "application/json"
@@ -118,91 +94,121 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ p_ano: $json.body?.ano ?? $json.ano ?? null, p_mes: $json.body?.mes ?? $json.mes ?? null }) }}",
-        "options": {}
+        "jsonBody": "={{ JSON.stringify({ p_ano: $json.ano, p_mes: $json.mes }) }}",
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi"
+      },
+      "id": "5f037a74-f9b8-4267-aa6a-97eaae9fb7c8",
+      "name": "Buscar no Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2944,
+        -32
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "",
+          "name": "supabase-ia-pulso-prd-usr-maria-morais"
+        }
       }
     },
     {
-      "id": "code-w6",
+      "parameters": {
+        "jsCode": "const PULSO_SITE_URL = '';\n\nconst STAGE = {\n  ideia: 'Ideia',\n  backlog: 'Backlog',\n  priorizacao: 'Priorização',\n  em_desenvolvimento: 'Em Desenvolvimento',\n  em_teste: 'Em Teste',\n  concluido: 'Concluído',\n  showcase: 'Showcase',\n  cancelado: 'Cancelado',\n};\n\nfunction brl(n) {\n  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(Number(n) || 0);\n}\nfunction horas(n) {\n  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(Number(n) || 0) + ' h';\n}\nfunction dataCurta(iso) {\n  if (!iso) return '—';\n  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeZone: 'America/Sao_Paulo' }).format(new Date(iso));\n}\nfunction plural(n, um, muitos) {\n  const v = Number(n) || 0;\n  return v + ' ' + (v === 1 ? um : muitos);\n}\nfunction esc(valor) {\n  return String(valor ?? '').replace(/[&<>\"']/g, (c) => ({\n    '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;',\n  }[c]));\n}\n\nfunction kpi(valor, rotulo, nota) {\n  const detalhe = '<div style=\"margin-top:6px;min-height:4.4em;font-size:12px;line-height:1.45;color:#8A9199;\">' + (nota ? esc(nota) : '&nbsp;') + '</div>';\n  return '<td width=\"50%\" valign=\"top\" style=\"width:50%;height:100%;padding:6px;\">'\n    + '<table role=\"presentation\" width=\"100%\" height=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:100%;height:100%;background:#FFFFFF;border:1px solid #DADFE5;border-radius:14px;\">'\n    + '<tr><td valign=\"top\" height=\"100%\" style=\"height:100%;padding:16px 16px 14px;\">'\n    + '<div style=\"font-family:\\'IBM Plex Mono\\',Consolas,monospace;font-size:22px;line-height:1;font-weight:600;color:#0F2467;\">' + esc(valor) + '</div>'\n    + '<div style=\"margin-top:8px;font-size:14px;line-height:1.35;font-weight:500;color:#4C5156;\">' + esc(rotulo) + '</div>'\n    + detalhe\n    + '</td></tr></table></td>';\n}\n\nfunction grade(itens) {\n  const linhas = [];\n  for (let i = 0; i < itens.length; i += 2) {\n    const par = itens.slice(i, i + 2).map((item) => kpi(item[0], item[1], item[2])).join('');\n    const completa = itens[i + 1] ? par : par + '<td width=\"50%\" style=\"width:50%;padding:6px;\"></td>';\n    linhas.push('<tr>' + completa + '</tr>');\n  }\n  return '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:100%;margin:0 -6px 8px;table-layout:fixed;\">' + linhas.join('') + '</table>';\n}\n\nfunction secao(titulo) {\n  return '<h2 style=\"margin:28px 0 8px;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#8A9199;\">' + esc(titulo) + '</h2>';\n}\n\nfunction celula(texto, extra) {\n  return '<td style=\"padding:10px 12px;border-bottom:1px solid #EDEFF3;font-size:13px;line-height:1.4;color:#26292C;' + (extra || '') + '\">' + texto + '</td>';\n}\n\nfunction tabela(titulo, itens, quando) {\n  const lista = Array.isArray(itens) ? itens : [];\n  const cabeca = secao(titulo);\n  if (!lista.length) {\n    return cabeca + '<p style=\"margin:0 0 8px;font-size:14px;line-height:1.6;color:#686D73;\">'\n      + (quando === 'criacao' ? 'Nenhuma iniciativa criada neste mês.' : 'Nenhuma iniciativa atualizada neste mês.')\n      + '</p>';\n  }\n  const rotuloData = quando === 'criacao' ? 'Criada em' : 'Atualizada em';\n  const cab = ['Iniciativa', 'Estágio', 'Área', 'Proprietário', 'Horas/mês', 'Valor/mês', rotuloData]\n    .map((nome) => '<th align=\"left\" style=\"padding:10px 12px;border-bottom:1px solid #DADFE5;font-size:11px;letter-spacing:0.04em;text-transform:uppercase;color:#8A9199;\">' + nome + '</th>')\n    .join('');\n  const corpo = lista.map((item) => {\n    const data = dataCurta(quando === 'criacao' ? item.created_at : item.last_activity_at);\n    const horasTxt = item.hours_saved_month == null ? '—' : horas(item.hours_saved_month);\n    const valorTxt = item.cost_saved_month == null ? '—' : brl(item.cost_saved_month);\n    return '<tr>'\n      + celula(esc(item.title), 'font-weight:600;')\n      + celula(esc(STAGE[item.stage] || item.stage))\n      + celula(esc(item.area_name || '—'), 'color:#686D73;')\n      + celula(esc(item.owner_name || '—'), 'color:#686D73;')\n      + celula(esc(horasTxt), 'font-family:\\'IBM Plex Mono\\',Consolas,monospace;')\n      + celula(esc(valorTxt), 'font-family:\\'IBM Plex Mono\\',Consolas,monospace;')\n      + celula(esc(data), 'font-family:\\'IBM Plex Mono\\',Consolas,monospace;color:#686D73;')\n      + '</tr>';\n  }).join('');\n  return cabeca\n    + '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:1px solid #DADFE5;border-radius:14px;border-collapse:separate;background:#FFFFFF;\">'\n    + '<tr>' + cab + '</tr>' + corpo + '</table>';\n}\n\nfunction htmlRelatorio(rel) {\n  const m = rel.metricas || {};\n  const g = rel.ganhos || {};\n  const v = rel.valor || {};\n  const site = PULSO_SITE_URL.replace(/\\/$/, '');\n  const painel = site\n    ? '<p style=\"margin:24px 0 0;font-size:13px;line-height:1.6;\"><a href=\"' + esc(site + '/dashboard') + '\" style=\"color:#1D58EE;\">Abrir o painel do Pulso</a></p>'\n    : '';\n  const ola = rel.diretor_nome\n    ? '<p style=\"margin:0 0 4px;font-size:14px;line-height:1.6;color:#4C5156;\">Olá, ' + esc(rel.diretor_nome) + '</p>'\n    : '';\n  return '<!DOCTYPE html><html lang=\"pt-BR\"><body style=\"margin:0;padding:0;background:#F6F7F9;\">'\n    + '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#F6F7F9;\"><tr><td align=\"center\" style=\"padding:24px 12px;\">'\n    + '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:720px;background:#FFFFFF;border:1px solid #DADFE5;border-radius:14px;\">'\n    + '<tr><td style=\"padding:22px 28px;background:#0F2467;border-radius:14px 14px 0 0;\">'\n    + '<div style=\"font-family:Poppins,Segoe UI,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;\">Pulso</div>'\n    + '<div style=\"margin-top:4px;font-family:Poppins,Segoe UI,sans-serif;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:#90D0FF;\">Relatório mensal</div>'\n    + '</td></tr>'\n    + '<tr><td style=\"padding:28px;font-family:Poppins,Segoe UI,sans-serif;color:#26292C;\">'\n    + ola\n    + '<h1 style=\"margin:0;font-size:22px;line-height:1.3;font-weight:700;color:#0F2467;\">' + esc(rel.nome) + '</h1>'\n    + (rel.diretor_nome ? '<p style=\"margin:8px 0 0;font-size:14px;line-height:1.6;color:#4C5156;\">Diretor: ' + esc(rel.diretor_nome) + '</p>' : '')\n    + '<p style=\"margin:8px 0 0;font-size:14px;line-height:1.6;color:#686D73;\">Posição de ' + esc(rel.rotulo) + '. Cada coleção recebe as iniciativas criadas no mês e, em separado, as que já existiam e foram atualizadas.</p>'\n    + '<p style=\"margin:12px 0 0;font-size:14px;line-height:1.6;color:#686D73;\">'\n    + esc(plural(m.criadas_no_mes, 'iniciativa criada', 'iniciativas criadas')) + ' e '\n    + esc(plural(m.atualizadas_no_mes, 'atualizada', 'atualizadas'))\n    + ' neste mês. Criadas não se repetem na segunda lista. A carga legada não entra como criação.</p>'\n    + secao('Métricas')\n    + grade([\n      [String(m.iniciativas || 0), 'Iniciativas da área', (m.ativas || 0) + ' ativas · ' + (m.concluidas || 0) + ' concluídas'],\n      [String(m.criadas_no_mes || 0), 'Criadas no mês', ''],\n      [String(m.atualizadas_no_mes || 0), 'Atualizadas no mês', ''],\n      [String(m.em_alerta || 0), 'Em alerta', 'Ativas sem atualização há mais de 14 dias.'],\n      [String(m.concluidas_no_mes || 0), 'Concluídas no mês', ''],\n      [String(m.com_ia || 0), 'Com uso de IA', ''],\n      [String(m.canceladas || 0), 'Canceladas', ''],\n      [String(m.ativas || 0), 'Ativas agora', ''],\n    ])\n    + secao('Ganhos')\n    + grade([\n      [horas(g.horas_devolvidas_mes), 'Horas devolvidas por mês', 'Só iniciativas concluídas. É o ganho realizado da área.'],\n      [horas(g.horas_concluidas_no_mes), 'Horas das concluídas no mês', ''],\n      [horas(g.horas_criadas), 'Horas nas criadas no mês', ''],\n      [horas(g.horas_atualizadas), 'Horas nas atualizadas no mês', ''],\n    ])\n    + '<p style=\"margin:4px 0 0;font-size:12px;line-height:1.5;color:#8A9199;\">'\n    + esc((m.com_horas || 0) + ' de ' + (m.iniciativas || 0) + ' iniciativas com horas informadas. O portfólio inteiro da área soma ' + horas(g.horas_portfolio) + '/mês, em qualquer estágio.')\n    + '</p>'\n    + secao('Valor para a área')\n    + grade([\n      [brl(v.mensal_realizado), 'Realizado por mês', 'Soma do R$/mês das concluídas.'],\n      [brl(v.anual_realizado), 'Realizado por ano', 'O realizado mensal vezes 12.'],\n      [brl(v.mensal_concluidas_no_mes), 'Concluídas neste mês', ''],\n      [brl(v.mensal_movimento), 'Movimento do mês', brl(v.mensal_criadas) + ' nas criadas e ' + brl(v.mensal_atualizadas) + ' nas atualizadas. Não soma com o realizado.'],\n    ])\n    + '<p style=\"margin:4px 0 0;font-size:12px;line-height:1.5;color:#8A9199;\">'\n    + esc((m.com_valor || 0) + ' de ' + (m.iniciativas || 0) + ' iniciativas com valor em R$ informado.')\n    + '</p>'\n    + tabela('Iniciativas criadas no mês', rel.criadas, 'criacao')\n    + tabela('Iniciativas atualizadas no mês', rel.atualizadas, 'atualizacao')\n    + painel\n    + '</td></tr></table>'\n    + '<p style=\"max-width:720px;margin:12px auto 0;font-family:Poppins,Segoe UI,sans-serif;font-size:12px;line-height:1.5;color:#8A9199;\">Pulso · Senff. Transparência interna.</p>'\n    + '</td></tr></table></body></html>';\n}\n\nconst linhas = [];\nfor (const item of $input.all()) {\n  const corpo = item.json;\n  if (Array.isArray(corpo)) linhas.push(...corpo);\n  else if (corpo && Array.isArray(corpo.data)) linhas.push(...corpo.data);\n  else if (corpo && corpo.slug) linhas.push(corpo);\n  else if (corpo && corpo.message && !corpo.slug) throw new Error(corpo.message);\n}\n\nfunction listaCopia(rel) {\n  const bruto = [];\n  if (Array.isArray(rel.emails_copia)) bruto.push(...rel.emails_copia);\n  else if (typeof rel.copia === 'string') bruto.push(...rel.copia.split(/[,;]+/));\n  const para = String(rel.diretor_email || '').trim().toLowerCase();\n  const vistos = new Set();\n  const saida = [];\n  for (const item of bruto) {\n    const email = String(item || '').trim().toLowerCase();\n    if (!email || email.indexOf('@') < 1 || email === para || vistos.has(email)) continue;\n    vistos.add(email);\n    saida.push(email);\n  }\n  return saida.join(', ');\n}\n\nconst pedido = $('Pedido').first().json;\nlet alvo = linhas;\nif (pedido.origem === 'manual') {\n  alvo = linhas.filter((rel) => rel.slug === pedido.diretoria);\n  if (!alvo.length) throw new Error('Diretoria \"' + pedido.diretoria + '\" não encontrada no Supabase.');\n  alvo = alvo.map((rel) => ({\n    ...rel,\n    diretor_email: pedido.diretor_email || rel.diretor_email,\n    emails_copia: Array.isArray(pedido.emails_copia) ? pedido.emails_copia : rel.emails_copia,\n  }));\n}\n\nreturn alvo.map((rel) => ({\n  json: {\n    ...rel,\n    origem: pedido.origem,\n    assunto: 'Pulso — ' + rel.nome + ' — ' + rel.rotulo,\n    copia: listaCopia(rel),\n    html: htmlRelatorio(rel),\n  },\n}));\n"
+      },
+      "id": "80751b63-1278-414b-bfd8-f04e705bca47",
       "name": "Montar e-mails",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1320,
-        180
-      ],
-      "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "javaScript",
-        "jsCode": "const STAGE = {\n  ideia: 'Ideia',\n  backlog: 'Backlog',\n  priorizacao: 'Priorização',\n  em_desenvolvimento: 'Em Desenvolvimento',\n  em_teste: 'Em Teste',\n  concluido: 'Concluído',\n  showcase: 'Showcase',\n  cancelado: 'Cancelado',\n};\n\nfunction brl(n) {\n  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(Number(n) || 0);\n}\nfunction horas(n) {\n  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(Number(n) || 0) + ' h';\n}\nfunction dataCurta(iso) {\n  if (!iso) return '—';\n  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeZone: 'America/Sao_Paulo' }).format(new Date(iso));\n}\nfunction plural(n, um, muitos) {\n  const v = Number(n) || 0;\n  return v + ' ' + (v === 1 ? um : muitos);\n}\nfunction esc(valor) {\n  return String(valor ?? '').replace(/[&<>\"']/g, (c) => ({\n    '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;',\n  }[c]));\n}\n\nfunction kpi(valor, rotulo, nota) {\n  const detalhe = '<div style=\"margin-top:6px;min-height:4.4em;font-size:12px;line-height:1.45;color:#8A9199;\">' + (nota ? esc(nota) : '&nbsp;') + '</div>';\n  return '<td width=\"50%\" valign=\"top\" style=\"width:50%;height:100%;padding:6px;\">'\n    + '<table role=\"presentation\" width=\"100%\" height=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:100%;height:100%;background:#FFFFFF;border:1px solid #DADFE5;border-radius:14px;\">'\n    + '<tr><td valign=\"top\" height=\"100%\" style=\"height:100%;padding:16px 16px 14px;\">'\n    + '<div style=\"font-family:\\'IBM Plex Mono\\',Consolas,monospace;font-size:22px;line-height:1;font-weight:600;color:#0F2467;\">' + esc(valor) + '</div>'\n    + '<div style=\"margin-top:8px;font-size:14px;line-height:1.35;font-weight:500;color:#4C5156;\">' + esc(rotulo) + '</div>'\n    + detalhe\n    + '</td></tr></table></td>';\n}\n\nfunction grade(itens) {\n  const linhas = [];\n  for (let i = 0; i < itens.length; i += 2) {\n    const par = itens.slice(i, i + 2).map((item) => kpi(item[0], item[1], item[2])).join('');\n    const completa = itens[i + 1] ? par : par + '<td width=\"50%\" style=\"width:50%;padding:6px;\"></td>';\n    linhas.push('<tr>' + completa + '</tr>');\n  }\n  return '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"width:100%;margin:0 -6px 8px;table-layout:fixed;\">' + linhas.join('') + '</table>';\n}\n\nfunction secao(titulo) {\n  return '<h2 style=\"margin:28px 0 8px;font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#8A9199;\">' + esc(titulo) + '</h2>';\n}\n\nfunction celula(texto, extra) {\n  return '<td style=\"padding:10px 12px;border-bottom:1px solid #EDEFF3;font-size:13px;line-height:1.4;color:#26292C;' + (extra || '') + '\">' + texto + '</td>';\n}\n\nfunction tabela(titulo, itens, quando) {\n  const lista = Array.isArray(itens) ? itens : [];\n  const cabeca = secao(titulo);\n  if (!lista.length) {\n    return cabeca + '<p style=\"margin:0 0 8px;font-size:14px;line-height:1.6;color:#686D73;\">'\n      + (quando === 'criacao' ? 'Nenhuma iniciativa criada neste mês.' : 'Nenhuma iniciativa atualizada neste mês.')\n      + '</p>';\n  }\n  const rotuloData = quando === 'criacao' ? 'Criada em' : 'Atualizada em';\n  const cab = ['Iniciativa', 'Estágio', 'Área', 'Proprietário', 'Horas/mês', 'Valor/mês', rotuloData]\n    .map((nome) => '<th align=\"left\" style=\"padding:10px 12px;border-bottom:1px solid #DADFE5;font-size:11px;letter-spacing:0.04em;text-transform:uppercase;color:#8A9199;\">' + nome + '</th>')\n    .join('');\n  const corpo = lista.map((item) => {\n    const data = dataCurta(quando === 'criacao' ? item.created_at : item.last_activity_at);\n    const horasTxt = item.hours_saved_month == null ? '—' : horas(item.hours_saved_month);\n    const valorTxt = item.cost_saved_month == null ? '—' : brl(item.cost_saved_month);\n    return '<tr>'\n      + celula(esc(item.title), 'font-weight:600;')\n      + celula(esc(STAGE[item.stage] || item.stage))\n      + celula(esc(item.area_name || '—'), 'color:#686D73;')\n      + celula(esc(item.owner_name || '—'), 'color:#686D73;')\n      + celula(esc(horasTxt), 'font-family:\\'IBM Plex Mono\\',Consolas,monospace;')\n      + celula(esc(valorTxt), 'font-family:\\'IBM Plex Mono\\',Consolas,monospace;')\n      + celula(esc(data), 'font-family:\\'IBM Plex Mono\\',Consolas,monospace;color:#686D73;')\n      + '</tr>';\n  }).join('');\n  return cabeca\n    + '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:1px solid #DADFE5;border-radius:14px;border-collapse:separate;background:#FFFFFF;\">'\n    + '<tr>' + cab + '</tr>' + corpo + '</table>';\n}\n\nfunction htmlRelatorio(rel) {\n  const m = rel.metricas || {};\n  const g = rel.ganhos || {};\n  const v = rel.valor || {};\n  let site = '';\n  try { site = String($env.PULSO_SITE_URL || '').replace(/\\/$/, ''); } catch (erro) { site = ''; }\n  const painel = site\n    ? '<p style=\"margin:24px 0 0;font-size:13px;line-height:1.6;\"><a href=\"' + esc(site + '/dashboard') + '\" style=\"color:#1D58EE;\">Abrir o painel do Pulso</a></p>'\n    : '';\n  const ola = rel.diretor_nome\n    ? '<p style=\"margin:0 0 4px;font-size:14px;line-height:1.6;color:#4C5156;\">Olá, ' + esc(rel.diretor_nome) + '</p>'\n    : '';\n  return '<!DOCTYPE html><html lang=\"pt-BR\"><body style=\"margin:0;padding:0;background:#F6F7F9;\">'\n    + '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#F6F7F9;\"><tr><td align=\"center\" style=\"padding:24px 12px;\">'\n    + '<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:720px;background:#FFFFFF;border:1px solid #DADFE5;border-radius:14px;\">'\n    + '<tr><td style=\"padding:22px 28px;background:#0F2467;border-radius:14px 14px 0 0;\">'\n    + '<div style=\"font-family:Poppins,Segoe UI,sans-serif;font-size:18px;font-weight:700;color:#FFFFFF;\">Pulso</div>'\n    + '<div style=\"margin-top:4px;font-family:Poppins,Segoe UI,sans-serif;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:#90D0FF;\">Relatório mensal</div>'\n    + '</td></tr>'\n    + '<tr><td style=\"padding:28px;font-family:Poppins,Segoe UI,sans-serif;color:#26292C;\">'\n    + ola\n    + '<h1 style=\"margin:0;font-size:22px;line-height:1.3;font-weight:700;color:#0F2467;\">' + esc(rel.nome) + '</h1>'\n    + (rel.diretor_nome ? '<p style=\"margin:8px 0 0;font-size:14px;line-height:1.6;color:#4C5156;\">Diretor: ' + esc(rel.diretor_nome) + '</p>' : '')\n    + '<p style=\"margin:8px 0 0;font-size:14px;line-height:1.6;color:#686D73;\">Posição de ' + esc(rel.rotulo) + '. Cada coleção recebe as iniciativas criadas no mês e, em separado, as que já existiam e foram atualizadas.</p>'\n    + '<p style=\"margin:12px 0 0;font-size:14px;line-height:1.6;color:#686D73;\">'\n    + esc(plural(m.criadas_no_mes, 'iniciativa criada', 'iniciativas criadas')) + ' e '\n    + esc(plural(m.atualizadas_no_mes, 'atualizada', 'atualizadas'))\n    + ' neste mês. Criadas não se repetem na segunda lista. A carga legada não entra como criação.</p>'\n    + secao('Métricas')\n    + grade([\n      [String(m.iniciativas || 0), 'Iniciativas da área', (m.ativas || 0) + ' ativas · ' + (m.concluidas || 0) + ' concluídas'],\n      [String(m.criadas_no_mes || 0), 'Criadas no mês', ''],\n      [String(m.atualizadas_no_mes || 0), 'Atualizadas no mês', ''],\n      [String(m.em_alerta || 0), 'Em alerta', 'Ativas sem atualização há mais de 14 dias.'],\n      [String(m.concluidas_no_mes || 0), 'Concluídas no mês', ''],\n      [String(m.com_ia || 0), 'Com uso de IA', ''],\n      [String(m.canceladas || 0), 'Canceladas', ''],\n      [String(m.ativas || 0), 'Ativas agora', ''],\n    ])\n    + secao('Ganhos')\n    + grade([\n      [horas(g.horas_devolvidas_mes), 'Horas devolvidas por mês', 'Só iniciativas concluídas. É o ganho realizado da área.'],\n      [horas(g.horas_concluidas_no_mes), 'Horas das concluídas no mês', ''],\n      [horas(g.horas_criadas), 'Horas nas criadas no mês', ''],\n      [horas(g.horas_atualizadas), 'Horas nas atualizadas no mês', ''],\n    ])\n    + '<p style=\"margin:4px 0 0;font-size:12px;line-height:1.5;color:#8A9199;\">'\n    + esc((m.com_horas || 0) + ' de ' + (m.iniciativas || 0) + ' iniciativas com horas informadas. O portfólio inteiro da área soma ' + horas(g.horas_portfolio) + '/mês, em qualquer estágio.')\n    + '</p>'\n    + secao('Valor para a área')\n    + grade([\n      [brl(v.mensal_realizado), 'Realizado por mês', 'Soma do R$/mês das concluídas.'],\n      [brl(v.anual_realizado), 'Realizado por ano', 'O realizado mensal vezes 12.'],\n      [brl(v.mensal_concluidas_no_mes), 'Concluídas neste mês', ''],\n      [brl(v.mensal_movimento), 'Movimento do mês', brl(v.mensal_criadas) + ' nas criadas e ' + brl(v.mensal_atualizadas) + ' nas atualizadas. Não soma com o realizado.'],\n    ])\n    + '<p style=\"margin:4px 0 0;font-size:12px;line-height:1.5;color:#8A9199;\">'\n    + esc((m.com_valor || 0) + ' de ' + (m.iniciativas || 0) + ' iniciativas com valor em R$ informado.')\n    + '</p>'\n    + tabela('Iniciativas criadas no mês', rel.criadas, 'criacao')\n    + tabela('Iniciativas atualizadas no mês', rel.atualizadas, 'atualizacao')\n    + painel\n    + '</td></tr></table>'\n    + '<p style=\"max-width:720px;margin:12px auto 0;font-family:Poppins,Segoe UI,sans-serif;font-size:12px;line-height:1.5;color:#8A9199;\">Pulso · Senff. Transparência interna.</p>'\n    + '</td></tr></table></body></html>';\n}\n\nconst linhas = [];\nfor (const item of $input.all()) {\n  const corpo = item.json;\n  if (Array.isArray(corpo)) linhas.push(...corpo);\n  else if (corpo && Array.isArray(corpo.data)) linhas.push(...corpo.data);\n  else if (corpo && corpo.slug) linhas.push(corpo);\n  else if (corpo && corpo.message && !corpo.slug) throw new Error(corpo.message);\n}\n\nfunction listaCopia(rel) {\n  const bruto = [];\n  if (Array.isArray(rel.emails_copia)) bruto.push(...rel.emails_copia);\n  else if (typeof rel.copia === 'string') bruto.push(...rel.copia.split(/[,;]+/));\n  const para = String(rel.diretor_email || '').trim().toLowerCase();\n  const vistos = new Set();\n  const saida = [];\n  for (const item of bruto) {\n    const email = String(item || '').trim().toLowerCase();\n    if (!email || email.indexOf('@') < 1 || email === para || vistos.has(email)) continue;\n    vistos.add(email);\n    saida.push(email);\n  }\n  return saida.join(', ');\n}\n\nreturn linhas.map((rel) => ({\n  json: {\n    ...rel,\n    assunto: 'Pulso — ' + rel.nome + ' — ' + rel.rotulo,\n    copia: listaCopia(rel),\n    html: htmlRelatorio(rel),\n  },\n}));\n"
-      }
+        3200,
+        -32
+      ]
     },
     {
-      "id": "if-email-w6",
-      "name": "Tem e-mail?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        1580,
-        180
-      ],
       "parameters": {
         "conditions": {
-          "string": [
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
             {
-              "value1": "={{ $json.diretor_email }}",
-              "operation": "isNotEmpty"
+              "leftValue": "={{ $json.diretor_email }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              },
+              "rightValue": ""
             }
-          ]
-        }
-      }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cf2fbdbe-3188-41f8-bd7a-009064e318b4",
+      "name": "Tem e-mail?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3456,
+        -32
+      ]
     },
     {
-      "id": "email-w6",
+      "parameters": {
+        "fromEmail": "Pulso <maria.morais@senff.com.br>",
+        "toEmail": "={{ $json.diretor_email }}",
+        "subject": "={{ $json.assunto }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "ccEmail": "={{ $json.copia }}",
+          "appendAttribution": false
+        },
+        "emailFormat": "html"
+      },
+      "id": "39a4d062-b154-4446-9d9e-99b7f2b7a9e3",
       "name": "Enviar e-mail",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        1840,
-        80
+        3712,
+        -144
       ],
-      "parameters": {
-        "fromEmail": "={{ $env.PULSO_EMAIL_FROM }}",
-        "toEmail": "={{ $json.diretor_email }}",
-        "subject": "={{ $json.assunto }}",
-        "emailFormat": "html",
-        "options": {
-          "ccEmail": "={{ $json.copia }}"
-        },
-        "html": "={{ $json.html }}"
-      },
+      "notesInFlow": true,
+      "webhookId": "8edbbc56-fbbc-452a-8ecd-d306d919a922",
       "credentials": {
         "smtp": {
-          "id": "ZOHO_MAIL",
-          "name": "Zoho Mail"
+          "id": "MJiLbCiEg74ITPRU",
+          "name": "smtp-ia-zoho-usr-maria-morais"
         }
       },
-      "notes": "Zoho Mail via SMTP: smtp.zoho.com, porta 465, SSL. O remetente (PULSO_EMAIL_FROM) é a caixa autenticada.",
-      "notesInFlow": true
+      "notes": "Zoho Mail via SMTP (smtppro.zoho.com, 465, SSL). Remetente = caixa autenticada (maria.morais)."
     },
     {
-      "id": "noop-w6",
+      "parameters": {},
+      "id": "10a57277-1f1e-4910-a267-be5d84037ab0",
       "name": "Sem e-mail",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        1840,
-        300
-      ],
-      "parameters": {}
+        3712,
+        80
+      ]
     }
   ],
+  "pinData": {},
   "connections": {
     "Dia 1 às 8h": {
       "main": [
         [
           {
-            "node": "Buscar no Supabase",
+            "node": "Pedido",
             "type": "main",
             "index": 0
           }
@@ -213,23 +219,11 @@
       "main": [
         [
           {
-            "node": "Segredo do webhook",
+            "node": "Pedido",
             "type": "main",
             "index": 0
           }
         ]
-      ]
-    },
-    "Segredo do webhook": {
-      "main": [
-        [
-          {
-            "node": "Buscar no Supabase",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        []
       ]
     },
     "Buscar no Supabase": {
@@ -271,6 +265,31 @@
           }
         ]
       ]
+    },
+    "Pedido": {
+      "main": [
+        [
+          {
+            "node": "Buscar no Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
-  }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timezone": "America/Sao_Paulo"
+  },
+  "versionId": "032d7719-9edc-49a2-8c3c-554a221deac3",
+  "meta": {
+    "instanceId": "d30062bd88697bd62d3b771228d729c041c3118df0396b3093600c8f6fe5f50b"
+  },
+  "nodeGroups": [],
+  "id": "HAeCCerfAyUFifSA",
+  "tags": []
 }
