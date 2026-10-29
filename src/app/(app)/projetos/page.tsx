@@ -79,9 +79,12 @@ export default async function ProjetosPage({
               : 'Seu perfil é somente leitura: você acompanha todas as iniciativas, mas não cadastra nem edita.'}
           </p>
         </div>
-        {podeCadastrar && (
-          <Link href="/projetos/novo"><Button>Cadastrar iniciativa</Button></Link>
-        )}
+        <div className="flex flex-wrap gap-2">
+          <Link href="/match"><Button variant="ghost">Match de soluções</Button></Link>
+          {podeCadastrar && (
+            <Link href="/projetos/novo"><Button>Cadastrar iniciativa</Button></Link>
+          )}
+        </div>
       </header>
 
       {searchParams.ok && (

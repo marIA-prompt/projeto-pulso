@@ -10,6 +10,7 @@ export function linksDaNav({
     ...(isGerencial ? [{ href: '/rankings', label: 'Rankings' }] : []),
     ...(isAdmin ? [{ href: '/relatorios', label: 'Relatórios' }] : []),
     { href: '/projetos', label: 'Iniciativas' },
+    { href: '/match', label: 'Match' },
     ...(isGerencial ? [{ href: '/lei-do-bem', label: 'Lei do Bem' }] : []),
     { href: '/comunidade', label: 'Comunidade' },
     { href: '/frequencias', label: 'Frequências' },
