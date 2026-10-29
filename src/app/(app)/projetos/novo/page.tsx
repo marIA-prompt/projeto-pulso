@@ -5,15 +5,19 @@ import { requireUser } from '@/lib/auth';
 import { hasRoleAtLeast } from '@/lib/types';
 import { ProjetoForm } from '@/components/ProjetoForm';
 import { nomesDiretoria } from '@/lib/diretorias-catalogo';
+import { problemaNormalizado } from '@/lib/match-solucoes';
 import { criarProjeto } from '../actions';
 
 export const metadata = { title: 'Nova iniciativa — Pulso' };
 
-export default async function NovoProjetoPage() {
+export default async function NovoProjetoPage({
+  searchParams,
+}: { searchParams: { problema?: string | string[] } }) {
   const perfil = await requireUser();
   // Leitor é somente leitura: não abre a tela de cadastro.
   if (!hasRoleAtLeast(perfil.role, 'participante')) redirect('/projetos');
 
+  const problema = problemaNormalizado(searchParams.problema);
   const supabase = createClient();
   const [{ data: areas }, { data: pessoas }, { data: diretorias }] = await Promise.all([
     supabase.from('areas').select('id, name').eq('is_real_area', true).order('name'),
@@ -40,6 +44,11 @@ export default async function NovoProjetoPage() {
           ✕ Fechar
         </Link>
       </header>
+      {problema && (
+        <p role="status" className="rounded-s bg-[var(--sig-ok-bg)] px-3 py-2 text-sm text-[var(--sig-ok)]">
+          O Pulsenff não encontrou iniciativa parecida. O problema já está em Objetivo e Contexto — complete o cadastro para apresentar na próxima reunião.
+        </p>
+      )}
       <ProjetoForm
         action={criarProjeto}
         areas={areas ?? []}
@@ -48,6 +57,7 @@ export default async function NovoProjetoPage() {
         ownerPadrao={perfil.id}
         rotulo="Cadastrar iniciativa"
         cancelHref="/projetos"
+        valores={problema ? { objetivo_contexto: problema } : undefined}
       />
     </div>
   );

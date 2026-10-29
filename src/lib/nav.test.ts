@@ -63,6 +63,17 @@ caso('administrador vê Rankings, Relatórios, Lei do Bem e Admin', () => {
   assert.ok(iRank < iRel && iRel < iIniciativas);
 });
 
+caso('todos os papéis veem o Match logo depois de Iniciativas', () => {
+  for (const papel of PAPEIS) {
+    const h = hrefs(papel);
+    const iIniciativas = h.indexOf('/projetos');
+    const iMatch = h.indexOf('/match');
+    const iComunidade = h.indexOf('/comunidade');
+    assert.equal(iMatch, iIniciativas + 1, papel);
+    assert.ok(iMatch < iComunidade, papel);
+  }
+});
+
 caso('os cinco papéis cobrem o gate gerencial+', () => {
   assert.deepEqual(PAPEIS, ['leitor', 'participante', 'editor', 'gerencial', 'administrador']);
   assert.equal(hasRoleAtLeast('editor', 'gerencial'), false);
