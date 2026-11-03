@@ -1,11 +1,17 @@
 import assert from 'node:assert/strict';
 import {
+  AMBIENTES_SENFF,
+  identificarAmbienteSenff,
+  pontuarHabilidades,
+} from './ferramentas-senff';
+import {
   auditoriaPessoa,
   complexidadeEntrega,
   corteMeses,
   dataEntrega,
   datasDoPeriodo,
   excluidaDoRanking,
+  formulaEspecialista,
   indiceColaboracao,
   kpisDoScorecard,
   montarRankings,
@@ -13,6 +19,7 @@ import {
   normalizarFerramenta,
   partesColaboracao,
   partesComplexidade,
+  scoreConhecimento,
   scoreEspecialista,
   volumeHabilidades,
   RANKING_TOP,
@@ -237,12 +244,12 @@ caso('especialistas somam volume de habilidades e complexidade das entregas', ()
   assert.equal(r.especialistas[0].id, 'carla');
   assert.equal(
     r.especialistas[0].valor,
-    scoreEspecialista(3, complexidadeEntrega(projetos[0])),
+    scoreConhecimento(50, complexidadeEntrega(projetos[0])),
   );
   const eva = r.especialistas.find((p) => p.id === 'eva');
   const diego = r.especialistas.find((p) => p.id === 'diego');
   assert.ok(eva && diego);
-  assert.equal(eva.valor, scoreEspecialista(2, 0));
+  assert.equal(eva.valor, scoreConhecimento(30, 0));
   assert.equal(diego.valor, scoreEspecialista(1, 0));
   assert.ok(r.especialistas[0].valor > eva.valor);
   assert.ok(eva.valor > diego.valor);
@@ -482,7 +489,8 @@ caso('auditoriaPessoa lista entregas, habilidades e partes da pontuação', () =
   assert.equal(a!.entregas[0].complexidade.total, complexidadeEntrega(projetos[0]));
   assert.equal(a!.entregas[0].noPeriodo, true);
   assert.equal(a!.ativas.length, 1);
-  assert.equal(a!.scoreEspecialista, scoreEspecialista(2, a!.complexidadeTotal));
+  assert.equal(a!.pontosHabilidades, 40);
+  assert.equal(a!.scoreEspecialista, scoreConhecimento(40, a!.complexidadeTotal));
   const partes = partesColaboracao({
     presentes3m: 4, convites3m: 8, available: true,
     iniciativasAtivas: 1, ferramentas: 2, temBio: true, temContato: true,
@@ -490,6 +498,109 @@ caso('auditoriaPessoa lista entregas, habilidades e partes da pontuação', () =
   assert.equal(a!.colaboracao.indice, partes.indice);
   assert.equal(a!.colaboracao.presenca + a!.colaboracao.disponibilidade + a!.colaboracao.ativas + a!.colaboracao.perfil, partes.indice);
   assert.equal(partesComplexidade(projetos[0]).total, complexidadeEntrega(projetos[0]));
+});
+
+caso('ambientes da Senff pesam mais que uma habilidade comum', () => {
+  assert.equal(identificarAmbienteSenff('Claude')?.pontos, 10);
+  assert.equal(identificarAmbienteSenff('saber Claude')?.id, 'claude');
+  assert.equal(identificarAmbienteSenff('Claude.ai')?.id, 'claude');
+  assert.equal(identificarAmbienteSenff('Claude-3')?.id, 'claude');
+  assert.equal(identificarAmbienteSenff('claudette'), null);
+  assert.equal(identificarAmbienteSenff('ChatGPT')?.pontos, 20);
+  assert.equal(identificarAmbienteSenff('Chat GPT')?.id, 'chatgpt');
+  assert.equal(identificarAmbienteSenff('Usar Airflow')?.pontos, 20);
+  assert.equal(identificarAmbienteSenff('Usar Arflow')?.id, 'airflow');
+  assert.equal(identificarAmbienteSenff('lançar Agentes de Monitoramento')?.id, 'agentes');
+  assert.equal(identificarAmbienteSenff('Python')?.pontos, 20);
+  assert.equal(identificarAmbienteSenff('Java'), null);
+  assert.equal(identificarAmbienteSenff('API'), null);
+  assert.equal(identificarAmbienteSenff('Visual Studio'), null);
+
+  const repetido = pontuarHabilidades(['Claude', 'Claude.ai'], ['saber Claude']);
+  assert.equal(repetido.total, 10);
+  assert.equal(repetido.itens.length, 1);
+
+  const pessoas = [
+    pessoa({
+      id: 'lia', full_name: 'Lia',
+      languages: ['SQL', 'Java', 'C#'],
+    }),
+    pessoa({
+      id: 'caio', full_name: 'Caio',
+      automations: ['ChatGPT', 'Usar Airflow', 'lançar Agentes de Monitoramento'],
+      languages: ['Claude'],
+    }),
+    pessoa({
+      id: 'bia', full_name: 'Bia',
+      automations: ['Excel Avançado'],
+    }),
+  ];
+  const r = montarRankings(pessoas, [], [], AGORA);
+  const caio = r.especialistas.find((p) => p.id === 'caio');
+  const lia = r.especialistas.find((p) => p.id === 'lia');
+  const bia = r.especialistas.find((p) => p.id === 'bia');
+  assert.ok(caio && lia && bia);
+  assert.equal(caio.valor, scoreConhecimento(10 + 20 + 20 + 20, 0));
+  assert.equal(lia.valor, scoreEspecialista(3, 0));
+  assert.equal(bia.valor, scoreEspecialista(1, 0));
+  assert.ok(caio.valor > lia.valor);
+  assert.equal(r.especialistas[0].id, 'caio');
+  assert.ok(caio.detalhe.includes('ChatGPT'));
+  assert.ok(caio.detalhe.includes('Airflow'));
+  assert.ok(caio.detalhe.includes('Agentes de Monitoramento'));
+  assert.ok(caio.detalhe.includes('70 pts'));
+
+  const aud = auditoriaPessoa('caio', pessoas, [], [], AGORA);
+  assert.ok(aud);
+  assert.equal(aud!.pontosHabilidades, 70);
+  assert.equal(aud!.scoreEspecialista, 70);
+  assert.equal(aud!.habilidades.filter((h) => h.senff).length, 4);
+  assert.equal(
+    formulaEspecialista(aud!.habilidades, 0),
+    'Claude 10 + ChatGPT 20 + Usar Airflow 20 + lançar Agentes de Monitoramento 20 = 70',
+  );
+});
+
+caso('os 17 ambientes do guia da Senff têm o peso do grupo', () => {
+  const pontos: Record<string, number> = {
+    chatgpt: 20,
+    claude: 10,
+    copilot: 10,
+    gemini: 10,
+    codex: 20,
+    cursor: 20,
+    vscode: 20,
+    python: 20,
+    navigate: 20,
+    n8n: 20,
+    clickup: 20,
+    agentes: 20,
+    maf: 20,
+    airflow: 20,
+    powerbi: 20,
+    api: 20,
+    pulso: 10,
+  };
+  assert.equal(AMBIENTES_SENFF.length, 17);
+  for (const ambiente of AMBIENTES_SENFF) {
+    assert.equal(ambiente.pontos, pontos[ambiente.id], ambiente.id);
+    assert.equal(identificarAmbienteSenff(ambiente.rotulo)?.id, ambiente.id);
+  }
+  assert.equal(identificarAmbienteSenff('Microsoft 365 Copilot')?.pontos, 10);
+  assert.equal(identificarAmbienteSenff('Gemini')?.pontos, 10);
+  assert.equal(identificarAmbienteSenff('LiteLLM')?.id, 'api');
+  assert.equal(identificarAmbienteSenff('Microsoft Agent Framework')?.id, 'maf');
+  assert.equal(identificarAmbienteSenff('Visual Studio Code')?.id, 'vscode');
+  assert.equal(identificarAmbienteSenff('Power BI')?.id, 'powerbi');
+  assert.equal(identificarAmbienteSenff('ClickUp')?.id, 'clickup');
+  assert.equal(identificarAmbienteSenff('Plataforma Pulso')?.id, 'pulso');
+  assert.equal(identificarAmbienteSenff('n8n')?.pontos, 20);
+  const tudo = pontuarHabilidades(
+    AMBIENTES_SENFF.map((a) => a.rotulo),
+    ['Claude', 'ChatGPT', 'Python'],
+  );
+  assert.equal(tudo.itens.length, 17);
+  assert.equal(tudo.total, AMBIENTES_SENFF.reduce((s, a) => s + a.pontos, 0));
 });
 
 caso('auditoriaPessoa não devolve excluídos nem ids inexistentes', () => {

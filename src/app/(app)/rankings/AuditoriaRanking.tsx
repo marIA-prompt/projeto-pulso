@@ -6,6 +6,7 @@ import { Avatar } from '@/components/Avatar';
 import { clsx } from '@/lib/clsx';
 import { diaCurto, nf, nf1, plural } from '@/lib/format';
 import {
+  formulaEspecialista,
   type AuditoriaIniciativa,
   type AuditoriaPessoa,
   type RankingCategoria,
@@ -44,7 +45,7 @@ export function AuditoriaRanking({
     };
   }, [onFechar]);
 
-  const formulaEsp = `${nf.format(dados.volumeHabilidades)} × 10 + ${nf.format(dados.complexidadeTotal)} = ${nf.format(dados.scoreEspecialista)}`;
+  const formulaEsp = formulaEspecialista(dados.habilidades, dados.complexidadeTotal);
 
   return (
     <div
@@ -102,15 +103,22 @@ export function AuditoriaRanking({
         </Bloco>
 
         <Bloco destaque={categoria === 'especialistas'} titulo="Especialistas" resumo={
-          `${plural(dados.volumeHabilidades, 'habilidade', 'habilidades')} · complexidade ${nf.format(dados.complexidadeTotal)} · score ${nf.format(dados.scoreEspecialista)}`
+          `${plural(dados.volumeHabilidades, 'habilidade', 'habilidades')} · ${nf.format(dados.pontosHabilidades)} pts · complexidade ${nf.format(dados.complexidadeTotal)} · score ${nf.format(dados.scoreEspecialista)}`
         }>
-          <p className="num text-xs text-g50">Fórmula: habilidades × 10 + complexidade das entregas = {formulaEsp}</p>
+          <p className="num text-xs text-g50">Fórmula: {formulaEsp}</p>
+          <p className="mt-1 text-xs text-g50">
+            Habilidade comum vale 10. Conversar com a IA e a Plataforma Pulso valem 10; o ChatGPT vale 20. Construir, automatizar e dados valem 20.
+          </p>
           <div className="mt-2 flex flex-wrap gap-1">
-            {dados.linguagens.length === 0 && dados.automacoes.length === 0 && (
+            {dados.habilidades.length === 0 && (
               <span className="text-sm text-g50">Nenhuma habilidade cadastrada no Hub.</span>
             )}
-            {dados.linguagens.map((h) => <Chip key={`l-${h}`}>{h}</Chip>)}
-            {dados.automacoes.map((h) => <Chip key={`a-${h}`}>{h}</Chip>)}
+            {dados.habilidades.map((h) => (
+              <Chip key={`${h.ambiente ?? h.nome}`} senff={h.senff}>
+                {h.nome}
+                <span className="num text-g50"> · {nf.format(h.pontos)}</span>
+              </Chip>
+            ))}
           </div>
           {dados.entregas.length > 0 && (
             <ul className="mt-3 space-y-2">
@@ -184,9 +192,15 @@ function Bloco({
   );
 }
 
-function Chip({ children }: { children: React.ReactNode }) {
+function Chip({ children, senff = false }: { children: React.ReactNode; senff?: boolean }) {
   return (
-    <span className="rounded-s bg-g20 px-2 py-0.5 text-xs font-medium text-g80">{children}</span>
+    <span className={clsx(
+      'rounded-s px-2 py-0.5 text-xs font-medium text-g80',
+      senff ? 'border border-[var(--blue)] bg-[color-mix(in_srgb,var(--blue)_10%,var(--g10))]' : 'bg-g20',
+    )}
+    >
+      {children}
+    </span>
   );
 }
 

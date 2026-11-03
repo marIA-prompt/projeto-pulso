@@ -89,8 +89,8 @@ export default async function RankingsPage({
         <h1 className="mt-1 text-2xl font-bold tracking-tight">Rankings</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-g60">
           Scorecard gerencial das três categorias do Pulso: volume de entregas,
-          conhecimento técnico e índice de ajuda entre pares. O recorte de datas
-          atualiza o placar na hora.
+          conhecimento técnico — com peso maior para os ambientes da Senff — e
+          índice de ajuda entre pares. O recorte de datas atualiza o placar na hora.
         </p>
       </header>
 

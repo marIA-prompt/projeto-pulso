@@ -1,5 +1,9 @@
 import type { ExperienceLevel, Stage } from '@/lib/types';
 import { diaISO, nf, nf1, plural } from '@/lib/format';
+import {
+  pontuarHabilidades,
+  type HabilidadePontuada,
+} from '@/lib/ferramentas-senff';
 
 export const RANKING_TOP = 10;
 export const RANKING_MESES = 3;
@@ -131,7 +135,10 @@ export type AuditoriaPessoa = {
   area_name: string | null;
   linguagens: string[];
   automacoes: string[];
+  habilidades: HabilidadePontuada[];
   volumeHabilidades: number;
+  /** Soma dos pontos das habilidades, já com o peso dos ambientes Senff. */
+  pontosHabilidades: number;
   scoreEspecialista: number;
   complexidadeTotal: number;
   entregasQtd: number;
@@ -254,7 +261,11 @@ export function habilidadesDoHub(p: PessoaRanking): { linguagens: string[]; auto
   };
 }
 
-/** Quantidade de habilidades únicas no Hub (linguagens + automações). */
+/**
+ * Quantidade de habilidades únicas no Hub (linguagens + automações).
+ * O placar de especialistas não usa esta contagem: os pontos vêm de
+ * pontuarHabilidades, com peso maior para os ambientes da Senff.
+ */
 export function volumeHabilidades(p: PessoaRanking): number {
   return new Set(ferramentasDe(p)).size;
 }
@@ -283,6 +294,31 @@ export function complexidadeEntrega(p: ProjetoRanking): number {
 
 export function scoreEspecialista(volume: number, complexidade: number): number {
   return volume * 10 + complexidade;
+}
+
+/** Conhecimento técnico: pontos das habilidades (ambientes Senff pesam mais) + complexidade. */
+export function scoreConhecimento(pontosHabilidades: number, complexidade: number): number {
+  return pontosHabilidades + complexidade;
+}
+
+export function formulaEspecialista(itens: HabilidadePontuada[], complexidade: number): string {
+  const partes = itens.map((item) => `${item.nome} ${nf.format(item.pontos)}`);
+  if (complexidade > 0 || partes.length === 0) {
+    partes.push(`complexidade ${nf.format(complexidade)}`);
+  }
+  return `${partes.join(' + ')} = ${nf.format(scoreConhecimento(
+    itens.reduce((soma, item) => soma + item.pontos, 0),
+    complexidade,
+  ))}`;
+}
+
+function detalheEspecialista(itens: HabilidadePontuada[], complexidade: number): string {
+  const pontos = itens.reduce((soma, item) => soma + item.pontos, 0);
+  const pedaco = plural(itens.length, 'habilidade', 'habilidades');
+  const senff = [...new Set(itens.filter((item) => item.senff).map((item) => item.ambiente ?? item.nome))];
+  const corpo = `${pedaco} · ${nf.format(pontos)} pts`;
+  const comComplexidade = complexidade > 0 ? `${corpo} · complexidade ${nf.format(complexidade)}` : corpo;
+  return senff.length > 0 ? `${comComplexidade} · ${senff.join(', ')}` : comComplexidade;
 }
 
 /**
@@ -481,17 +517,15 @@ export function montarRankings(
       });
     }
 
-    const volume = volumeHabilidades(p);
+    const conhecimento = pontuarHabilidades(p.languages, p.automations);
+    const volume = conhecimento.itens.length;
     const complexidade = complexidadePorId.get(p.id) ?? 0;
-    const scoreEsp = scoreEspecialista(volume, complexidade);
+    const scoreEsp = scoreConhecimento(conhecimento.total, complexidade);
     if (scoreEsp > 0) {
-      const pedacoHabilidade = plural(volume, 'habilidade', 'habilidades');
       especialistas.push({
         ...base,
         valor: scoreEsp,
-        detalhe: complexidade > 0
-          ? `${pedacoHabilidade} · complexidade ${nf.format(complexidade)}`
-          : pedacoHabilidade,
+        detalhe: detalheEspecialista(conhecimento.itens, complexidade),
       });
     }
 
@@ -572,7 +606,8 @@ export function auditoriaPessoa(
   const presencaPorId = agregarPresencas(presencas, desde, ate);
   const pres = presencaPorId.get(id);
   const hub = habilidadesDoHub(pessoa);
-  const volume = volumeHabilidades(pessoa);
+  const conhecimento = pontuarHabilidades(pessoa.languages, pessoa.automations);
+  const volume = conhecimento.itens.length;
 
   const minhas = projetos.filter((proj) => proj.owner_id === id);
   const entregasPeriodo = minhas
@@ -608,8 +643,10 @@ export function auditoriaPessoa(
     area_name: pessoa.area_name,
     linguagens: hub.linguagens,
     automacoes: hub.automacoes,
+    habilidades: conhecimento.itens,
     volumeHabilidades: volume,
-    scoreEspecialista: scoreEspecialista(volume, complexidadeTotal),
+    pontosHabilidades: conhecimento.total,
+    scoreEspecialista: scoreConhecimento(conhecimento.total, complexidadeTotal),
     complexidadeTotal,
     entregasQtd: entregas.length,
     horasMes,

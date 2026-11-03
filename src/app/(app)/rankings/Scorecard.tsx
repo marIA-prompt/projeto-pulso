@@ -41,7 +41,7 @@ const ABAS: {
     id: 'especialistas',
     rotulo: 'Especialistas',
     titulo: 'Especialistas (conhecimento técnico)',
-    nota: 'Volume de habilidades no Hub (linguagens e automações) e complexidade das iniciativas entregues no período — IA, n8n, ferramentas, horas e score.',
+    nota: 'Habilidade comum vale 10. No guia da Senff, conversar com a IA e a Plataforma Pulso valem 10; o ChatGPT vale 20. Construir, automatizar e dados valem 20. Soma-se a complexidade das entregas no período.',
     cor: 'var(--cat-7)',
   },
   {
