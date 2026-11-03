@@ -102,7 +102,7 @@ export function PerfilForm({ valores, nomeCompleto }: { valores: Valores; nomeCo
           <h2 className="text-base font-semibold">Habilidades</h2>
           <p className="mt-1 text-sm text-g60">
             Separe por vírgula. Elas viram os filtros e a busca da comunidade.
-            No ranking de especialistas, ChatGPT, Airflow e Agentes de Monitoramento valem 20 pontos; Claude e as demais habilidades valem 10.
+            No ranking de especialistas, conversar com a IA vale 10 e o ChatGPT vale 20. Construir, automatizar, dados e o Pulso valem 20. As outras habilidades valem 10.
           </p>
         </div>
 
@@ -118,7 +118,7 @@ export function PerfilForm({ valores, nomeCompleto }: { valores: Valores; nomeCo
           valorInicial={valores.automations ?? []}
           sugestoes={[
             ...SUGESTOES_AMBIENTES_SENFF,
-            'n8n', 'Power Automate', 'ClickUp', 'Bitrix', 'Zapier', 'Make', 'Power BI', 'Excel Avançado', 'RPA',
+            'Power Automate', 'Bitrix', 'Zapier', 'Make', 'Excel Avançado', 'RPA',
           ]}
           placeholder="Claude, ChatGPT, Airflow, n8n…"
         />

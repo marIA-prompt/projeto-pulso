@@ -41,7 +41,7 @@ const ABAS: {
     id: 'especialistas',
     rotulo: 'Especialistas',
     titulo: 'Especialistas (conhecimento técnico)',
-    nota: 'Cada habilidade do Hub vale 10 pontos, inclusive Claude. ChatGPT, Airflow e Agentes de Monitoramento valem 20. Soma-se a complexidade das entregas no período.',
+    nota: 'Habilidade comum vale 10. No guia da Senff, conversar com a IA vale 10 e o ChatGPT vale 20. Construir, automatizar, dados e o Pulso valem 20. Soma-se a complexidade das entregas no período.',
     cor: 'var(--cat-7)',
   },
   {

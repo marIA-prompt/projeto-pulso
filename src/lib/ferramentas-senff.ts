@@ -1,10 +1,8 @@
 /**
- * Ambientes de IA da Senff que pesam no ranking de especialistas.
- * A lista de referência fica em
- * https://hml-prototipos.senff.com.br/senff-ia/ambientes/
- *
- * Claude vale 10. ChatGPT, Airflow e Agentes de Monitoramento valem 20.
- * Habilidade que não é um desses ambientes continua em 10.
+ * Ambientes do Guia de Ambientes de IA da Senff (data.js do protótipo,
+ * 17 ambientes). Conversar com a IA vale 10, no mesmo patamar de uma
+ * habilidade comum. O ChatGPT vale 20, como construir, automatizar,
+ * dados e o Pulso. Habilidade fora do guia continua em 10.
  */
 
 export const PONTOS_HABILIDADE_BASE = 10;
@@ -21,13 +19,6 @@ export type AmbienteSenff = {
 
 export const AMBIENTES_SENFF: readonly AmbienteSenff[] = [
   {
-    id: 'claude',
-    rotulo: 'Claude',
-    pontos: 10,
-    chaves: ['claude'],
-    exatas: [],
-  },
-  {
     id: 'chatgpt',
     rotulo: 'ChatGPT',
     pontos: 20,
@@ -35,14 +26,77 @@ export const AMBIENTES_SENFF: readonly AmbienteSenff[] = [
     exatas: ['gpt', 'gpt-4', 'gpt4', 'gpt-4o'],
   },
   {
-    id: 'airflow',
-    rotulo: 'Airflow',
-    pontos: 20,
-    chaves: ['airflow', 'apache airflow', 'arflow'],
+    id: 'claude',
+    rotulo: 'Claude',
+    pontos: 10,
+    chaves: ['claude'],
     exatas: [],
   },
   {
-    id: 'agentes-monitoramento',
+    id: 'copilot',
+    rotulo: 'Microsoft 365 Copilot',
+    pontos: 10,
+    chaves: ['microsoft 365 copilot', 'm365 copilot', 'copilot'],
+    exatas: [],
+  },
+  {
+    id: 'gemini',
+    rotulo: 'Gemini',
+    pontos: 10,
+    chaves: ['google gemini', 'gemini'],
+    exatas: [],
+  },
+  {
+    id: 'codex',
+    rotulo: 'Codex',
+    pontos: 20,
+    chaves: ['openai codex', 'codex'],
+    exatas: [],
+  },
+  {
+    id: 'cursor',
+    rotulo: 'Cursor',
+    pontos: 20,
+    chaves: ['cursor'],
+    exatas: [],
+  },
+  {
+    id: 'vscode',
+    rotulo: 'VS Code',
+    pontos: 20,
+    chaves: ['visual studio code', 'vs code', 'vscode'],
+    exatas: [],
+  },
+  {
+    id: 'python',
+    rotulo: 'Python',
+    pontos: 20,
+    chaves: ['python'],
+    exatas: [],
+  },
+  {
+    id: 'navigate',
+    rotulo: 'Navigate',
+    pontos: 20,
+    chaves: ['navigate'],
+    exatas: [],
+  },
+  {
+    id: 'n8n',
+    rotulo: 'n8n',
+    pontos: 20,
+    chaves: ['n8n'],
+    exatas: [],
+  },
+  {
+    id: 'clickup',
+    rotulo: 'Esteira de API do ClickUp',
+    pontos: 20,
+    chaves: ['esteira de api do clickup', 'clickup', 'click up'],
+    exatas: [],
+  },
+  {
+    id: 'agentes',
     rotulo: 'Agentes de Monitoramento',
     pontos: 20,
     chaves: [
@@ -51,6 +105,41 @@ export const AMBIENTES_SENFF: readonly AmbienteSenff[] = [
       'agentes monitoramento',
       'agente monitoramento',
     ],
+    exatas: [],
+  },
+  {
+    id: 'maf',
+    rotulo: 'MAF',
+    pontos: 20,
+    chaves: ['microsoft agent framework', 'maf'],
+    exatas: [],
+  },
+  {
+    id: 'airflow',
+    rotulo: 'Airflow',
+    pontos: 20,
+    chaves: ['apache airflow', 'airflow', 'arflow'],
+    exatas: [],
+  },
+  {
+    id: 'powerbi',
+    rotulo: 'Power BI',
+    pontos: 20,
+    chaves: ['power bi', 'powerbi'],
+    exatas: [],
+  },
+  {
+    id: 'api',
+    rotulo: 'API das LLMs',
+    pontos: 20,
+    chaves: ['api das llms', 'api das llm', 'api de llms', 'api de llm', 'litellm', 'lite llm'],
+    exatas: [],
+  },
+  {
+    id: 'pulso',
+    rotulo: 'Plataforma Pulso',
+    pontos: 20,
+    chaves: ['plataforma pulso', 'pulso'],
     exatas: [],
   },
 ];

@@ -107,7 +107,7 @@ export function AuditoriaRanking({
         }>
           <p className="num text-xs text-g50">Fórmula: {formulaEsp}</p>
           <p className="mt-1 text-xs text-g50">
-            Cada habilidade vale 10. Ambientes da Senff: Claude 10; ChatGPT, Airflow e Agentes de Monitoramento 20.
+            Habilidade comum vale 10. Conversar com a IA vale 10; o ChatGPT vale 20. Construir, automatizar, dados e o Pulso valem 20.
           </p>
           <div className="mt-2 flex flex-wrap gap-1">
             {dados.habilidades.length === 0 && (
