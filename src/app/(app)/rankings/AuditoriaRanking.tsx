@@ -107,7 +107,7 @@ export function AuditoriaRanking({
         }>
           <p className="num text-xs text-g50">Fórmula: {formulaEsp}</p>
           <p className="mt-1 text-xs text-g50">
-            Habilidade comum vale 10. Conversar com a IA vale 10; o ChatGPT vale 20. Construir, automatizar, dados e o Pulso valem 20.
+            Habilidade comum vale 10. Conversar com a IA e a Plataforma Pulso valem 10; o ChatGPT vale 20. Construir, automatizar e dados valem 20.
           </p>
           <div className="mt-2 flex flex-wrap gap-1">
             {dados.habilidades.length === 0 && (

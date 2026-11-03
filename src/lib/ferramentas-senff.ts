@@ -1,8 +1,8 @@
 /**
  * Ambientes do Guia de Ambientes de IA da Senff (data.js do protótipo,
- * 17 ambientes). Conversar com a IA vale 10, no mesmo patamar de uma
- * habilidade comum. O ChatGPT vale 20, como construir, automatizar,
- * dados e o Pulso. Habilidade fora do guia continua em 10.
+ * 17 ambientes). Conversar com a IA e a Plataforma Pulso valem 10, no mesmo
+ * patamar de uma habilidade comum. O ChatGPT vale 20, como construir,
+ * automatizar e dados. Habilidade fora do guia continua em 10.
  */
 
 export const PONTOS_HABILIDADE_BASE = 10;
@@ -138,7 +138,7 @@ export const AMBIENTES_SENFF: readonly AmbienteSenff[] = [
   {
     id: 'pulso',
     rotulo: 'Plataforma Pulso',
-    pontos: 20,
+    pontos: 10,
     chaves: ['plataforma pulso', 'pulso'],
     exatas: [],
   },

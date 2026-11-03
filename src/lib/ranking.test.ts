@@ -579,7 +579,7 @@ caso('os 17 ambientes do guia da Senff têm o peso do grupo', () => {
     airflow: 20,
     powerbi: 20,
     api: 20,
-    pulso: 20,
+    pulso: 10,
   };
   assert.equal(AMBIENTES_SENFF.length, 17);
   for (const ambiente of AMBIENTES_SENFF) {
