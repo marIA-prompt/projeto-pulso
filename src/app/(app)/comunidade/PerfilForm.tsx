@@ -7,6 +7,7 @@ import { atualizarPerfilHub, type EstadoPerfil } from './actions';
 import { TagInput } from './TagInput';
 import { Button } from '@/components/ui/Button';
 import { ErroBox } from '@/components/ui/Card';
+import { SUGESTOES_AMBIENTES_SENFF } from '@/lib/ferramentas-senff';
 import { EXPERIENCE_LEVELS, EXPERIENCE_LABEL } from '@/lib/types';
 
 type Valores = {
@@ -99,7 +100,10 @@ export function PerfilForm({ valores, nomeCompleto }: { valores: Valores; nomeCo
       <section className="card space-y-4 p-6">
         <div>
           <h2 className="text-base font-semibold">Habilidades</h2>
-          <p className="mt-1 text-sm text-g60">Separe por vírgula. Elas viram os filtros e a busca da comunidade.</p>
+          <p className="mt-1 text-sm text-g60">
+            Separe por vírgula. Elas viram os filtros e a busca da comunidade.
+            No ranking de especialistas, ChatGPT, Airflow e Agentes de Monitoramento valem 20 pontos; Claude e as demais habilidades valem 10.
+          </p>
         </div>
 
         <TagInput
@@ -112,8 +116,11 @@ export function PerfilForm({ valores, nomeCompleto }: { valores: Valores; nomeCo
         <TagInput
           name="automations" label="Automações & ferramentas"
           valorInicial={valores.automations ?? []}
-          sugestoes={['n8n', 'Power Automate', 'ClickUp', 'Bitrix', 'Zapier', 'Make', 'Power BI', 'Excel Avançado', 'RPA']}
-          placeholder="n8n, Power Automate, ClickUp…"
+          sugestoes={[
+            ...SUGESTOES_AMBIENTES_SENFF,
+            'n8n', 'Power Automate', 'ClickUp', 'Bitrix', 'Zapier', 'Make', 'Power BI', 'Excel Avançado', 'RPA',
+          ]}
+          placeholder="Claude, ChatGPT, Airflow, n8n…"
         />
 
         <TagInput
