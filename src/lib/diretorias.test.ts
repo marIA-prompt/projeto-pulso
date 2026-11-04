@@ -14,10 +14,13 @@ import {
   diretoriaParaGravar,
 } from './diretorias';
 
-const sql = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), '../../supabase/migrations/0021_projetos_diretoria_por_area.sql'),
+const sql = [
+  '0021_projetos_diretoria_por_area.sql',
+  '0024_area_pos_vendas_solucoes_empresariais.sql',
+].map((arquivo) => readFileSync(
+  join(dirname(fileURLToPath(import.meta.url)), '../../supabase/migrations', arquivo),
   'utf8',
-);
+)).join('\n');
 
 let falhas = 0;
 function caso(nome: string, fn: () => void) {
@@ -45,6 +48,7 @@ caso('cada área antiga do pedido aponta para uma diretoria', () => {
     Cobrança: 'Área Crédito/Cobrança',
     Seguros: 'Área de Seguros',
     'Pós Vendas - Private Label': 'Área Pós Vendas Private Label',
+    'Pós vendas Soluções Empresariais': 'Área Pós Vendas Private Label',
     'Departamento Controladoria - Riscos': 'Área Controladoria',
     'Produtos Financeiros': 'Área de Tesouraria e Captação',
     'Comercial PJ': 'Área Comercial PJ',
@@ -95,6 +99,8 @@ caso('aceita caixa, acento, espaço e as grafias legadas', () => {
   assert.equal(diretoriaDaArea('OPERAÇÕES'), 'Área Operações e Atendimento');
   assert.equal(diretoriaDeTexto('Área de Rh'), 'Área de RH');
   assert.equal(diretoriaDeTexto('Áre Pós Vendas Private Label'), 'Área Pós Vendas Private Label');
+  assert.equal(diretoriaDeTexto('Área de Pós-Venda Private Label'), 'Área Pós Vendas Private Label');
+  assert.equal(diretoriaDaArea('Pós vendas Soluções Empresariais'), 'Área Pós Vendas Private Label');
   assert.equal(diretoriaDeTexto('FROTA'), 'Área de RH');
   assert.equal(diretoriaDeTexto('BANCO PJ'), 'Área Comercial PJ');
   assert.equal(diretoriaDeTexto('Credito PJ'), 'Área Crédito/Cobrança');
